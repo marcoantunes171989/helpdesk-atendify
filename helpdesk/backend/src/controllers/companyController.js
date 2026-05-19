@@ -38,7 +38,7 @@ exports.links = async (req, res) => {
   const { id } = req.params;
   const company = await prisma.company.findUnique({
     where: { id },
-    include: { _count: { select: { employees: true, tickets: true, categories: true } } },
+    include: { _count: { select: { employees: true, tickets: true, categories: true, users: true } } },
   });
   if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
   res.json({
@@ -46,6 +46,7 @@ exports.links = async (req, res) => {
     employees: company._count.employees,
     tickets: company._count.tickets,
     categories: company._count.categories,
+    users: company._count.users,
   });
 };
 
@@ -104,32 +105,43 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   const { id, force } = { ...req.params, ...req.query };
 
-  const company = await prisma.company.findUnique({
-    where: { id },
-    include: { _count: { select: { employees: true, tickets: true, categories: true } } },
-  });
-  if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
-
-  const hasLinks = company._count.employees > 0 || company._count.tickets > 0 || company._count.categories > 0;
-
-  if (hasLinks && force !== 'true') {
-    return res.status(409).json({
-      error: 'Empresa possui registros vinculados',
-      details: {
-        employees: company._count.employees,
-        tickets: company._count.tickets,
-        categories: company._count.categories,
-      },
+  try {
+    const company = await prisma.company.findUnique({
+      where: { id },
+      include: { _count: { select: { employees: true, tickets: true, categories: true, users: true } } },
     });
+    if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
+
+    const hasLinks =
+      company._count.employees > 0 ||
+      company._count.tickets > 0 ||
+      company._count.categories > 0 ||
+      company._count.users > 0;
+
+    if (hasLinks && force !== 'true') {
+      return res.status(409).json({
+        error: 'Empresa possui registros vinculados',
+        details: {
+          employees: company._count.employees,
+          tickets: company._count.tickets,
+          categories: company._count.categories,
+          users: company._count.users,
+        },
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.ticketComment.deleteMany({ where: { ticket: { companyId: id } } });
+      await tx.ticket.deleteMany({ where: { companyId: id } });
+      await tx.employee.deleteMany({ where: { companyId: id } });
+      await tx.category.deleteMany({ where: { companyId: id } });
+      await tx.user.deleteMany({ where: { companyId: id } });
+      await tx.company.delete({ where: { id } });
+    });
+
+    res.json({ message: 'Empresa excluída com sucesso' });
+  } catch (err) {
+    console.error('Erro ao excluir empresa:', err);
+    res.status(500).json({ error: err.message || 'Erro ao excluir empresa' });
   }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.ticketComment.deleteMany({ where: { ticket: { companyId: id } } });
-    await tx.ticket.deleteMany({ where: { companyId: id } });
-    await tx.employee.deleteMany({ where: { companyId: id } });
-    await tx.category.deleteMany({ where: { companyId: id } });
-    await tx.company.delete({ where: { id } });
-  });
-
-  res.json({ message: 'Empresa excluída com sucesso' });
 };

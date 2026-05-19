@@ -31,6 +31,7 @@ model Company {
   tickets           Ticket[]
   categories        Category[]
   employees         Employee[]
+  users             User[]
 
   @@map("companies")
 }
@@ -43,6 +44,8 @@ model User {
   password  String
   role      Role     @default(CLIENT)
   active    Boolean  @default(true)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
