@@ -34,7 +34,9 @@ export const companyService = {
   get: (id) => api.get(`/companies/${id}`).then(r => r.data),
   create: (data) => api.post('/companies', data).then(r => r.data),
   update: (id, data) => api.put(`/companies/${id}`, data).then(r => r.data),
-  remove: (id) => api.delete(`/companies/${id}`).then(r => r.data),
+  deactivate: (id) => api.delete(`/companies/${id}`).then(r => r.data),
+  delete: (id) => api.delete(`/companies/${id}?force=true`).then(r => r.data),
+  checkLinks: (id) => api.get(`/companies/${id}/links`).then(r => r.data),
 };
 
 export const userService = {
