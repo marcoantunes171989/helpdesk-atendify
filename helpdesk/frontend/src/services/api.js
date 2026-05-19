@@ -65,6 +65,14 @@ export const ticketService = {
   updateComment: (id, commentId, data) => api.put(`/tickets/${id}/comments/${commentId}`, data).then(r => r.data),
 };
 
+export const technicianService = {
+  list: (params) => api.get('/technicians', { params }).then(r => r.data),
+  get: (id) => api.get(`/technicians/${id}`).then(r => r.data),
+  create: (data) => api.post('/technicians', data).then(r => r.data),
+  update: (id, data) => api.put(`/technicians/${id}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/technicians/${id}`).then(r => r.data),
+};
+
 export const statusService = {
   list: (params) => api.get('/statuses', { params }).then(r => r.data),
   create: (data) => api.post('/statuses', data).then(r => r.data),

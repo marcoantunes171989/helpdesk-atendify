@@ -13,6 +13,7 @@ import TicketDetail from './pages/TicketDetail';
 import Employees from './pages/Employees';
 import CompanyDetail from './pages/CompanyDetail';
 import Status from './pages/Status';
+import Technicians from './pages/Technicians';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -41,6 +42,7 @@ function AppRoutes() {
         <Route path="tickets/:id" element={<TicketDetail />} />
         <Route path="employees" element={<Employees />} />
         <Route path="statuses" element={<Status />} />
+        <Route path="technicians" element={<Technicians />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

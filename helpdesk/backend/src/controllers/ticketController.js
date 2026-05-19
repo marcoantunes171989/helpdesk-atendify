@@ -6,6 +6,7 @@ const ticketInclude = {
   user: { select: { id: true, name: true, email: true } },
   assignee: { select: { id: true, name: true, email: true } },
   employee: { select: { id: true, name: true, position: true } },
+  technician: { select: { id: true, name: true } },
   ticketStatus: { select: { id: true, name: true, color: true } },
   category: { select: { id: true, name: true, slaHours: true } },
   company: { select: { id: true, name: true } },
@@ -50,6 +51,7 @@ exports.list = async (req, res) => {
       user: { select: { id: true, name: true } },
       assignee: { select: { id: true, name: true } },
       employee: { select: { id: true, name: true, position: true } },
+      technician: { select: { id: true, name: true } },
       ticketStatus: { select: { id: true, name: true, color: true } },
       category: { select: { id: true, name: true } },
       company: { select: { id: true, name: true } },
@@ -72,13 +74,14 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { title, description, priority, categoryId, companyId, employeeId, attachments } = req.body;
+  const { title, description, priority, categoryId, companyId, employeeId, technicianId, attachments } = req.body;
 
   if (!title) return res.status(400).json({ error: 'Título é obrigatório' });
   if (!description) return res.status(400).json({ error: 'Descrição é obrigatória' });
   if (!companyId) return res.status(400).json({ error: 'Empresa é obrigatória' });
   if (!categoryId) return res.status(400).json({ error: 'Categoria é obrigatória' });
   if (!employeeId) return res.status(400).json({ error: 'Funcionário é obrigatório' });
+  if (!technicianId) return res.status(400).json({ error: 'Técnico é obrigatório' });
   if (!priority) return res.status(400).json({ error: 'Prioridade é obrigatória' });
 
   let slaDeadline = null;
@@ -98,6 +101,7 @@ exports.create = async (req, res) => {
       priority: priority || 'MEDIUM',
       categoryId: categoryId || null,
       employeeId: employeeId || null,
+      technicianId: technicianId || null,
       statusId: statusId || null,
       userId: req.user.id,
       companyId,
@@ -141,6 +145,7 @@ exports.update = async (req, res) => {
   if (assignedTo !== undefined) data.assignedTo = assignedTo || null;
   if (companyId !== undefined) data.companyId = companyId;
   if (employeeId !== undefined) data.employeeId = employeeId || null;
+  if (req.body.technicianId !== undefined) data.technicianId = req.body.technicianId || null;
   if ('statusId' in req.body) data.statusId = req.body.statusId || null;
 
   if (status && status !== ticket.status) {

@@ -12,7 +12,7 @@ import {
 import dayjs from 'dayjs';
 import {
   ticketService, userService, categoryService, companyService,
-  employeeService, statusService,
+  employeeService, statusService, technicianService,
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -59,8 +59,10 @@ export default function TicketDetail() {
   const [editStatus, setEditStatus] = useState(null);
   const [editStatusId, setEditStatusId] = useState(null);
   const [editAssignedTo, setEditAssignedTo] = useState(null);
+  const [editTechnicianId, setEditTechnicianId] = useState(null);
   const [editEmployees, setEditEmployees] = useState([]);
   const [loadingEditEmployees, setLoadingEditEmployees] = useState(false);
+  const [technicians, setTechnicians] = useState([]);
   const [editSaving, setEditSaving] = useState(false);
 
   // Edit comment (trâmite)
@@ -86,6 +88,10 @@ export default function TicketDetail() {
     if (canUpdateTicketStatus(user?.role)) {
       companyService.list().then(list => setCompanies(list.filter(c => c.active)));
       statusService.list().then(setStatuses);
+      technicianService.list({ active: 'true' }).then(list => {
+        list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+        setTechnicians(list);
+      });
     }
   }, [id, user]);
 
@@ -99,6 +105,7 @@ export default function TicketDetail() {
     setEditStatus(ticket.status);
     setEditStatusId(ticket.statusId);
     setEditAssignedTo(ticket.assignedTo);
+    setEditTechnicianId(ticket.technicianId);
     if (ticket.companyId) {
       setLoadingEditEmployees(true);
       employeeService.list({ companyId: ticket.companyId, active: 'true' })
@@ -139,6 +146,7 @@ export default function TicketDetail() {
         priority: editPriority,
         status: editStatus,
         statusId: editStatusId || null,
+        technicianId: editTechnicianId || null,
         assignedTo: editAssignedTo || null,
       });
       setTicket(updated);
@@ -456,6 +464,20 @@ export default function TicketDetail() {
                     </Select>
                   </Col>
                 </Row>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>TÉCNICO</div>
+                  <Select
+                    value={editTechnicianId}
+                    style={{ width: '100%' }}
+                    onChange={setEditTechnicianId}
+                    allowClear
+                    placeholder="Selecione o técnico"
+                    showSearch
+                    optionFilterProp="children"
+                  >
+                    {technicians.map(t => <Option key={t.id} value={t.id}>{t.name}</Option>)}
+                  </Select>
+                </div>
                 {canAssignTickets(user?.role) && (
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>ATRIBUÍDO A</div>
@@ -686,9 +708,9 @@ export default function TicketDetail() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { label: 'Solicitante', value: ticket.user?.name },
                 { label: 'Empresa', value: ticket.company?.name },
                 ticket.employee && { label: 'Funcionário', value: `${ticket.employee.name}${ticket.employee.position ? ` — ${ticket.employee.position}` : ''}` },
+                ticket.technician && { label: 'Técnico', value: ticket.technician.name },
                 { label: 'Aberto em', value: dayjs(ticket.createdAt).format('DD/MM/YYYY HH:mm') },
                 ticket.resolvedAt && { label: 'Resolvido em', value: dayjs(ticket.resolvedAt).format('DD/MM/YYYY HH:mm') },
               ].filter(Boolean).map(item => (

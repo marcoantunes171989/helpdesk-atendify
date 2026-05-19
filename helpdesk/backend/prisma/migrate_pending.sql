@@ -75,3 +75,24 @@ ALTER TABLE "ticket_comment_attachments" DROP CONSTRAINT IF EXISTS "ticket_comme
 ALTER TABLE "ticket_comment_attachments" ADD CONSTRAINT "ticket_comment_attachments_commentId_fkey"
     FOREIGN KEY ("commentId") REFERENCES "ticket_comments"("id")
     ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- 8. Criar tabela de tecnicos
+CREATE TABLE IF NOT EXISTS "technicians" (
+    "id"          TEXT         NOT NULL,
+    "code"        INTEGER,
+    "name"        TEXT         NOT NULL,
+    "description" TEXT,
+    "observation" TEXT,
+    "active"      BOOLEAN      NOT NULL DEFAULT true,
+    "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "technicians_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "technicians_code_key" ON "technicians"("code");
+
+-- 9. Adicionar campo technicianId em tickets
+ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "technicianId" TEXT;
+ALTER TABLE "tickets" DROP CONSTRAINT IF EXISTS "tickets_technicianId_fkey";
+ALTER TABLE "tickets" ADD CONSTRAINT "tickets_technicianId_fkey"
+    FOREIGN KEY ("technicianId") REFERENCES "technicians"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE;

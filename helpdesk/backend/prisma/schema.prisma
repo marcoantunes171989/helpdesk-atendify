@@ -91,8 +91,10 @@ model Ticket {
   user        User         @relation("CreatedTickets", fields: [userId], references: [id])
   assignedTo  String?
   assignee    User?        @relation("AssignedTickets", fields: [assignedTo], references: [id])
-  employeeId  String?
-  employee    Employee?    @relation(fields: [employeeId], references: [id])
+  employeeId    String?
+  employee      Employee?       @relation(fields: [employeeId], references: [id])
+  technicianId  String?
+  technician    Technician?     @relation(fields: [technicianId], references: [id])
   slaDeadline DateTime?
   resolvedAt  DateTime?
   createdAt   DateTime     @default(now())
@@ -170,6 +172,20 @@ model TicketAttachment {
   createdAt DateTime @default(now())
 
   @@map("ticket_attachments")
+}
+
+model Technician {
+  id          String    @id @default(cuid())
+  code        Int?      @unique
+  name        String
+  description String?
+  observation String?
+  active      Boolean   @default(true)
+  tickets     Ticket[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("technicians")
 }
 
 model Employee {

@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { ticketService, categoryService, companyService, employeeService, statusService } from '../services/api';
+import { ticketService, categoryService, companyService, employeeService, statusService, technicianService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
@@ -30,6 +30,7 @@ export default function Tickets() {
   const [categories, setCategories] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [companyEmployees, setCompanyEmployees] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,10 @@ export default function Tickets() {
     });
     companyService.list({ active: true }).then(setCompanies);
     statusService.list({ active: true }).then(setStatuses);
+    technicianService.list({ active: 'true' }).then(list => {
+      list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      setTechnicians(list);
+    });
   }, [user]);
 
   const handleCompanyChange = (companyId) => {
@@ -187,8 +192,8 @@ export default function Tickets() {
       ) : <span style={{ color: '#d1d5db' }}>—</span>,
     },
     {
-      title: 'Solicitante', key: 'user',
-      render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.user?.name || '—'}</span>,
+      title: 'Técnico', key: 'technician',
+      render: (_, r) => <span style={{ color: '#374151', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
     },
     {
       title: 'Categoria', key: 'category',
@@ -383,6 +388,19 @@ export default function Tickets() {
               >
                 {companyEmployees.map(e => (
                   <Option key={e.id} value={e.id}>{e.name}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="technicianId" label="Técnico" rules={[{ required: true, message: 'Selecione o técnico responsável' }]}>
+              <Select
+                placeholder="Selecione o técnico"
+                showSearch
+                optionFilterProp="children"
+                size="large"
+                notFoundContent="Nenhum técnico ativo cadastrado"
+              >
+                {technicians.map(t => (
+                  <Option key={t.id} value={t.id}>{t.name}</Option>
                 ))}
               </Select>
             </Form.Item>
