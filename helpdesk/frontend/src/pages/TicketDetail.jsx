@@ -8,7 +8,7 @@ import {
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
   DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined, EditOutlined,
-  EyeOutlined, MessageOutlined,
+  EyeOutlined, MessageOutlined, LockOutlined, UnlockOutlined, CheckCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -73,6 +73,12 @@ export default function TicketDetail() {
   const [editingCommentDate, setEditingCommentDate] = useState(null);
   const [editingCommentSaving, setEditingCommentSaving] = useState(false);
   const [commentDate, setCommentDate] = useState(dayjs());
+
+  const [resolveModal, setResolveModal] = useState(false);
+  const [resolveMessage, setResolveMessage] = useState('');
+  const [resolveSaving, setResolveSaving] = useState(false);
+  const [reopenModal, setReopenModal] = useState(false);
+  const [reopenSaving, setReopenSaving] = useState(false);
 
   const load = () => {
     ticketService.get(id)
@@ -160,6 +166,47 @@ export default function TicketDetail() {
       message.error(err.response?.data?.error || 'Erro ao salvar');
     } finally {
       setEditSaving(false);
+    }
+  };
+
+  const handleStatusChange = (v) => {
+    if (v === 'RESOLVED') {
+      setResolveMessage('');
+      setResolveModal(true);
+    } else {
+      handleUpdate('status', v);
+    }
+  };
+
+  const handleResolveConfirm = async () => {
+    if (!resolveMessage.trim()) { message.warning('Informe a conclusão do chamado'); return; }
+    setResolveSaving(true);
+    try {
+      await ticketService.addComment(id, { message: `::SYS_RESOLVED:: ${resolveMessage.trim()}` });
+      const updated = await ticketService.update(id, { status: 'RESOLVED' });
+      setTicket(updated);
+      setResolveModal(false);
+      setResolveMessage('');
+      message.success('Chamado finalizado');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao finalizar');
+    } finally {
+      setResolveSaving(false);
+    }
+  };
+
+  const handleReopenConfirm = async () => {
+    setReopenSaving(true);
+    try {
+      await ticketService.addComment(id, { message: '::SYS_REOPENED::' });
+      const updated = await ticketService.update(id, { status: 'OPEN' });
+      setTicket(updated);
+      setReopenModal(false);
+      message.success('Chamado reaberto');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao reabrir');
+    } finally {
+      setReopenSaving(false);
     }
   };
 
@@ -397,6 +444,18 @@ export default function TicketDetail() {
                   Editar
                 </Button>
               )}
+              {canEdit && isResolved && !editMode && (
+                <Tooltip title="Chamado finalizado — clique para reabrir">
+                  <Button
+                    icon={<LockOutlined />}
+                    size="small"
+                    style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: '#15803d', borderColor: '#15803d' }}
+                    onClick={() => setReopenModal(true)}
+                  >
+                    Reabrir
+                  </Button>
+                </Tooltip>
+              )}
             </div>
 
             {editMode ? (
@@ -573,6 +632,42 @@ export default function TicketDetail() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {ticket.comments.map(c => {
+                const isSysResolved = c.message.startsWith('::SYS_RESOLVED::');
+                const isSysReopened = c.message.startsWith('::SYS_REOPENED::');
+                if (isSysResolved || isSysReopened) {
+                  const sysMsg = isSysResolved ? c.message.slice('::SYS_RESOLVED::'.length).trim() : null;
+                  return (
+                    <div key={c.id}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
+                        <div style={{ flex: 1, height: 1, background: isSysResolved ? '#bbf7d0' : '#fed7aa' }} />
+                        <div style={{
+                          background: isSysResolved ? '#f0fdf4' : '#fff7ed',
+                          border: `1px solid ${isSysResolved ? '#86efac' : '#fdba74'}`,
+                          borderRadius: 20, padding: '3px 14px', fontSize: 12,
+                          color: isSysResolved ? '#15803d' : '#c2410c', fontWeight: 600,
+                          display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+                        }}>
+                          {isSysResolved ? <CheckCircleOutlined /> : <UnlockOutlined />}
+                          {isSysResolved ? 'Chamado Resolvido' : 'Chamado Reaberto'}
+                          {' · '}
+                          {dayjs(c.createdAt).format('DD/MM HH:mm')}
+                          {' · '}
+                          {c.user.name}
+                        </div>
+                        <div style={{ flex: 1, height: 1, background: isSysResolved ? '#bbf7d0' : '#fed7aa' }} />
+                      </div>
+                      {sysMsg && (
+                        <div style={{
+                          margin: '4px 40px 8px', padding: '8px 14px', borderRadius: 8, fontSize: 13,
+                          background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#374151',
+                          whiteSpace: 'pre-wrap', lineHeight: 1.6,
+                        }}>
+                          {sysMsg}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
                 const isAgent = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(c.user.role);
                 const canEditComment = c.user.id === user?.id || ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
                 const isEditingThis = editingCommentId === c.id;
@@ -872,7 +967,7 @@ export default function TicketDetail() {
                 <Space direction="vertical" style={{ width: '100%' }} size={10}>
                   <div>
                     <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
-                    <Select value={ticket.status} style={{ width: '100%' }} onChange={v => handleUpdate('status', v)} size="small">
+                    <Select value={ticket.status} style={{ width: '100%' }} onChange={handleStatusChange} size="small">
                       {Object.entries(TICKET_STATUS).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
                     </Select>
                   </div>
@@ -921,6 +1016,76 @@ export default function TicketDetail() {
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
             Todos os trâmites vinculados também serão removidos.
           </div>
+        </div>
+      </Modal>
+
+      {/* Modal — Finalizar chamado */}
+      <Modal
+        open={resolveModal}
+        onCancel={() => { setResolveModal(false); setResolveMessage(''); }}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <CheckCircleOutlined style={{ color: '#16a34a', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Finalizar Chamado</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => { setResolveModal(false); setResolveMessage(''); }}>Cancelar</Button>
+            <Button
+              type="primary"
+              loading={resolveSaving}
+              disabled={!resolveMessage.trim()}
+              onClick={handleResolveConfirm}
+              style={{ background: '#16a34a', borderColor: '#16a34a' }}
+            >
+              Finalizar
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '8px 0' }}>
+          <p style={{ color: '#374151', marginBottom: 12 }}>
+            Informe a conclusão do chamado. Este trâmite será registrado e o chamado será marcado como <strong>Resolvido</strong>.
+          </p>
+          <TextArea
+            rows={4}
+            value={resolveMessage}
+            onChange={e => setResolveMessage(e.target.value)}
+            placeholder="Descreva como o chamado foi resolvido..."
+            style={{ borderRadius: 8, resize: 'vertical' }}
+            autoFocus
+          />
+        </div>
+      </Modal>
+
+      {/* Modal — Reabrir chamado */}
+      <Modal
+        open={reopenModal}
+        onCancel={() => setReopenModal(false)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <UnlockOutlined style={{ color: '#c2410c', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Reabrir Chamado</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setReopenModal(false)}>Cancelar</Button>
+            <Button
+              loading={reopenSaving}
+              onClick={handleReopenConfirm}
+              style={{ background: '#f97316', borderColor: '#f97316', color: '#fff', fontWeight: 600 }}
+            >
+              Reabrir
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '8px 0' }}>
+          <p style={{ color: '#374151' }}>
+            Deseja reabrir o chamado? O status será alterado para <strong>Aberto</strong> e um trâmite de reabertura será registrado automaticamente.
+          </p>
         </div>
       </Modal>
 
