@@ -33,6 +33,18 @@ function maskPhone(value) {
   return d.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
 }
 
+function maskCEP(value) {
+  return value.replace(/\D/g, '').slice(0, 8).replace(/^(\d{5})(\d{0,3})/, '$1-$2').replace(/-$/, '');
+}
+
+function maskStateReg(value) {
+  return value.replace(/[^\d./\-]/g, '').slice(0, 18);
+}
+
+function onlyNumbers(value) {
+  return value.replace(/\D/g, '');
+}
+
 function validateCNPJ(cnpj) {
   const c = cnpj.replace(/\D/g, '');
   if (c.length !== 14 || /^(\d)\1+$/.test(c)) return false;
@@ -65,7 +77,16 @@ export default function Companies() {
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
-  const openEdit = (record) => { setEditing(record); form.setFieldsValue(record); setDrawerOpen(true); };
+  const openEdit = (record) => {
+    setEditing(record);
+    form.setFieldsValue({
+      ...record,
+      phone: record.phone ? maskPhone(record.phone) : '',
+      zipCode: record.zipCode ? maskCEP(record.zipCode) : '',
+      cnpj: record.cnpj ? maskCNPJ(record.cnpj) : '',
+    });
+    setDrawerOpen(true);
+  };
 
   const handleSubmit = async (values) => {
     setSaving(true);
@@ -218,8 +239,8 @@ export default function Companies() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="stateRegistration" label="Inscrição Estadual">
-                <Input placeholder="000.000.000.000" />
+              <Form.Item name="stateRegistration" label="Inscrição Estadual" normalize={v => maskStateReg(v || '')}>
+                <Input placeholder="000.000.000.000" maxLength={18} />
               </Form.Item>
             </Col>
           </Row>
@@ -251,8 +272,8 @@ export default function Companies() {
           </Divider>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="zipCode" label="CEP">
-                <Input placeholder="00000-000" />
+              <Form.Item name="zipCode" label="CEP" normalize={v => maskCEP(v || '')}>
+                <Input placeholder="00000-000" maxLength={9} />
               </Form.Item>
             </Col>
             <Col span={16}>
@@ -263,8 +284,8 @@ export default function Companies() {
           </Row>
           <Row gutter={16}>
             <Col span={6}>
-              <Form.Item name="addressNumber" label="Número">
-                <Input placeholder="Nº" />
+              <Form.Item name="addressNumber" label="Número" normalize={v => onlyNumbers(v || '')}>
+                <Input placeholder="Nº" maxLength={10} inputMode="numeric" />
               </Form.Item>
             </Col>
             <Col span={18}>

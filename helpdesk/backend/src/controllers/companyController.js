@@ -66,7 +66,9 @@ exports.create = async (req, res) => {
     data: {
       name, cnpj: cnpjClean, stateRegistration, email,
       phone: phone ? phone.replace(/\D/g, '') : null,
-      website, zipCode, street, addressNumber, complement,
+      website,
+      zipCode: zipCode ? zipCode.replace(/\D/g, '') : null,
+      street, addressNumber, complement,
       neighborhood, city, state, notes,
     },
   });
@@ -90,7 +92,9 @@ exports.update = async (req, res) => {
     data: {
       name, stateRegistration, email,
       phone: phone ? phone.replace(/\D/g, '') : null,
-      website, zipCode, street, addressNumber, complement,
+      website,
+      zipCode: zipCode ? zipCode.replace(/\D/g, '') : null,
+      street, addressNumber, complement,
       neighborhood, city, state, notes, active,
     },
   });
