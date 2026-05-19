@@ -21,7 +21,7 @@ export const PRIORITY = {
 };
 
 export const canManageUsers = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);
-export const canManageCompanies = (role) => role === 'SUPER_ADMIN';
+export const canManageCompanies = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);
 export const canManageCategories = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);
 export const canAssignTickets = (role) => ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(role);
 export const canUpdateTicketStatus = (role) => ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(role);
