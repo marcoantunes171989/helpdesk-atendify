@@ -50,7 +50,7 @@ export default function Login() {
             color: 'white', fontSize: 24, fontWeight: 700, margin: '0 0 6px',
             fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.3px',
           }}>
-            Helpdesk
+            Atendexa
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, margin: 0, textAlign: 'center' }}>
             Gerencie seus atendimentos com agilidade
@@ -86,7 +86,7 @@ export default function Login() {
               margin: '0 0 12px', letterSpacing: '-0.3px',
               fontFamily: "'Poppins', sans-serif",
             }}>
-              Helpdesk
+              Atendexa
             </h1>
             <p style={{
               color: 'rgba(255,255,255,0.75)', fontSize: 15,
@@ -174,7 +174,7 @@ export default function Login() {
             </Form>
 
             <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: 12, marginTop: 32 }}>
-              © {new Date().getFullYear()} Helpdesk · Todos os direitos reservados
+              © {new Date().getFullYear()} Atendexa · Todos os direitos reservados
             </p>
           </div>
         </div>

@@ -83,7 +83,7 @@ export default function AppLayout() {
           <CustomerServiceOutlined style={{ color: '#fff', fontSize: 16 }} />
         </div>
         {(!collapsed || isMobile) && (
-          <span style={{ fontWeight: 700, fontSize: 16, color: '#111827', fontFamily: "'Poppins', sans-serif" }}>Helpdesk</span>
+          <span style={{ fontWeight: 700, fontSize: 16, color: '#111827', fontFamily: "'Poppins', sans-serif" }}>Atendexa</span>
         )}
       </div>
 

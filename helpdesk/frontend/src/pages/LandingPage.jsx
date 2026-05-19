@@ -79,7 +79,7 @@ export default function LandingPage() {
               <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="white" />
             </svg>
           </div>
-          <span className="lp-nav-logo-text">Helpdesk</span>
+          <span className="lp-nav-logo-text">Atendexa</span>
         </a>
 
         <div className="lp-nav-links">
@@ -122,7 +122,7 @@ export default function LandingPage() {
               <span>resultados reais</span>
             </h1>
             <p className="lp-hero-subtitle">
-              Plataforma completa de helpdesk para gerenciar chamados, equipes e
+              Plataforma completa de atendimento para gerenciar chamados, equipes e
               prazos de SLA — tudo em um só lugar, com clareza e eficiência.
             </p>
             <div className="lp-hero-actions">
@@ -268,9 +268,9 @@ export default function LandingPage() {
               <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="white" />
             </svg>
           </div>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Helpdesk</span>
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Atendexa</span>
         </div>
-        <span className="lp-footer-text">© {new Date().getFullYear()} Helpdesk · Todos os direitos reservados</span>
+        <span className="lp-footer-text">© {new Date().getFullYear()} Atendexa · Todos os direitos reservados</span>
         <a className="lp-nav-btn" onClick={() => navigate('/login')}>Acessar →</a>
       </footer>
     </div>
