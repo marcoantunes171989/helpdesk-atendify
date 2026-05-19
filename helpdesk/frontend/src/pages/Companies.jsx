@@ -7,8 +7,6 @@ import { PlusOutlined, EditOutlined, StopOutlined, EyeOutlined } from '@ant-desi
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { companyService } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
-import { canManageCompanies } from '../utils/constants';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -19,6 +17,37 @@ const BR_STATES = [
   'RO','RR','RS','SC','SE','SP','TO',
 ];
 
+function maskCNPJ(value) {
+  return value
+    .replace(/\D/g, '')
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
+    .slice(0, 18);
+}
+
+function maskPhone(value) {
+  const d = value.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 10) return d.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim();
+  return d.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
+}
+
+function validateCNPJ(cnpj) {
+  const c = cnpj.replace(/\D/g, '');
+  if (c.length !== 14 || /^(\d)\1+$/.test(c)) return false;
+  const calc = (len) => {
+    let sum = 0, weight = len - 7;
+    for (let i = 0; i < len; i++) {
+      sum += parseInt(c[i]) * weight--;
+      if (weight < 2) weight = 9;
+    }
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return calc(12) === parseInt(c[12]) && calc(13) === parseInt(c[13]);
+}
+
 export default function Companies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +55,6 @@ export default function Companies() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const load = () => {
@@ -78,12 +106,15 @@ export default function Companies() {
       render: (_, r) => (
         <div>
           <div style={{ fontWeight: 600, color: '#111827' }}>{r.name}</div>
-          <div style={{ fontSize: 12, color: '#9ca3af' }}>{r.cnpj}</div>
+          <div style={{ fontSize: 12, color: '#9ca3af' }}>{maskCNPJ(r.cnpj || '')}</div>
         </div>
       ),
     },
     { title: 'Email', dataIndex: 'email', key: 'email', render: v => <span style={{ color: '#6b7280' }}>{v}</span> },
-    { title: 'Telefone', dataIndex: 'phone', key: 'phone', render: v => <span style={{ color: '#6b7280' }}>{v || '—'}</span> },
+    {
+      title: 'Telefone', dataIndex: 'phone', key: 'phone',
+      render: v => <span style={{ color: '#6b7280' }}>{v ? maskPhone(v) : '—'}</span>,
+    },
     {
       title: 'Cidade/UF', key: 'location',
       render: (_, r) => r.city ? <span style={{ color: '#6b7280' }}>{r.city}{r.state ? `/${r.state}` : ''}</span> : <span style={{ color: '#d1d5db' }}>—</span>,
@@ -140,7 +171,6 @@ export default function Companies() {
         <Table dataSource={companies} columns={columns} rowKey="id" loading={loading} scroll={{ x: 900 }} size="middle" />
       </div>
 
-      {/* Drawer — Cadastro/Edição */}
       <Drawer
         title={<span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Empresa' : 'Nova Empresa'}</span>}
         open={drawerOpen}
@@ -158,7 +188,6 @@ export default function Companies() {
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
 
-          {/* Dados da Empresa */}
           <Divider orientation="left" style={{ fontSize: 13, color: '#16a34a', borderColor: '#bbf7d0' }}>
             Dados da Empresa
           </Divider>
@@ -171,8 +200,21 @@ export default function Companies() {
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="cnpj" label="CNPJ" rules={[{ required: !editing, message: 'Informe o CNPJ' }]}>
-                <Input placeholder="00.000.000/0001-00" disabled={!!editing} />
+              <Form.Item
+                name="cnpj" label="CNPJ"
+                rules={[
+                  { required: !editing, message: 'Informe o CNPJ' },
+                  {
+                    validator: (_, value) => {
+                      if (!value || editing) return Promise.resolve();
+                      if (!validateCNPJ(value)) return Promise.reject('CNPJ inválido');
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+                normalize={v => maskCNPJ(v || '')}
+              >
+                <Input placeholder="00.000.000/0001-00" disabled={!!editing} maxLength={18} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -183,13 +225,16 @@ export default function Companies() {
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Informe o email' }, { type: 'email', message: 'Email inválido' }]}>
+              <Form.Item
+                name="email" label="Email"
+                rules={[{ required: true, message: 'Informe o email' }, { type: 'email', message: 'Email inválido' }]}
+              >
                 <Input placeholder="contato@empresa.com.br" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="phone" label="Telefone">
-                <Input placeholder="(11) 99999-9999" />
+              <Form.Item name="phone" label="Telefone" normalize={v => maskPhone(v || '')}>
+                <Input placeholder="(11) 99999-9999" maxLength={15} />
               </Form.Item>
             </Col>
           </Row>
@@ -201,7 +246,6 @@ export default function Companies() {
             </Col>
           </Row>
 
-          {/* Endereço */}
           <Divider orientation="left" style={{ fontSize: 13, color: '#16a34a', borderColor: '#bbf7d0' }}>
             Endereço
           </Divider>
@@ -249,7 +293,6 @@ export default function Companies() {
             </Col>
           </Row>
 
-          {/* Informações adicionais */}
           <Divider orientation="left" style={{ fontSize: 13, color: '#16a34a', borderColor: '#bbf7d0' }}>
             Informações Adicionais
           </Divider>
