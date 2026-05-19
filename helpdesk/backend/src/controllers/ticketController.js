@@ -239,7 +239,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 exports.updateComment = async (req, res) => {
-  const { message } = req.body;
+  const { message, attachments } = req.body;
   const { id, commentId } = req.params;
   if (!message) return res.status(400).json({ error: 'Mensagem é obrigatória' });
 
@@ -252,7 +252,16 @@ exports.updateComment = async (req, res) => {
 
   const updated = await prisma.ticketComment.update({
     where: { id: commentId },
-    data: { message },
+    data: {
+      message,
+      ...(attachments?.length > 0 && {
+        attachments: {
+          createMany: {
+            data: attachments.map(a => ({ name: a.name, mimeType: a.mimeType, size: a.size, data: a.data })),
+          },
+        },
+      }),
+    },
     include: commentInclude,
   });
 

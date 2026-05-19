@@ -68,6 +68,7 @@ export default function TicketDetail() {
   // Edit comment (trâmite)
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState('');
+  const [editingCommentFiles, setEditingCommentFiles] = useState([]);
   const [editingCommentSaving, setEditingCommentSaving] = useState(false);
 
   const load = () => {
@@ -200,18 +201,32 @@ export default function TicketDetail() {
     if (!editingCommentText.trim()) { message.warning('O texto não pode ficar em branco'); return; }
     setEditingCommentSaving(true);
     try {
-      const updated = await ticketService.updateComment(id, commentId, { message: editingCommentText });
+      const updated = await ticketService.updateComment(id, commentId, {
+        message: editingCommentText,
+        attachments: editingCommentFiles,
+      });
       setTicket(prev => ({
         ...prev,
         comments: prev.comments.map(c => c.id === commentId ? updated : c),
       }));
       setEditingCommentId(null);
+      setEditingCommentFiles([]);
       message.success('Trâmite atualizado');
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao atualizar');
     } finally {
       setEditingCommentSaving(false);
     }
+  };
+
+  const addEditingCommentFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      setEditingCommentFiles(prev => [...prev, { name: file.name, mimeType: file.type, size: file.size, data: base64 }]);
+    };
+    reader.readAsDataURL(file);
+    return false;
   };
 
   const handleDeleteComment = async (commentId) => {
@@ -638,18 +653,55 @@ export default function TicketDetail() {
                             style={{ borderRadius: 8, resize: 'none', marginBottom: 8 }}
                             autoFocus
                           />
-                          <Space>
-                            <Button size="small" onClick={() => setEditingCommentId(null)}>Cancelar</Button>
-                            <Button
-                              size="small"
-                              type="primary"
-                              loading={editingCommentSaving}
-                              onClick={() => handleUpdateComment(c.id)}
-                              style={{ background: '#16a34a', borderColor: '#16a34a' }}
-                            >
-                              Salvar
-                            </Button>
-                          </Space>
+                          {editingCommentFiles.length > 0 && (
+                            <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                              {editingCommentFiles.map((f, i) => (
+                                <div key={i} style={{
+                                  display: 'flex', alignItems: 'center', gap: 6,
+                                  background: '#f3f4f6', borderRadius: 6, padding: '3px 10px', fontSize: 12, maxWidth: 220,
+                                }}>
+                                  <FileOutlined style={{ color: '#6b7280', fontSize: 11, flexShrink: 0 }} />
+                                  <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {f.name}
+                                  </span>
+                                  <button
+                                    onClick={() => setEditingCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, fontSize: 14, lineHeight: 1 }}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Upload multiple beforeUpload={addEditingCommentFile} showUploadList={false}>
+                              <Tooltip title="Anexar arquivo">
+                                <Button
+                                  type="text"
+                                  size="small"
+                                  icon={
+                                    <Badge count={editingCommentFiles.length} size="small" offset={[6, -4]}>
+                                      <PaperClipOutlined style={{ fontSize: 15 }} />
+                                    </Badge>
+                                  }
+                                  style={{ color: editingCommentFiles.length > 0 ? '#16a34a' : '#9ca3af' }}
+                                />
+                              </Tooltip>
+                            </Upload>
+                            <Space>
+                              <Button size="small" onClick={() => { setEditingCommentId(null); setEditingCommentFiles([]); }}>Cancelar</Button>
+                              <Button
+                                size="small"
+                                type="primary"
+                                loading={editingCommentSaving}
+                                onClick={() => handleUpdateComment(c.id)}
+                                style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                              >
+                                Salvar
+                              </Button>
+                            </Space>
+                          </div>
                         </div>
                       ) : (
                         <>
