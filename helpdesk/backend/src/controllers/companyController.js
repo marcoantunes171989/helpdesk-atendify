@@ -21,7 +21,7 @@ exports.list = async (req, res) => {
   const companies = await prisma.company.findMany({
     where,
     include: {
-      _count: { select: { users: true, tickets: true } },
+      _count: { select: { tickets: true } },
     },
     orderBy: { name: 'asc' },
   });

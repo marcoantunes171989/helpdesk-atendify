@@ -89,10 +89,6 @@ export default function Companies() {
       render: (_, r) => r.city ? <span style={{ color: '#6b7280' }}>{r.city}{r.state ? `/${r.state}` : ''}</span> : <span style={{ color: '#d1d5db' }}>—</span>,
     },
     {
-      title: 'Usuários', key: 'users',
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#16a34a' }}>{r._count?.users ?? '—'}</span>,
-    },
-    {
       title: 'Chamados', key: 'tickets',
       render: (_, r) => <span style={{ fontWeight: 600, color: '#374151' }}>{r._count?.tickets ?? '—'}</span>,
     },
