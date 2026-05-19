@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Drawer, Modal, Form, Input, Select, Space,
-  message, Tooltip, Avatar, Tag, Row, Col,
+  message, Tooltip, Avatar, Row, Col,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined,
@@ -121,14 +121,6 @@ export default function Employees() {
     {
       title: 'Empresa', key: 'company',
       render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.company?.name || '—'}</span>,
-    },
-    {
-      title: 'Status', dataIndex: 'active', key: 'active',
-      render: v => (
-        <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>
-          {v ? 'Ativo' : 'Inativo'}
-        </Tag>
-      ),
     },
     {
       title: '', key: 'actions', width: 80,

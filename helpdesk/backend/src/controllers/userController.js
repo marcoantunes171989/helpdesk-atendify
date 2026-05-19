@@ -65,6 +65,13 @@ exports.update = async (req, res) => {
   const target = await prisma.user.findUnique({ where: { id } });
   if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
 
+  if (email && email !== target.email) {
+    const byEmail = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' }, NOT: { id } },
+    });
+    if (byEmail) return res.status(409).json({ error: 'E-mail já cadastrado para outro usuário' });
+  }
+
   const user = await prisma.user.update({
     where: { id },
     data: { name, email, role, active },

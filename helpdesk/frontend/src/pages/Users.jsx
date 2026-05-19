@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Drawer, Modal, Form, Input, Select, Tag, Space,
-  message, Switch, Tooltip, Avatar, Popconfirm,
+  message, Switch, Tooltip, Avatar,
 } from 'antd';
-import { PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined, TeamOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined, TeamOutlined,
+  SearchOutlined, ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,18 +26,35 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pwdModal, setPwdModal] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState(undefined);
   const [form] = Form.useForm();
   const [pwdForm] = Form.useForm();
   const { user } = useAuth();
 
-  const load = () => {
+  const load = (params = {}) => {
     setLoading(true);
-    userService.list().then(setUsers).finally(() => setLoading(false));
+    userService.list(params).then(setUsers).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(); }, [user]);
+
+  const applyFilters = () => {
+    const params = {};
+    if (search.trim()) params.search = search.trim();
+    if (roleFilter) params.role = roleFilter;
+    load(params);
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setRoleFilter(undefined);
+    load();
+  };
 
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => { setEditing(record); form.setFieldsValue({ ...record }); setDrawerOpen(true); };
@@ -50,7 +70,7 @@ export default function Users() {
         message.success('Usuário criado');
       }
       setDrawerOpen(false);
-      load();
+      applyFilters();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar');
     } finally {
@@ -58,13 +78,17 @@ export default function Users() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    setDeleteLoading(true);
     try {
-      await userService.remove(id);
+      await userService.remove(deleteModal.id);
       message.success('Usuário excluído com sucesso');
-      load();
+      setDeleteModal(null);
+      applyFilters();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao excluir usuário');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -126,19 +150,17 @@ export default function Users() {
       title: '', key: 'actions', width: 110,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} /></Tooltip>
-          <Tooltip title="Redefinir senha"><Button type="text" icon={<KeyOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => setPwdModal(record.id)} /></Tooltip>
+          <Tooltip title="Editar">
+            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+          </Tooltip>
+          <Tooltip title="Redefinir senha">
+            <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => setPwdModal(record.id)} />
+          </Tooltip>
           {record.id !== user?.id && (
-            <Popconfirm
-              title="Excluir usuário?"
-              description="Esta ação não pode ser desfeita."
-              onConfirm={() => handleDelete(record.id)}
-              okText="Excluir"
-              cancelText="Cancelar"
-              okButtonProps={{ danger: true }}
-            >
-              <Tooltip title="Excluir"><Button type="text" icon={<DeleteOutlined />} size="small" danger /></Tooltip>
-            </Popconfirm>
+            <Tooltip title="Excluir">
+              <Button type="text" icon={<DeleteOutlined />} size="small" danger
+                onClick={() => setDeleteModal({ id: record.id, name: record.name })} />
+            </Tooltip>
           )}
         </Space>
       ),
@@ -157,9 +179,72 @@ export default function Users() {
         </Button>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-        <Table dataSource={users} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle" />
+      {/* Filtros */}
+      <div style={{
+        display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
+        padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
+      }}>
+        <Input
+          prefix={<SearchOutlined style={{ color: '#9ca3af' }} />}
+          placeholder="Buscar por nome ou e-mail..."
+          style={{ flex: 1, minWidth: 200 }}
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onPressEnter={applyFilters}
+          onClear={clearFilters}
+        />
+        <Select
+          placeholder="Filtrar por perfil"
+          style={{ width: 180 }}
+          allowClear
+          value={roleFilter}
+          onChange={v => setRoleFilter(v)}
+        >
+          {roleOptions}
+        </Select>
+        <Button type="primary" ghost onClick={applyFilters}
+          style={{ borderColor: '#16a34a', color: '#16a34a' }}>
+          Buscar
+        </Button>
       </div>
+
+      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        <Table dataSource={users} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle"
+          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} usuário${t !== 1 ? 's' : ''}` }}
+        />
+      </div>
+
+      {/* Modal — Confirmar exclusão */}
+      <Modal
+        open={!!deleteModal}
+        onCancel={() => setDeleteModal(null)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Excluir usuário</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+              Excluir permanentemente
+            </Button>
+          </div>
+        }
+      >
+        {deleteModal && (
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ color: '#374151', marginBottom: 16 }}>
+              Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
+            </p>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+              O usuário será removido do sistema e não poderá ser recuperado.
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Drawer — Cadastro / Edição */}
       <Drawer
