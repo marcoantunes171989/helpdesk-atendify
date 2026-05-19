@@ -5,7 +5,7 @@ import {
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined, TeamOutlined,
-  SearchOutlined, ExclamationCircleOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { userService } from '../services/api';
@@ -43,18 +43,6 @@ export default function Users() {
 
   useEffect(() => { load(); }, [user]);
 
-  const applyFilters = () => {
-    const params = {};
-    if (search.trim()) params.search = search.trim();
-    if (roleFilter) params.role = roleFilter;
-    load(params);
-  };
-
-  const clearFilters = () => {
-    setSearch('');
-    setRoleFilter(undefined);
-    load();
-  };
 
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => { setEditing(record); form.setFieldsValue({ ...record }); setDrawerOpen(true); };
@@ -70,7 +58,7 @@ export default function Users() {
         message.success('Usuário criado');
       }
       setDrawerOpen(false);
-      applyFilters();
+      load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar');
     } finally {
@@ -84,7 +72,7 @@ export default function Users() {
       await userService.remove(deleteModal.id);
       message.success('Usuário excluído com sucesso');
       setDeleteModal(null);
-      applyFilters();
+      load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao excluir usuário');
     } finally {
@@ -104,6 +92,16 @@ export default function Users() {
   };
 
   const roleOptions = Object.entries(ROLES).map(([v, { label }]) => <Option key={v} value={v}>{label}</Option>);
+
+  const filteredUsers = (() => {
+    let result = users;
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(u => [u.name, u.email, ROLES[u.role]?.label].some(f => (f || '').toLowerCase().includes(q)));
+    }
+    if (roleFilter) result = result.filter(u => u.role === roleFilter);
+    return result;
+  })();
 
   const columns = [
     {
@@ -172,7 +170,7 @@ export default function Users() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Usuários</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>{users.length} usuário{users.length !== 1 ? 's' : ''} cadastrado{users.length !== 1 ? 's' : ''}</p>
+          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>{filteredUsers.length} usuário{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}</p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
           Novo Usuário
@@ -182,35 +180,29 @@ export default function Users() {
       {/* Filtros */}
       <div style={{
         display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
-        padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
+        padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
       }}>
-        <Input
-          prefix={<SearchOutlined style={{ color: '#9ca3af' }} />}
-          placeholder="Buscar por nome ou e-mail..."
+        <Input.Search
+          placeholder="Buscar por nome, e-mail ou perfil..."
           style={{ flex: 1, minWidth: 200 }}
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onPressEnter={applyFilters}
-          onClear={clearFilters}
+          onSearch={v => setSearch(v)}
         />
         <Select
           placeholder="Filtrar por perfil"
           style={{ width: 180 }}
           allowClear
           value={roleFilter}
-          onChange={v => setRoleFilter(v)}
+          onChange={v => setRoleFilter(v || undefined)}
         >
           {roleOptions}
         </Select>
-        <Button type="primary" ghost onClick={applyFilters}
-          style={{ borderColor: '#16a34a', color: '#16a34a' }}>
-          Buscar
-        </Button>
       </div>
 
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-        <Table dataSource={users} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle"
+        <Table dataSource={filteredUsers} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} usuário${t !== 1 ? 's' : ''}` }}
         />
       </div>

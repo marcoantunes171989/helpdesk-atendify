@@ -309,6 +309,7 @@ export default function Tickets() {
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
+          onSearch={v => setSearch(v)}
         />
       </div>
 

@@ -164,6 +164,7 @@ export default function Technicians() {
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
+          onSearch={v => setSearch(v)}
           style={{ maxWidth: 420 }}
         />
       </div>

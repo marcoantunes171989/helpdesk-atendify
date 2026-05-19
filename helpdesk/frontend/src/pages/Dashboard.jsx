@@ -188,20 +188,21 @@ export default function Dashboard() {
 
       <Card
         title={
-          <Space style={{ width: '100%', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-            <span style={{ fontWeight: 600, fontSize: 14 }}>
-              Chamados Recentes
-              {search && <span style={{ fontSize: 12, fontWeight: 400, color: '#9ca3af', marginLeft: 8 }}>{filteredTickets.length} de {recentTickets.length}</span>}
-            </span>
-            <Input.Search
-              placeholder="Buscar em todos os campos..."
-              allowClear
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width: 300 }}
-              size="small"
-            />
-          </Space>
+          <span style={{ fontWeight: 600, fontSize: 14 }}>
+            Chamados Recentes
+            {search && <span style={{ fontSize: 12, fontWeight: 400, color: '#9ca3af', marginLeft: 8 }}>{filteredTickets.length} de {recentTickets.length}</span>}
+          </span>
+        }
+        extra={
+          <Input.Search
+            placeholder="Buscar em todos os campos..."
+            allowClear
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onSearch={v => setSearch(v)}
+            style={{ width: 280 }}
+            size="small"
+          />
         }
         style={{ marginTop: 20, borderRadius: 12, border: '1px solid #e5e7eb' }}
         bodyStyle={{ padding: 0 }}

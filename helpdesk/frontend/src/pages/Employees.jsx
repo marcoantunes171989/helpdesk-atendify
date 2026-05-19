@@ -4,7 +4,7 @@ import {
   message, Tooltip, Avatar, Row, Col,
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined,
+  PlusOutlined, EditOutlined, DeleteOutlined,
   PhoneOutlined, IdcardOutlined, ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { employeeService, companyService } from '../services/api';
@@ -137,6 +137,10 @@ export default function Employees() {
     },
   ];
 
+  const filteredEmployees = search
+    ? (() => { const q = search.toLowerCase(); return employees.filter(e => [e.name, e.position, e.phone, e.company?.name].some(f => (f || '').toLowerCase().includes(q))); })()
+    : employees;
+
   return (
     <div>
       {/* Header */}
@@ -144,7 +148,7 @@ export default function Employees() {
         <div>
           <h1 className="page-title">Funcionários</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
-            {employees.length} funcionário{employees.length !== 1 ? 's' : ''} cadastrado{employees.length !== 1 ? 's' : ''}
+            {filteredEmployees.length} funcionário{filteredEmployees.length !== 1 ? 's' : ''} cadastrado{filteredEmployees.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
@@ -153,30 +157,21 @@ export default function Employees() {
       </div>
 
       {/* Busca */}
-      <div style={{
-        display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
-        padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
-      }}>
-        <Input
-          prefix={<SearchOutlined style={{ color: '#9ca3af' }} />}
-          placeholder="Buscar por nome ou cargo..."
-          style={{ flex: 1, minWidth: 200 }}
+      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar por nome, cargo, telefone ou empresa..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onPressEnter={() => load({ search })}
-          onClear={() => { setSearch(''); load(); }}
+          onSearch={v => setSearch(v)}
+          style={{ maxWidth: 480 }}
         />
-        <Button type="primary" ghost onClick={() => load({ search })}
-          style={{ borderColor: '#16a34a', color: '#16a34a' }}>
-          Buscar
-        </Button>
       </div>
 
       {/* Tabela */}
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
-          dataSource={employees} columns={columns} rowKey="id" loading={loading}
+          dataSource={filteredEmployees} columns={columns} rowKey="id" loading={loading}
           scroll={{ x: 700 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} funcionário${t !== 1 ? 's' : ''}` }}
         />

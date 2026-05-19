@@ -236,6 +236,7 @@ export default function Companies() {
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
+          onSearch={v => setSearch(v)}
           style={{ maxWidth: 500 }}
         />
       </div>

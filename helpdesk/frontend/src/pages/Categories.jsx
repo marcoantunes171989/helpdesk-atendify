@@ -135,6 +135,7 @@ export default function Categories() {
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
+          onSearch={v => setSearch(v)}
           style={{ maxWidth: 420 }}
         />
       </div>
