@@ -184,7 +184,7 @@ export default function Users() {
       }}>
         <Input.Search
           placeholder="Buscar por nome, e-mail ou perfil..."
-          style={{ flex: 1, minWidth: 200 }}
+          style={{ flex: 1 }}
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}

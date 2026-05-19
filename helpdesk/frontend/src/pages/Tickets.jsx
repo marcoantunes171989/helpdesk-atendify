@@ -305,7 +305,7 @@ export default function Tickets() {
         </Select>
         <Input.Search
           placeholder="Buscar em todos os campos..."
-          style={{ flex: 2, minWidth: 200 }}
+          style={{ flex: 2 }}
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}

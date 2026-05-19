@@ -165,7 +165,7 @@ export default function Technicians() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           onSearch={v => setSearch(v)}
-          style={{ maxWidth: 420 }}
+          style={{ width: '100%' }}
         />
       </div>
 

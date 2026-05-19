@@ -164,7 +164,7 @@ export default function Employees() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           onSearch={v => setSearch(v)}
-          style={{ maxWidth: 480 }}
+          style={{ width: '100%' }}
         />
       </div>
 

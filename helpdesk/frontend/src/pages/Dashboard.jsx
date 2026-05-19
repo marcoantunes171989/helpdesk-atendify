@@ -200,7 +200,7 @@ export default function Dashboard() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             onSearch={v => setSearch(v)}
-            style={{ width: 280 }}
+            style={{ width: 320 }}
             size="small"
           />
         }

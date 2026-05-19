@@ -237,7 +237,7 @@ export default function Companies() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           onSearch={v => setSearch(v)}
-          style={{ maxWidth: 500 }}
+          style={{ width: '100%' }}
         />
       </div>
 
