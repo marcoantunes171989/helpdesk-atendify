@@ -120,14 +120,20 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const { title, description, status, priority, categoryId, assignedTo } = req.body;
   const { id } = req.params;
 
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  const { statusId } = req.body;
-  const data = { title, description, priority, categoryId, assignedTo, statusId: statusId || null };
+  const { title, description, status, priority, categoryId, assignedTo } = req.body;
+  const data = {};
+
+  if (title !== undefined) data.title = title;
+  if (description !== undefined) data.description = description;
+  if (priority !== undefined) data.priority = priority;
+  if (categoryId !== undefined) data.categoryId = categoryId || null;
+  if (assignedTo !== undefined) data.assignedTo = assignedTo || null;
+  if ('statusId' in req.body) data.statusId = req.body.statusId || null;
 
   if (status && status !== ticket.status) {
     data.status = status;

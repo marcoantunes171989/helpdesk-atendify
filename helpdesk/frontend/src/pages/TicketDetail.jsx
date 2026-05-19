@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
-  DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined,
+  DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined, EditOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ticketService, userService, categoryService } from '../services/api';
@@ -37,6 +37,10 @@ export default function TicketDetail() {
   const [comment, setComment] = useState('');
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   const load = () => {
     ticketService.get(id)
@@ -52,6 +56,21 @@ export default function TicketDetail() {
       userService.list({ role: 'AGENT' }).then(setAgents);
     }
   }, [id, user]);
+
+  const handleSaveEdit = async () => {
+    if (!editTitle.trim()) { message.warning('O título não pode ficar em branco'); return; }
+    setEditSaving(true);
+    try {
+      const updated = await ticketService.update(id, { title: editTitle.trim(), description: editDescription });
+      setTicket(updated);
+      setEditMode(false);
+      message.success('Chamado atualizado');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao salvar');
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const handleUpdate = async (field, value) => {
     try {
@@ -115,6 +134,7 @@ export default function TicketDetail() {
     && dayjs(ticket.slaDeadline).isBefore(dayjs());
 
   const isClosed = ['CLOSED', 'CANCELLED'].includes(ticket.status);
+  const isResolved = ticket.status === 'RESOLVED';
   const canEdit = canUpdateTicketStatus(user?.role);
 
   return (
@@ -133,28 +153,72 @@ export default function TicketDetail() {
         <Col xs={24} lg={16}>
           {/* Cabeçalho do chamado */}
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 16 }}>
-            <Space wrap style={{ marginBottom: 12 }}>
-              <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6 }}>
-                {TICKET_STATUS[ticket.status]?.label}
-              </Tag>
-              <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6 }}>
-                {PRIORITY[ticket.priority]?.label}
-              </Tag>
-              {isExpired && (
-                <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6 }}>
-                  SLA Vencido
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <Space wrap>
+                <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6 }}>
+                  {TICKET_STATUS[ticket.status]?.label}
                 </Tag>
+                <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6 }}>
+                  {PRIORITY[ticket.priority]?.label}
+                </Tag>
+                {isExpired && (
+                  <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6 }}>
+                    SLA Vencido
+                  </Tag>
+                )}
+                <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 8px', borderRadius: 4 }}>
+                  #{ticket.id.slice(-8).toUpperCase()}
+                </code>
+              </Space>
+              {canEdit && !isResolved && !isClosed && !editMode && (
+                <Button
+                  icon={<EditOutlined />}
+                  size="small"
+                  style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8 }}
+                  onClick={() => { setEditTitle(ticket.title); setEditDescription(ticket.description); setEditMode(true); }}
+                >
+                  Editar
+                </Button>
               )}
-              <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 8px', borderRadius: 4 }}>
-                #{ticket.id.slice(-8).toUpperCase()}
-              </code>
-            </Space>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
-              {ticket.title}
-            </h2>
-            <Paragraph style={{ color: '#374151', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.7 }}>
-              {ticket.description}
-            </Paragraph>
+            </div>
+
+            {editMode ? (
+              <>
+                <Input
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, borderRadius: 8 }}
+                  placeholder="Título do chamado"
+                />
+                <TextArea
+                  rows={5}
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  style={{ borderRadius: 8, resize: 'vertical' }}
+                  placeholder="Descrição do chamado"
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                  <Button onClick={() => setEditMode(false)}>Cancelar</Button>
+                  <Button
+                    type="primary"
+                    loading={editSaving}
+                    onClick={handleSaveEdit}
+                    style={{ background: '#16a34a', borderColor: '#16a34a', borderRadius: 8, fontWeight: 600 }}
+                  >
+                    Salvar Alterações
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
+                  {ticket.title}
+                </h2>
+                <Paragraph style={{ color: '#374151', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.7 }}>
+                  {ticket.description}
+                </Paragraph>
+              </>
+            )}
           </div>
 
           {/* Anexos */}
