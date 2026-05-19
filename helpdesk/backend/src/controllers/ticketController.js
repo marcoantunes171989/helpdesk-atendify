@@ -41,6 +41,7 @@ exports.list = async (req, res) => {
     include: {
       user: { select: { id: true, name: true } },
       assignee: { select: { id: true, name: true } },
+      employee: { select: { id: true, name: true, position: true } },
       category: { select: { id: true, name: true } },
       company: { select: { id: true, name: true } },
       _count: { select: { comments: true, attachments: true } },

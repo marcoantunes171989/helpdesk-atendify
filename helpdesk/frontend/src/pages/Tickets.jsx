@@ -132,9 +132,14 @@ export default function Tickets() {
     t.slaDeadline && !['RESOLVED', 'CLOSED', 'CANCELLED'].includes(t.status)
     && dayjs(t.slaDeadline).isBefore(dayjs());
 
+  const statusCounts = Object.keys(TICKET_STATUS).reduce((acc, k) => {
+    acc[k] = tickets.filter(t => t.status === k).length;
+    return acc;
+  }, {});
+
   const columns = [
     {
-      title: 'ID', dataIndex: 'id', key: 'id', width: 90,
+      title: 'ID', dataIndex: 'id', key: 'id', width: 80,
       render: v => (
         <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>
           {v.slice(-6).toUpperCase()}
@@ -142,7 +147,7 @@ export default function Tickets() {
       ),
     },
     {
-      title: 'Título', dataIndex: 'title', key: 'title',
+      title: 'Título', dataIndex: 'title', key: 'title', minWidth: 180,
       render: (v, r) => (
         <Space size={6}>
           {isSlaExpired(r) && (
@@ -150,9 +155,30 @@ export default function Tickets() {
               <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 13 }} />
             </Tooltip>
           )}
-          <span style={{ fontWeight: 500, color: '#111827' }}>{v}</span>
+          <div>
+            <div style={{ fontWeight: 500, color: '#111827', fontSize: 13 }}>{v}</div>
+            {r._count?.comments > 0 && (
+              <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                {r._count.comments} msg{r._count.comments !== 1 ? 's' : ''}
+                {r._count?.attachments > 0 ? ` · ${r._count.attachments} anexo${r._count.attachments !== 1 ? 's' : ''}` : ''}
+              </span>
+            )}
+          </div>
         </Space>
       ),
+    },
+    {
+      title: 'Empresa', key: 'company',
+      render: (_, r) => <span style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</span>,
+    },
+    {
+      title: 'Funcionário', key: 'employee',
+      render: (_, r) => r.employee ? (
+        <div>
+          <div style={{ fontSize: 13, color: '#374151' }}>{r.employee.name}</div>
+          {r.employee.position && <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.employee.position}</div>}
+        </div>
+      ) : <span style={{ color: '#d1d5db' }}>—</span>,
     },
     {
       title: 'Solicitante', key: 'user',
@@ -164,35 +190,30 @@ export default function Tickets() {
     },
     {
       title: 'Status', dataIndex: 'status', key: 'status',
-      render: v => <Tag color={TICKET_STATUS[v]?.color}>{TICKET_STATUS[v]?.label}</Tag>,
+      render: v => (
+        <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
+          {TICKET_STATUS[v]?.label}
+        </Tag>
+      ),
     },
     {
       title: 'Prioridade', dataIndex: 'priority', key: 'priority',
-      render: v => <Tag color={PRIORITY[v]?.color}>{PRIORITY[v]?.label}</Tag>,
+      render: v => (
+        <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6, fontSize: 11 }}>
+          {PRIORITY[v]?.label}
+        </Tag>
+      ),
     },
     {
-      title: 'Msgs',
-      key: 'comments',
-      render: (_, r) => <Badge count={r._count?.comments} showZero color="#16a34a" style={{ fontSize: 11 }} />,
-    },
-    {
-      title: <PaperClipOutlined style={{ fontSize: 14, color: '#9ca3af' }} />,
-      key: 'attachments',
-      width: 60,
-      render: (_, r) => r._count?.attachments > 0
-        ? <Badge count={r._count.attachments} color="#6b7280" size="small" style={{ fontSize: 11 }} />
-        : null,
-    },
-    {
-      title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
+      title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', width: 130,
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
     },
     {
-      title: '', key: 'actions', width: 80,
+      title: '', key: 'actions', width: 60,
       render: (_, r) => (
         <Space size={4}>
           <Tooltip title="Ver detalhes">
-            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#6b7280' }}
+            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#16a34a' }}
               onClick={() => navigate(`/app/tickets/${r.id}`)} />
           </Tooltip>
           {!['CLOSED', 'CANCELLED'].includes(r.status) && (
@@ -210,7 +231,14 @@ export default function Tickets() {
         <div>
           <h1 className="page-title">Chamados</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
-            {tickets.length} chamado{tickets.length !== 1 ? 's' : ''} encontrado{tickets.length !== 1 ? 's' : ''}
+            {tickets.length} chamado{tickets.length !== 1 ? 's' : ''} · {' '}
+            {Object.entries(TICKET_STATUS).map(([k, { label, color }]) =>
+              statusCounts[k] > 0 ? (
+                <Tag key={k} color={color} style={{ fontSize: 11, marginRight: 4 }}>
+                  {label}: {statusCounts[k]}
+                </Tag>
+              ) : null
+            )}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openDrawer}
@@ -224,17 +252,21 @@ export default function Tickets() {
         display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
         padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
       }}>
-        <Select allowClear placeholder="Status" style={{ minWidth: 130, flex: 1 }} onChange={v => applyFilters({ status: v })}>
-          {Object.entries(TICKET_STATUS).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
+        <Select allowClear placeholder="Todos os status" style={{ minWidth: 150, flex: 1 }} onChange={v => applyFilters({ status: v })}>
+          {Object.entries(TICKET_STATUS).map(([k, { label }]) => (
+            <Option key={k} value={k}>
+              {label} {statusCounts[k] > 0 ? `(${statusCounts[k]})` : ''}
+            </Option>
+          ))}
         </Select>
-        <Select allowClear placeholder="Prioridade" style={{ minWidth: 120, flex: 1 }} onChange={v => applyFilters({ priority: v })}>
+        <Select allowClear placeholder="Todas as prioridades" style={{ minWidth: 160, flex: 1 }} onChange={v => applyFilters({ priority: v })}>
           {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
         </Select>
-        <Select allowClear placeholder="Categoria" style={{ minWidth: 160, flex: 1 }} onChange={v => applyFilters({ categoryId: v })}>
+        <Select allowClear placeholder="Todas as categorias" style={{ minWidth: 160, flex: 1 }} onChange={v => applyFilters({ categoryId: v })}>
           {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
         </Select>
         <Input.Search
-          placeholder="Buscar título ou descrição..."
+          placeholder="Buscar por título ou descrição..."
           style={{ flex: 2, minWidth: 200 }}
           allowClear
           onSearch={v => applyFilters({ search: v })}
@@ -244,7 +276,7 @@ export default function Tickets() {
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
           dataSource={tickets} columns={columns} rowKey="id" loading={loading}
-          scroll={{ x: 1000 }} size="middle"
+          scroll={{ x: 1300 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} chamados` }}
         />
       </div>
