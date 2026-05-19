@@ -3,11 +3,14 @@
 -- =============================================================
 
 -- 1. Remover vínculo users <-> companies
---    (drop FK primeiro, depois a coluna)
 ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_companyId_fkey";
 ALTER TABLE "users" DROP COLUMN IF EXISTS "companyId";
 
--- 2. Criar tabela de anexos de chamados (se ainda não existir)
+-- 2. Tornar companyId opcional em categories (categorias são globais)
+ALTER TABLE "categories" DROP CONSTRAINT IF EXISTS "categories_companyId_fkey";
+ALTER TABLE "categories" ALTER COLUMN "companyId" DROP NOT NULL;
+
+-- 3. Criar tabela de anexos de chamados (se ainda não existir)
 CREATE TABLE IF NOT EXISTS "ticket_attachments" (
     "id"        TEXT         NOT NULL,
     "ticketId"  TEXT         NOT NULL,

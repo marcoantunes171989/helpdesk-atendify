@@ -61,15 +61,15 @@ enum Role {
 }
 
 model Category {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
-  slaHours    Int      @default(24)
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id])
+  slaHours    Int       @default(24)
+  companyId   String?
+  company     Company?  @relation(fields: [companyId], references: [id])
   tickets     Ticket[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("categories")
 }

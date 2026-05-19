@@ -3,41 +3,28 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.list = async (req, res) => {
-  const { companyId } = req.query;
-  const where = companyId ? { companyId } : {};
-
   const categories = await prisma.category.findMany({
-    where,
-    include: {
-      company: { select: { name: true } },
-      _count: { select: { tickets: true } },
-    },
+    include: { _count: { select: { tickets: true } } },
     orderBy: { name: 'asc' },
   });
-
   res.json(categories);
 };
 
 exports.get = async (req, res) => {
   const category = await prisma.category.findUnique({
     where: { id: req.params.id },
-    include: { company: { select: { name: true } } },
   });
-
   if (!category) return res.status(404).json({ error: 'Categoria não encontrada' });
   res.json(category);
 };
 
 exports.create = async (req, res) => {
-  const { name, description, companyId } = req.body;
+  const { name, description } = req.body;
   if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
-  const targetCompanyId = companyId || req.user.companyId;
-
   const category = await prisma.category.create({
-    data: { name, description, companyId: targetCompanyId },
+    data: { name, description },
   });
-
   res.status(201).json(category);
 };
 
