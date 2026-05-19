@@ -62,6 +62,7 @@ export const ticketService = {
   update: (id, data) => api.put(`/tickets/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/tickets/${id}`).then(r => r.data),
   addComment: (id, data) => api.post(`/tickets/${id}/comments`, data).then(r => r.data),
+  updateComment: (id, commentId, data) => api.put(`/tickets/${id}/comments/${commentId}`, data).then(r => r.data),
 };
 
 export const statusService = {

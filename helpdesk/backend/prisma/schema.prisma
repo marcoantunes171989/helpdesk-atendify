@@ -134,15 +134,29 @@ enum Priority {
 }
 
 model TicketComment {
-  id        String   @id @default(cuid())
-  message   String
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id])
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id          String                   @id @default(cuid())
+  message     String
+  ticketId    String
+  ticket      Ticket                   @relation(fields: [ticketId], references: [id])
+  userId      String
+  user        User                     @relation(fields: [userId], references: [id])
+  attachments TicketCommentAttachment[]
+  createdAt   DateTime                 @default(now())
 
   @@map("ticket_comments")
+}
+
+model TicketCommentAttachment {
+  id        String        @id @default(cuid())
+  commentId String
+  comment   TicketComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String        @db.Text
+  createdAt DateTime      @default(now())
+
+  @@map("ticket_comment_attachments")
 }
 
 model TicketAttachment {

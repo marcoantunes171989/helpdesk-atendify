@@ -2,16 +2,22 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Tag, Button, Select, Space, Typography, Divider, Input, Modal,
-  Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge,
+  Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload,
 } from 'antd';
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
   DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined, EditOutlined,
+  EyeOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { ticketService, userService, categoryService } from '../services/api';
+import {
+  ticketService, userService, categoryService, companyService,
+  employeeService, statusService,
+} from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus } from '../utils/constants';
+import {
+  TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus,
+} from '../utils/constants';
 
 const { Paragraph } = Typography;
 const { TextArea } = Input;
@@ -32,15 +38,35 @@ export default function TicketDetail() {
   const [ticket, setTicket] = useState(null);
   const [agents, setAgents] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [comment, setComment] = useState('');
+  const [commentFiles, setCommentFiles] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+
+  // Edit ticket
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editCompanyId, setEditCompanyId] = useState(null);
+  const [editCategoryId, setEditCategoryId] = useState(null);
+  const [editEmployeeId, setEditEmployeeId] = useState(null);
+  const [editPriority, setEditPriority] = useState(null);
+  const [editStatus, setEditStatus] = useState(null);
+  const [editStatusId, setEditStatusId] = useState(null);
+  const [editAssignedTo, setEditAssignedTo] = useState(null);
+  const [editEmployees, setEditEmployees] = useState([]);
+  const [loadingEditEmployees, setLoadingEditEmployees] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
+
+  // Edit comment (trâmite)
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [editingCommentSaving, setEditingCommentSaving] = useState(false);
 
   const load = () => {
     ticketService.get(id)
@@ -51,17 +77,70 @@ export default function TicketDetail() {
 
   useEffect(() => {
     load();
-    categoryService.list().then(setCategories);
-    if (canAssignTickets(user?.role)) {
-      userService.list({ role: 'AGENT' }).then(setAgents);
+    categoryService.list({ active: 'true' }).then(list => {
+      const unique = [...new Map(list.map(c => [c.name.toLowerCase(), c])).values()];
+      unique.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      setCategories(unique);
+    });
+    if (canAssignTickets(user?.role)) userService.list({ role: 'AGENT' }).then(setAgents);
+    if (canUpdateTicketStatus(user?.role)) {
+      companyService.list().then(list => setCompanies(list.filter(c => c.active)));
+      statusService.list().then(setStatuses);
     }
   }, [id, user]);
+
+  const openEditMode = () => {
+    setEditTitle(ticket.title);
+    setEditDescription(ticket.description);
+    setEditCompanyId(ticket.companyId);
+    setEditCategoryId(ticket.categoryId);
+    setEditEmployeeId(ticket.employeeId);
+    setEditPriority(ticket.priority);
+    setEditStatus(ticket.status);
+    setEditStatusId(ticket.statusId);
+    setEditAssignedTo(ticket.assignedTo);
+    if (ticket.companyId) {
+      setLoadingEditEmployees(true);
+      employeeService.list({ companyId: ticket.companyId, active: 'true' })
+        .then(list => {
+          list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+          setEditEmployees(list);
+        })
+        .finally(() => setLoadingEditEmployees(false));
+    }
+    setEditMode(true);
+  };
+
+  const handleEditCompanyChange = (val) => {
+    setEditCompanyId(val);
+    setEditEmployeeId(null);
+    setEditEmployees([]);
+    if (val) {
+      setLoadingEditEmployees(true);
+      employeeService.list({ companyId: val, active: 'true' })
+        .then(list => {
+          list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+          setEditEmployees(list);
+        })
+        .finally(() => setLoadingEditEmployees(false));
+    }
+  };
 
   const handleSaveEdit = async () => {
     if (!editTitle.trim()) { message.warning('O título não pode ficar em branco'); return; }
     setEditSaving(true);
     try {
-      const updated = await ticketService.update(id, { title: editTitle.trim(), description: editDescription });
+      const updated = await ticketService.update(id, {
+        title: editTitle.trim(),
+        description: editDescription,
+        companyId: editCompanyId,
+        categoryId: editCategoryId || null,
+        employeeId: editEmployeeId || null,
+        priority: editPriority,
+        status: editStatus,
+        statusId: editStatusId || null,
+        assignedTo: editAssignedTo || null,
+      });
       setTicket(updated);
       setEditMode(false);
       message.success('Chamado atualizado');
@@ -98,14 +177,43 @@ export default function TicketDetail() {
     if (!comment.trim()) return;
     setSending(true);
     try {
-      const newComment = await ticketService.addComment(id, { message: comment });
+      const newComment = await ticketService.addComment(id, { message: comment, attachments: commentFiles });
       setTicket(prev => ({ ...prev, comments: [...prev.comments, newComment] }));
       setComment('');
+      setCommentFiles([]);
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao enviar');
     } finally {
       setSending(false);
     }
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editingCommentText.trim()) { message.warning('O texto não pode ficar em branco'); return; }
+    setEditingCommentSaving(true);
+    try {
+      const updated = await ticketService.updateComment(id, commentId, { message: editingCommentText });
+      setTicket(prev => ({
+        ...prev,
+        comments: prev.comments.map(c => c.id === commentId ? updated : c),
+      }));
+      setEditingCommentId(null);
+      message.success('Trâmite atualizado');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao atualizar');
+    } finally {
+      setEditingCommentSaving(false);
+    }
+  };
+
+  const addCommentFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      setCommentFiles(prev => [...prev, { name: file.name, mimeType: file.type, size: file.size, data: base64 }]);
+    };
+    reader.readAsDataURL(file);
+    return false;
   };
 
   const downloadAttachment = (att) => {
@@ -132,10 +240,75 @@ export default function TicketDetail() {
 
   const isExpired = ticket.slaDeadline && !['RESOLVED', 'CLOSED', 'CANCELLED'].includes(ticket.status)
     && dayjs(ticket.slaDeadline).isBefore(dayjs());
-
   const isClosed = ['CLOSED', 'CANCELLED'].includes(ticket.status);
   const isResolved = ticket.status === 'RESOLVED';
   const canEdit = canUpdateTicketStatus(user?.role);
+
+  const renderAttachment = (att, compact = false) => {
+    const isImage = att.mimeType.startsWith('image/');
+    const src = `data:${att.mimeType};base64,${att.data}`;
+
+    if (compact) {
+      return isImage ? (
+        <img
+          key={att.id}
+          src={src}
+          alt={att.name}
+          title={att.name}
+          style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', border: '1px solid #e5e7eb', flexShrink: 0 }}
+          onClick={() => setPreviewImage({ src, name: att.name })}
+        />
+      ) : (
+        <Tooltip key={att.id} title={`${att.name} (${formatSize(att.size)})`}>
+          <Button
+            type="text"
+            icon={<FileOutlined />}
+            size="small"
+            style={{ color: '#6b7280' }}
+            onClick={() => downloadAttachment(att)}
+          />
+        </Tooltip>
+      );
+    }
+
+    return (
+      <div key={att.id} style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          {isImage ? (
+            <img
+              src={src}
+              alt={att.name}
+              style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', flexShrink: 0 }}
+              onClick={() => setPreviewImage({ src, name: att.name })}
+            />
+          ) : (
+            <FileOutlined style={{ color: '#6b7280', fontSize: 18, flexShrink: 0 }} />
+          )}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {att.name}
+            </div>
+            <div style={{ fontSize: 11, color: '#9ca3af' }}>{formatSize(att.size)}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+          {isImage && (
+            <Tooltip title="Visualizar">
+              <Button type="text" icon={<EyeOutlined />} size="small"
+                style={{ color: '#6b7280' }} onClick={() => setPreviewImage({ src, name: att.name })} />
+            </Tooltip>
+          )}
+          <Tooltip title="Baixar">
+            <Button type="text" icon={<DownloadOutlined />} size="small"
+              style={{ color: '#16a34a' }} onClick={() => downloadAttachment(att)} />
+          </Tooltip>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -151,7 +324,8 @@ export default function TicketDetail() {
       <Row gutter={[20, 20]}>
         {/* Coluna principal */}
         <Col xs={24} lg={16}>
-          {/* Cabeçalho do chamado */}
+
+          {/* Cabeçalho */}
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <Space wrap>
@@ -175,7 +349,7 @@ export default function TicketDetail() {
                   icon={<EditOutlined />}
                   size="small"
                   style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8 }}
-                  onClick={() => { setEditTitle(ticket.title); setEditDescription(ticket.description); setEditMode(true); }}
+                  onClick={openEditMode}
                 >
                   Editar
                 </Button>
@@ -183,21 +357,120 @@ export default function TicketDetail() {
             </div>
 
             {editMode ? (
-              <>
-                <Input
-                  value={editTitle}
-                  onChange={e => setEditTitle(e.target.value)}
-                  style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, borderRadius: 8 }}
-                  placeholder="Título do chamado"
-                />
-                <TextArea
-                  rows={5}
-                  value={editDescription}
-                  onChange={e => setEditDescription(e.target.value)}
-                  style={{ borderRadius: 8, resize: 'vertical' }}
-                  placeholder="Descrição do chamado"
-                />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+              <div>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>TÍTULO</div>
+                  <Input
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    style={{ borderRadius: 8 }}
+                    placeholder="Título do chamado"
+                  />
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>DESCRIÇÃO</div>
+                  <TextArea
+                    rows={4}
+                    value={editDescription}
+                    onChange={e => setEditDescription(e.target.value)}
+                    style={{ borderRadius: 8, resize: 'vertical' }}
+                    placeholder="Descrição do chamado"
+                  />
+                </div>
+                <Row gutter={12} style={{ marginBottom: 12 }}>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>EMPRESA</div>
+                    <Select
+                      value={editCompanyId}
+                      style={{ width: '100%' }}
+                      onChange={handleEditCompanyChange}
+                      showSearch
+                      optionFilterProp="children"
+                      placeholder="Selecione a empresa"
+                    >
+                      {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                    </Select>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>FUNCIONÁRIO</div>
+                    <Select
+                      value={editEmployeeId}
+                      style={{ width: '100%' }}
+                      onChange={setEditEmployeeId}
+                      allowClear
+                      placeholder="Selecione o funcionário"
+                      loading={loadingEditEmployees}
+                      showSearch
+                      optionFilterProp="children"
+                    >
+                      {editEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
+                    </Select>
+                  </Col>
+                </Row>
+                <Row gutter={12} style={{ marginBottom: 12 }}>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>CATEGORIA</div>
+                    <Select
+                      value={editCategoryId}
+                      style={{ width: '100%' }}
+                      onChange={setEditCategoryId}
+                      allowClear
+                      placeholder="Sem categoria"
+                      showSearch
+                      optionFilterProp="children"
+                    >
+                      {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                    </Select>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>PRIORIDADE</div>
+                    <Select value={editPriority} style={{ width: '100%' }} onChange={setEditPriority}>
+                      {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
+                    </Select>
+                  </Col>
+                </Row>
+                <Row gutter={12} style={{ marginBottom: 12 }}>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
+                    <Select value={editStatus} style={{ width: '100%' }} onChange={setEditStatus}>
+                      {Object.entries(TICKET_STATUS).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
+                    </Select>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS PERSONALIZADO</div>
+                    <Select
+                      value={editStatusId}
+                      style={{ width: '100%' }}
+                      onChange={setEditStatusId}
+                      allowClear
+                      placeholder="Nenhum"
+                    >
+                      {statuses.map(s => (
+                        <Option key={s.id} value={s.id}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
+                            {s.name}
+                          </span>
+                        </Option>
+                      ))}
+                    </Select>
+                  </Col>
+                </Row>
+                {canAssignTickets(user?.role) && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>ATRIBUÍDO A</div>
+                    <Select
+                      value={editAssignedTo}
+                      style={{ width: '100%' }}
+                      onChange={setEditAssignedTo}
+                      allowClear
+                      placeholder="Não atribuído"
+                    >
+                      {agents.map(a => <Option key={a.id} value={a.id}>{a.name}</Option>)}
+                    </Select>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
                   <Button onClick={() => setEditMode(false)}>Cancelar</Button>
                   <Button
                     type="primary"
@@ -208,7 +481,7 @@ export default function TicketDetail() {
                     Salvar Alterações
                   </Button>
                 </div>
-              </>
+              </div>
             ) : (
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
@@ -221,7 +494,7 @@ export default function TicketDetail() {
             )}
           </div>
 
-          {/* Anexos */}
+          {/* Anexos do chamado */}
           {ticket.attachments?.length > 0 && (
             <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
@@ -233,56 +506,30 @@ export default function TicketDetail() {
                 </h3>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {ticket.attachments.map(att => (
-                  <div key={att.id} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb',
-                    background: '#f9fafb',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                      <FileOutlined style={{ color: '#6b7280', fontSize: 18, flexShrink: 0 }} />
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {att.name}
-                        </div>
-                        <div style={{ fontSize: 11, color: '#9ca3af' }}>{formatSize(att.size)}</div>
-                      </div>
-                    </div>
-                    <Tooltip title="Baixar">
-                      <Button
-                        type="text"
-                        icon={<DownloadOutlined />}
-                        size="small"
-                        style={{ color: '#16a34a', flexShrink: 0 }}
-                        onClick={() => downloadAttachment(att)}
-                      />
-                    </Tooltip>
-                  </div>
-                ))}
+                {ticket.attachments.map(att => renderAttachment(att))}
               </div>
             </div>
           )}
 
-          {/* Comentários */}
+          {/* Trâmites */}
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24 }}>
             <h3 style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: '0 0 20px' }}>
-              Comentários ({ticket.comments.length})
+              Trâmites ({ticket.comments.length})
             </h3>
 
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: '#9ca3af', fontSize: 14 }}>
-                Nenhum comentário ainda. Seja o primeiro a responder.
+                Nenhum trâmite ainda. Seja o primeiro a responder.
               </div>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {ticket.comments.map(c => {
                 const isAgent = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(c.user.role);
+                const canEditComment = c.user.id === user?.id || ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
+                const isEditingThis = editingCommentId === c.id;
                 return (
-                  <div key={c.id} style={{
-                    display: 'flex', gap: 12,
-                    flexDirection: isAgent ? 'row' : 'row-reverse',
-                  }}>
+                  <div key={c.id} style={{ display: 'flex', gap: 12, flexDirection: isAgent ? 'row' : 'row-reverse' }}>
                     <Avatar
                       size={36}
                       style={{
@@ -308,15 +555,63 @@ export default function TicketDetail() {
                         <span style={{ fontSize: 11, color: '#9ca3af' }}>
                           {dayjs(c.createdAt).format('DD/MM HH:mm')}
                         </span>
+                        {c.attachments?.length > 0 && (
+                          <Badge count={c.attachments.length} size="small" color="#6b7280" offset={[4, 0]}>
+                            <PaperClipOutlined style={{ fontSize: 12, color: '#9ca3af' }} />
+                          </Badge>
+                        )}
+                        {canEditComment && !isEditingThis && !isClosed && (
+                          <Tooltip title="Editar trâmite">
+                            <Button
+                              type="text"
+                              icon={<EditOutlined />}
+                              size="small"
+                              style={{ color: '#d1d5db', padding: 0, height: 'auto' }}
+                              onClick={() => { setEditingCommentId(c.id); setEditingCommentText(c.message); }}
+                            />
+                          </Tooltip>
+                        )}
                       </div>
-                      <div style={{
-                        padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
-                        background: isAgent ? '#f0fdf4' : '#f9fafb',
-                        color: '#374151', whiteSpace: 'pre-wrap',
-                        border: `1px solid ${isAgent ? '#bbf7d0' : '#e5e7eb'}`,
-                      }}>
-                        {c.message}
-                      </div>
+
+                      {isEditingThis ? (
+                        <div>
+                          <TextArea
+                            value={editingCommentText}
+                            onChange={e => setEditingCommentText(e.target.value)}
+                            rows={3}
+                            style={{ borderRadius: 8, resize: 'none', marginBottom: 8 }}
+                            autoFocus
+                          />
+                          <Space>
+                            <Button size="small" onClick={() => setEditingCommentId(null)}>Cancelar</Button>
+                            <Button
+                              size="small"
+                              type="primary"
+                              loading={editingCommentSaving}
+                              onClick={() => handleUpdateComment(c.id)}
+                              style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                            >
+                              Salvar
+                            </Button>
+                          </Space>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{
+                            padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
+                            background: isAgent ? '#f0fdf4' : '#f9fafb',
+                            color: '#374151', whiteSpace: 'pre-wrap',
+                            border: `1px solid ${isAgent ? '#bbf7d0' : '#e5e7eb'}`,
+                          }}>
+                            {c.message}
+                          </div>
+                          {c.attachments?.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                              {c.attachments.map(att => renderAttachment(att, true))}
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 );
@@ -329,11 +624,45 @@ export default function TicketDetail() {
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   rows={3}
-                  placeholder="Escreva um comentário..."
+                  placeholder="Escreva um trâmite..."
                   style={{ borderRadius: 8, resize: 'none' }}
                   onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                {commentFiles.length > 0 && (
+                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {commentFiles.map((f, i) => (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        background: '#f3f4f6', borderRadius: 6, padding: '3px 10px', fontSize: 12, maxWidth: 220,
+                      }}>
+                        <FileOutlined style={{ color: '#6b7280', fontSize: 11, flexShrink: 0 }} />
+                        <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {f.name}
+                        </span>
+                        <button
+                          onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, fontSize: 14, lineHeight: 1 }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                  <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
+                    <Tooltip title="Anexar arquivo">
+                      <Button
+                        type="text"
+                        icon={
+                          <Badge count={commentFiles.length} size="small" offset={[6, -4]}>
+                            <PaperClipOutlined style={{ fontSize: 17 }} />
+                          </Badge>
+                        }
+                        style={{ color: commentFiles.length > 0 ? '#16a34a' : '#9ca3af' }}
+                      />
+                    </Tooltip>
+                  </Upload>
                   <Button
                     type="primary"
                     icon={<SendOutlined />}
@@ -359,6 +688,7 @@ export default function TicketDetail() {
               {[
                 { label: 'Solicitante', value: ticket.user?.name },
                 { label: 'Empresa', value: ticket.company?.name },
+                ticket.employee && { label: 'Funcionário', value: `${ticket.employee.name}${ticket.employee.position ? ` — ${ticket.employee.position}` : ''}` },
                 { label: 'Aberto em', value: dayjs(ticket.createdAt).format('DD/MM/YYYY HH:mm') },
                 ticket.resolvedAt && { label: 'Resolvido em', value: dayjs(ticket.resolvedAt).format('DD/MM/YYYY HH:mm') },
               ].filter(Boolean).map(item => (
@@ -438,6 +768,8 @@ export default function TicketDetail() {
           </div>
         </Col>
       </Row>
+
+      {/* Modal — Excluir chamado */}
       <Modal
         open={deleteModal}
         onCancel={() => setDeleteModal(false)}
@@ -461,9 +793,28 @@ export default function TicketDetail() {
             Você está prestes a excluir o chamado <strong>"{ticket?.title}"</strong> permanentemente. Esta ação não pode ser desfeita.
           </p>
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
-            Todos os comentários vinculados também serão removidos.
+            Todos os trâmites vinculados também serão removidos.
           </div>
         </div>
+      </Modal>
+
+      {/* Modal — Preview de imagem */}
+      <Modal
+        open={!!previewImage}
+        onCancel={() => setPreviewImage(null)}
+        footer={null}
+        title={previewImage?.name}
+        centered
+        width={860}
+        styles={{ body: { padding: 12, textAlign: 'center' } }}
+      >
+        {previewImage && (
+          <img
+            src={previewImage.src}
+            alt={previewImage.name}
+            style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: 8, display: 'inline-block' }}
+          />
+        )}
       </Modal>
     </div>
   );

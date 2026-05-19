@@ -10,7 +10,13 @@ const ticketInclude = {
   category: { select: { id: true, name: true, slaHours: true } },
   company: { select: { id: true, name: true } },
   comments: {
-    include: { user: { select: { id: true, name: true, role: true } } },
+    include: {
+      user: { select: { id: true, name: true, role: true } },
+      attachments: {
+        select: { id: true, name: true, mimeType: true, size: true, data: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      },
+    },
     orderBy: { createdAt: 'asc' },
   },
   attachments: {
@@ -125,7 +131,7 @@ exports.update = async (req, res) => {
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  const { title, description, status, priority, categoryId, assignedTo } = req.body;
+  const { title, description, status, priority, categoryId, assignedTo, companyId, employeeId } = req.body;
   const data = {};
 
   if (title !== undefined) data.title = title;
@@ -133,6 +139,8 @@ exports.update = async (req, res) => {
   if (priority !== undefined) data.priority = priority;
   if (categoryId !== undefined) data.categoryId = categoryId || null;
   if (assignedTo !== undefined) data.assignedTo = assignedTo || null;
+  if (companyId !== undefined) data.companyId = companyId;
+  if (employeeId !== undefined) data.employeeId = employeeId || null;
   if ('statusId' in req.body) data.statusId = req.body.statusId || null;
 
   if (status && status !== ticket.status) {
@@ -169,20 +177,39 @@ exports.remove = async (req, res) => {
   res.json({ message: 'Chamado excluído com sucesso' });
 };
 
+const commentInclude = {
+  user: { select: { id: true, name: true, role: true } },
+  attachments: {
+    select: { id: true, name: true, mimeType: true, size: true, data: true, createdAt: true },
+    orderBy: { createdAt: 'asc' },
+  },
+};
+
 exports.addComment = async (req, res) => {
-  const { message } = req.body;
+  const { message, attachments } = req.body;
   if (!message) return res.status(400).json({ error: 'Mensagem é obrigatória' });
 
   const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
   if (ticket.status === 'CLOSED') {
-    return res.status(400).json({ error: 'Chamado fechado não aceita comentários' });
+    return res.status(400).json({ error: 'Chamado fechado não aceita trâmites' });
   }
 
   const comment = await prisma.ticketComment.create({
-    data: { message, ticketId: ticket.id, userId: req.user.id },
-    include: { user: { select: { id: true, name: true, role: true } } },
+    data: {
+      message,
+      ticketId: ticket.id,
+      userId: req.user.id,
+      ...(attachments?.length > 0 && {
+        attachments: {
+          createMany: {
+            data: attachments.map(a => ({ name: a.name, mimeType: a.mimeType, size: a.size, data: a.data })),
+          },
+        },
+      }),
+    },
+    include: commentInclude,
   });
 
   if (ticket.status === 'OPEN' && req.user.role !== 'CLIENT') {
@@ -190,4 +217,25 @@ exports.addComment = async (req, res) => {
   }
 
   res.status(201).json(comment);
+};
+
+exports.updateComment = async (req, res) => {
+  const { message } = req.body;
+  const { id, commentId } = req.params;
+  if (!message) return res.status(400).json({ error: 'Mensagem é obrigatória' });
+
+  const comment = await prisma.ticketComment.findFirst({ where: { id: commentId, ticketId: id } });
+  if (!comment) return res.status(404).json({ error: 'Trâmite não encontrado' });
+
+  if (comment.userId !== req.user.id && !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Sem permissão para editar este trâmite' });
+  }
+
+  const updated = await prisma.ticketComment.update({
+    where: { id: commentId },
+    data: { message },
+    include: commentInclude,
+  });
+
+  res.json(updated);
 };
