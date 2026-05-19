@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Tag, Button, Select, Space, Typography, Divider, Input, Modal,
-  Avatar, Spin, Alert, Row, Col, Tooltip, message,
+  Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge,
 } from 'antd';
 import {
-  ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined, DeleteOutlined,
+  ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
+  DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ticketService, userService, categoryService } from '../services/api';
@@ -88,6 +89,21 @@ export default function TicketDetail() {
     }
   };
 
+  const downloadAttachment = (att) => {
+    const link = document.createElement('a');
+    link.href = `data:${att.mimeType};base64,${att.data}`;
+    link.download = att.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const formatSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
       <Spin size="large" />
@@ -140,6 +156,48 @@ export default function TicketDetail() {
               {ticket.description}
             </Paragraph>
           </div>
+
+          {/* Anexos */}
+          {ticket.attachments?.length > 0 && (
+            <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <Badge count={ticket.attachments.length} color="#6b7280" size="small">
+                  <PaperClipOutlined style={{ fontSize: 16, color: '#374151' }} />
+                </Badge>
+                <h3 style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: 0 }}>
+                  Anexos ({ticket.attachments.length})
+                </h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {ticket.attachments.map(att => (
+                  <div key={att.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: 8, border: '1px solid #e5e7eb',
+                    background: '#f9fafb',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <FileOutlined style={{ color: '#6b7280', fontSize: 18, flexShrink: 0 }} />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {att.name}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#9ca3af' }}>{formatSize(att.size)}</div>
+                      </div>
+                    </div>
+                    <Tooltip title="Baixar">
+                      <Button
+                        type="text"
+                        icon={<DownloadOutlined />}
+                        size="small"
+                        style={{ color: '#16a34a', flexShrink: 0 }}
+                        onClick={() => downloadAttachment(att)}
+                      />
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Comentários */}
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24 }}>

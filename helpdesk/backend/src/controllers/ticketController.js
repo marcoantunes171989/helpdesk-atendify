@@ -11,6 +11,10 @@ const ticketInclude = {
     include: { user: { select: { id: true, name: true, role: true } } },
     orderBy: { createdAt: 'asc' },
   },
+  attachments: {
+    select: { id: true, name: true, mimeType: true, size: true, data: true, createdAt: true },
+    orderBy: { createdAt: 'asc' },
+  },
 };
 
 exports.list = async (req, res) => {
@@ -38,7 +42,7 @@ exports.list = async (req, res) => {
       assignee: { select: { id: true, name: true } },
       category: { select: { id: true, name: true } },
       company: { select: { id: true, name: true } },
-      _count: { select: { comments: true } },
+      _count: { select: { comments: true, attachments: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -57,7 +61,7 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { title, description, priority, categoryId, companyId } = req.body;
+  const { title, description, priority, categoryId, companyId, attachments } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: 'Título e descrição são obrigatórios' });
   }
@@ -82,10 +86,26 @@ exports.create = async (req, res) => {
       companyId: targetCompanyId,
       slaDeadline,
     },
+  });
+
+  if (attachments && attachments.length > 0) {
+    await prisma.ticketAttachment.createMany({
+      data: attachments.map(a => ({
+        ticketId: ticket.id,
+        name: a.name,
+        mimeType: a.mimeType,
+        size: a.size,
+        data: a.data,
+      })),
+    });
+  }
+
+  const result = await prisma.ticket.findUnique({
+    where: { id: ticket.id },
     include: ticketInclude,
   });
 
-  res.status(201).json(ticket);
+  res.status(201).json(result);
 };
 
 exports.update = async (req, res) => {

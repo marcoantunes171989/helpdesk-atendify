@@ -1,17 +1,29 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Drawer, Modal, Form, Input, Select, Tag, Space,
-  message, Tooltip, Badge,
+  message, Tooltip, Badge, Upload,
 } from 'antd';
-import { PlusOutlined, EyeOutlined, DeleteOutlined, ExclamationCircleOutlined, CustomerServiceOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined, EyeOutlined, DeleteOutlined, ExclamationCircleOutlined,
+  CustomerServiceOutlined, PaperClipOutlined,
+} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { ticketService, categoryService, userService, companyService } from '../services/api';
+import { ticketService, categoryService, companyService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
 const { Option } = Select;
 const { TextArea } = Input;
+
+const MAX_FILE_SIZE_MB = 5;
+
+const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+  reader.onerror = reject;
+  reader.readAsDataURL(file.originFileObj || file);
+});
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
@@ -23,6 +35,7 @@ export default function Tickets() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [filters, setFilters] = useState({});
+  const [fileList, setFileList] = useState([]);
   const [form] = Form.useForm();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -38,13 +51,40 @@ export default function Tickets() {
     companyService.list().then(setCompanies);
   }, [user]);
 
+  const openDrawer = () => {
+    form.resetFields();
+    setFileList([]);
+    setDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setDrawerOpen(false);
+    setFileList([]);
+  };
+
+  const beforeUpload = (file) => {
+    const isLt5M = file.size / 1024 / 1024 < MAX_FILE_SIZE_MB;
+    if (!isLt5M) {
+      message.error(`"${file.name}" excede ${MAX_FILE_SIZE_MB}MB`);
+      return Upload.LIST_IGNORE;
+    }
+    return false;
+  };
+
   const handleCreate = async (values) => {
     setSaving(true);
     try {
-      const ticket = await ticketService.create(values);
+      const attachments = await Promise.all(
+        fileList.map(async (f) => ({
+          name: f.name,
+          mimeType: f.type || 'application/octet-stream',
+          size: f.size,
+          data: await readFileAsBase64(f),
+        }))
+      );
+      const ticket = await ticketService.create({ ...values, attachments });
       message.success('Chamado aberto com sucesso');
-      setDrawerOpen(false);
-      form.resetFields();
+      closeDrawer();
       navigate(`/app/tickets/${ticket.id}`);
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao abrir chamado');
@@ -109,10 +149,6 @@ export default function Tickets() {
       render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
     {
-      title: 'Atribuído a', key: 'assignee',
-      render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.assignee?.name || '—'}</span>,
-    },
-    {
       title: 'Status', dataIndex: 'status', key: 'status',
       render: v => <Tag color={TICKET_STATUS[v]?.color}>{TICKET_STATUS[v]?.label}</Tag>,
     },
@@ -121,8 +157,17 @@ export default function Tickets() {
       render: v => <Tag color={PRIORITY[v]?.color}>{PRIORITY[v]?.label}</Tag>,
     },
     {
-      title: 'Msgs', key: 'comments',
+      title: 'Msgs',
+      key: 'comments',
       render: (_, r) => <Badge count={r._count?.comments} showZero color="#16a34a" style={{ fontSize: 11 }} />,
+    },
+    {
+      title: <PaperClipOutlined style={{ fontSize: 14, color: '#9ca3af' }} />,
+      key: 'attachments',
+      width: 60,
+      render: (_, r) => r._count?.attachments > 0
+        ? <Badge count={r._count.attachments} color="#6b7280" size="small" style={{ fontSize: 11 }} />
+        : null,
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
@@ -138,7 +183,7 @@ export default function Tickets() {
           </Tooltip>
           {!['CLOSED', 'CANCELLED'].includes(r.status) && (
             <Button type="text" icon={<DeleteOutlined />} size="small" danger
-              onClick={() => setDeleteModal({ id: r.id, title: r.title, status: r.status })} />
+              onClick={() => setDeleteModal({ id: r.id, title: r.title })} />
           )}
         </Space>
       ),
@@ -154,7 +199,7 @@ export default function Tickets() {
             {tickets.length} chamado{tickets.length !== 1 ? 's' : ''} encontrado{tickets.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setDrawerOpen(true); }}
+        <Button type="primary" icon={<PlusOutlined />} onClick={openDrawer}
           style={{ borderRadius: 8, fontWeight: 600 }}>
           Abrir Chamado
         </Button>
@@ -232,12 +277,12 @@ export default function Tickets() {
           </div>
         }
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
         width="100%"
         styles={{ body: { padding: '24px', overflowY: 'auto' } }}
         extra={
           <Space>
-            <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
+            <Button onClick={closeDrawer}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
               Abrir Chamado
@@ -261,9 +306,7 @@ export default function Tickets() {
             <Form.Item name="categoryId" label="Categoria">
               <Select allowClear placeholder="Selecione a categoria" size="large">
                 {categories.map(c => (
-                  <Option key={c.id} value={c.id}>
-                    {c.name} <span style={{ color: '#9ca3af', fontSize: 12 }}>· SLA {c.slaHours}h</span>
-                  </Option>
+                  <Option key={c.id} value={c.id}>{c.name}</Option>
                 ))}
               </Select>
             </Form.Item>
@@ -271,6 +314,33 @@ export default function Tickets() {
               <Select size="large">
                 {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
               </Select>
+            </Form.Item>
+
+            {/* Anexos */}
+            <Form.Item
+              label={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Badge count={fileList.length} size="small" color="#16a34a" offset={[4, -2]}>
+                    <PaperClipOutlined style={{ fontSize: 15, color: '#374151' }} />
+                  </Badge>
+                  <span>Anexos</span>
+                  <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 400 }}>
+                    opcional · máx. {MAX_FILE_SIZE_MB}MB por arquivo
+                  </span>
+                </div>
+              }
+            >
+              <Upload
+                multiple
+                beforeUpload={beforeUpload}
+                fileList={fileList}
+                onChange={({ fileList: newList }) => setFileList(newList)}
+                showUploadList={{ showRemoveIcon: true }}
+              >
+                <Button icon={<PaperClipOutlined />} style={{ borderRadius: 8 }}>
+                  Adicionar arquivo
+                </Button>
+              </Upload>
             </Form.Item>
           </Form>
         </div>

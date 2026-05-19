@@ -29,23 +29,23 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { name, description, slaHours, companyId } = req.body;
+  const { name, description, companyId } = req.body;
   if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
   const targetCompanyId = companyId || req.user.companyId;
 
   const category = await prisma.category.create({
-    data: { name, description, slaHours: slaHours || 24, companyId: targetCompanyId },
+    data: { name, description, companyId: targetCompanyId },
   });
 
   res.status(201).json(category);
 };
 
 exports.update = async (req, res) => {
-  const { name, description, slaHours } = req.body;
+  const { name, description } = req.body;
   const category = await prisma.category.update({
     where: { id: req.params.id },
-    data: { name, description, slaHours },
+    data: { name, description },
   });
   res.json(category);
 };

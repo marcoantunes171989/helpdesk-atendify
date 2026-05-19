@@ -93,6 +93,7 @@ model Ticket {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   comments    TicketComment[]
+  attachments TicketAttachment[]
 
   @@map("tickets")
 }
@@ -122,6 +123,19 @@ model TicketComment {
   createdAt DateTime @default(now())
 
   @@map("ticket_comments")
+}
+
+model TicketAttachment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("ticket_attachments")
 }
 
 model Employee {
