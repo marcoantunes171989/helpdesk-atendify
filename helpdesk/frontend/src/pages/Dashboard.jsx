@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Row, Col, Card, Table, Tag, Typography, Spin, Alert } from 'antd';
+import { Row, Col, Card, Table, Tag, Typography, Spin, Alert, Input, Tooltip, Button, Space } from 'antd';
 import {
   ClockCircleOutlined, CheckCircleOutlined, SyncOutlined,
-  ExclamationCircleOutlined, CloseCircleOutlined, RiseOutlined,
+  ExclamationCircleOutlined, CloseCircleOutlined, RiseOutlined, EyeOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import { dashboardService } from '../services/api';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
@@ -35,6 +36,8 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     dashboardService.stats()
@@ -51,6 +54,16 @@ export default function Dashboard() {
   if (error) return <Alert type="error" message={error} />;
 
   const { summary, byPriority, byCategory, recentTickets } = data;
+
+  const filteredTickets = search
+    ? (() => {
+        const q = search.toLowerCase();
+        return recentTickets.filter(r => [
+          r.id, r.title, r.user?.name, r.category?.name,
+          TICKET_STATUS[r.status]?.label, PRIORITY[r.priority]?.label,
+        ].some(f => (f || '').toLowerCase().includes(q)));
+      })()
+    : recentTickets;
 
   const stats = [
     { title: 'Total de Chamados', value: summary.total, icon: <ClockCircleOutlined />, color: '#6b7280', bg: '#f3f4f6' },
@@ -83,6 +96,15 @@ export default function Dashboard() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       render: v => <span style={{ color: '#9ca3af', fontSize: 13 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
+    },
+    {
+      title: '', key: 'actions', width: 50,
+      render: (_, r) => (
+        <Tooltip title="Ver detalhes">
+          <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#16a34a' }}
+            onClick={() => navigate(`/app/tickets/${r.id}`)} />
+        </Tooltip>
+      ),
     },
   ];
 
@@ -165,12 +187,27 @@ export default function Dashboard() {
       </Row>
 
       <Card
-        title={<span style={{ fontWeight: 600, fontSize: 14 }}>Chamados Recentes</span>}
+        title={
+          <Space style={{ width: '100%', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>
+              Chamados Recentes
+              {search && <span style={{ fontSize: 12, fontWeight: 400, color: '#9ca3af', marginLeft: 8 }}>{filteredTickets.length} de {recentTickets.length}</span>}
+            </span>
+            <Input.Search
+              placeholder="Buscar em todos os campos..."
+              allowClear
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width: 300 }}
+              size="small"
+            />
+          </Space>
+        }
         style={{ marginTop: 20, borderRadius: 12, border: '1px solid #e5e7eb' }}
         bodyStyle={{ padding: 0 }}
       >
         <Table
-          dataSource={recentTickets}
+          dataSource={filteredTickets}
           columns={columns}
           rowKey="id"
           pagination={false}
