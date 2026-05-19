@@ -14,7 +14,6 @@ module.exports = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      include: { company: true },
     });
     if (!user || !user.active) {
       return res.status(401).json({ error: 'Usuário inativo ou não encontrado' });

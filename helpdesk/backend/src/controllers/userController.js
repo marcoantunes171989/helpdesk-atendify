@@ -3,6 +3,11 @@ const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
+const userSelect = {
+  id: true, code: true, name: true, email: true,
+  role: true, active: true, createdAt: true,
+};
+
 exports.list = async (req, res) => {
   const { search, role, active } = req.query;
   const where = {};
@@ -18,10 +23,7 @@ exports.list = async (req, res) => {
 
   const users = await prisma.user.findMany({
     where,
-    select: {
-      id: true, code: true, name: true, email: true, role: true,
-      active: true, companyId: true, createdAt: true,
-    },
+    select: userSelect,
     orderBy: { name: 'asc' },
   });
 
@@ -31,10 +33,7 @@ exports.list = async (req, res) => {
 exports.get = async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.params.id },
-    select: {
-      id: true, code: true, name: true, email: true, role: true,
-      active: true, companyId: true, createdAt: true,
-    },
+    select: userSelect,
   });
 
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
@@ -52,8 +51,8 @@ exports.create = async (req, res) => {
 
   const hash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { name, email, password: hash, role: role || 'CLIENT', companyId: req.user.companyId },
-    select: { id: true, code: true, name: true, email: true, role: true, active: true, companyId: true, createdAt: true },
+    data: { name, email, password: hash, role: role || 'CLIENT' },
+    select: userSelect,
   });
 
   res.status(201).json(user);
@@ -69,7 +68,7 @@ exports.update = async (req, res) => {
   const user = await prisma.user.update({
     where: { id },
     data: { name, email, role, active },
-    select: { id: true, code: true, name: true, email: true, role: true, active: true, companyId: true },
+    select: userSelect,
   });
 
   res.json(user);

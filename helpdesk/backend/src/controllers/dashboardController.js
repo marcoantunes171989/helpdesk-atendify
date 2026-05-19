@@ -3,23 +3,17 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.stats = async (req, res) => {
-  const companyFilter = req.user.role === 'SUPER_ADMIN'
-    ? {}
-    : { companyId: req.user.companyId };
-
-  const userFilter = req.user.role === 'CLIENT'
-    ? { userId: req.user.id }
-    : companyFilter;
+  const where = {};
 
   const [total, open, inProgress, resolved, closed, overdueSla] = await Promise.all([
-    prisma.ticket.count({ where: userFilter }),
-    prisma.ticket.count({ where: { ...userFilter, status: 'OPEN' } }),
-    prisma.ticket.count({ where: { ...userFilter, status: 'IN_PROGRESS' } }),
-    prisma.ticket.count({ where: { ...userFilter, status: 'RESOLVED' } }),
-    prisma.ticket.count({ where: { ...userFilter, status: 'CLOSED' } }),
+    prisma.ticket.count({ where }),
+    prisma.ticket.count({ where: { ...where, status: 'OPEN' } }),
+    prisma.ticket.count({ where: { ...where, status: 'IN_PROGRESS' } }),
+    prisma.ticket.count({ where: { ...where, status: 'RESOLVED' } }),
+    prisma.ticket.count({ where: { ...where, status: 'CLOSED' } }),
     prisma.ticket.count({
       where: {
-        ...userFilter,
+        ...where,
         slaDeadline: { lt: new Date() },
         status: { notIn: ['RESOLVED', 'CLOSED', 'CANCELLED'] },
       },
@@ -28,19 +22,19 @@ exports.stats = async (req, res) => {
 
   const byPriority = await prisma.ticket.groupBy({
     by: ['priority'],
-    where: userFilter,
+    where,
     _count: true,
   });
 
   const byStatus = await prisma.ticket.groupBy({
     by: ['status'],
-    where: userFilter,
+    where,
     _count: true,
   });
 
   const byCategory = await prisma.ticket.groupBy({
     by: ['categoryId'],
-    where: { ...userFilter, categoryId: { not: null } },
+    where: { ...where, categoryId: { not: null } },
     _count: true,
     orderBy: { _count: { categoryId: 'desc' } },
     take: 5,
@@ -58,7 +52,7 @@ exports.stats = async (req, res) => {
   }));
 
   const recentTickets = await prisma.ticket.findMany({
-    where: userFilter,
+    where,
     take: 10,
     orderBy: { createdAt: 'desc' },
     include: {

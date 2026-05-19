@@ -6,7 +6,7 @@ import {
 import { PlusOutlined, EyeOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { ticketService, categoryService, userService } from '../services/api';
+import { ticketService, categoryService, userService, companyService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
@@ -16,6 +16,7 @@ const { TextArea } = Input;
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [filters, setFilters] = useState({});
@@ -31,9 +32,7 @@ export default function Tickets() {
   useEffect(() => {
     load();
     categoryService.list().then(setCategories);
-    if (['SUPER_ADMIN', 'ADMIN'].includes(user?.role)) {
-      userService.list({ role: 'AGENT' });
-    }
+    companyService.list().then(setCompanies);
   }, [user]);
 
   const handleCreate = async (values) => {
@@ -193,6 +192,11 @@ export default function Tickets() {
           </Form.Item>
           <Form.Item name="description" label="Descrição" rules={[{ required: true, message: 'Descreva o problema' }]}>
             <TextArea rows={4} placeholder="Detalhe o problema com o máximo de informações possível..." />
+          </Form.Item>
+          <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
+            <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children">
+              {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+            </Select>
           </Form.Item>
           <Form.Item name="categoryId" label="Categoria">
             <Select allowClear placeholder="Selecione a categoria">

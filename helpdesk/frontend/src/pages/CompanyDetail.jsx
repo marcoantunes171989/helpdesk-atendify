@@ -7,22 +7,14 @@ import {
 } from 'antd';
 import {
   ArrowLeftOutlined, EditOutlined, PlusOutlined,
-  TeamOutlined, UserOutlined, CustomerServiceOutlined,
-  IdcardOutlined, StopOutlined, BankOutlined,
+  CustomerServiceOutlined, IdcardOutlined, StopOutlined, BankOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { companyService, employeeService, userService, ticketService } from '../services/api';
+import { companyService, employeeService, ticketService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { ROLES, TICKET_STATUS, PRIORITY } from '../utils/constants';
+import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
 const { Option } = Select;
-
-const roleColors = {
-  SUPER_ADMIN: { bg: '#f3e8ff', color: '#7c3aed' },
-  ADMIN: { bg: '#dbeafe', color: '#1d4ed8' },
-  AGENT: { bg: '#dcfce7', color: '#15803d' },
-  CLIENT: { bg: '#f3f4f6', color: '#374151' },
-};
 
 const StatCard = ({ icon, label, value, color, bg }) => (
   <Card className="stat-card" style={{ borderRadius: 12, height: '100%' }} bodyStyle={{ padding: '16px 20px' }}>
@@ -45,7 +37,6 @@ export default function CompanyDetail() {
 
   const [company, setCompany] = useState(null);
   const [employees, setEmployees] = useState([]);
-  const [users, setUsers] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,15 +54,13 @@ export default function CompanyDetail() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [comp, emps, usrs, tiks] = await Promise.all([
+      const [comp, emps, tiks] = await Promise.all([
         companyService.get(id),
         employeeService.list({ companyId: id }),
-        userService.list({ companyId: id }),
         ticketService.list({ companyId: id }),
       ]);
       setCompany(comp);
       setEmployees(emps);
-      setUsers(usrs);
       setTickets(Array.isArray(tiks) ? tiks : tiks?.tickets || []);
     } catch {
       setError('Erro ao carregar dados da empresa');
@@ -164,29 +153,6 @@ export default function CompanyDetail() {
     },
   ];
 
-  const userColumns = [
-    {
-      title: 'Usuário', key: 'name',
-      render: (_, r) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar size={32} style={{ background: roleColors[r.role]?.bg, color: roleColors[r.role]?.color, fontWeight: 700, fontSize: 13 }}>
-            {r.name?.charAt(0).toUpperCase()}
-          </Avatar>
-          <div>
-            <div style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.email}</div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Perfil', dataIndex: 'role', key: 'role',
-      render: v => <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: roleColors[v]?.bg, color: roleColors[v]?.color }}>{ROLES[v]?.label}</span>,
-    },
-    { title: 'Status', dataIndex: 'active', key: 'active', render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>{v ? 'Ativo' : 'Inativo'}</Tag> },
-    { title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span> },
-  ];
-
   const ticketColumns = [
     {
       title: 'Chamado', key: 'title',
@@ -237,16 +203,13 @@ export default function CompanyDetail() {
 
       {/* Stats */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6} style={{ display: 'flex' }}>
+        <Col xs={12} sm={8} style={{ display: 'flex' }}>
           <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="#16a34a" bg="#dcfce7" />
         </Col>
-        <Col xs={12} sm={6} style={{ display: 'flex' }}>
-          <StatCard icon={<TeamOutlined />} label="Usuários" value={users.length} color="#2563eb" bg="#dbeafe" />
-        </Col>
-        <Col xs={12} sm={6} style={{ display: 'flex' }}>
+        <Col xs={12} sm={8} style={{ display: 'flex' }}>
           <StatCard icon={<CustomerServiceOutlined />} label="Chamados" value={tickets.length} color="#d97706" bg="#fffbeb" />
         </Col>
-        <Col xs={12} sm={6} style={{ display: 'flex' }}>
+        <Col xs={12} sm={8} style={{ display: 'flex' }}>
           <StatCard icon={<CustomerServiceOutlined />} label="Em Aberto" value={openTickets} color="#dc2626" bg="#fef2f2" />
         </Col>
       </Row>
@@ -271,15 +234,6 @@ export default function CompanyDetail() {
                     </div>
                   )}
                   <Table dataSource={employees} columns={empColumns} rowKey="id" size="middle" scroll={{ x: 700 }} pagination={{ pageSize: 10 }} />
-                </div>
-              ),
-            },
-            {
-              key: 'users',
-              label: <span><UserOutlined /> Usuários ({users.length})</span>,
-              children: (
-                <div style={{ padding: '16px 0' }}>
-                  <Table dataSource={users} columns={userColumns} rowKey="id" size="middle" scroll={{ x: 600 }} pagination={{ pageSize: 10 }} />
                 </div>
               ),
             },
