@@ -3,12 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Card, Row, Col, Tabs, Table, Button, Tag, Drawer, Modal, Form,
   Input, Select, Switch, Space, Tooltip, message,
-  Spin, Alert, Avatar, DatePicker, InputNumber, Divider,
+  Spin, Alert, Avatar,
 } from 'antd';
 import {
   ArrowLeftOutlined, EditOutlined, PlusOutlined,
   CustomerServiceOutlined, IdcardOutlined, DeleteOutlined, BankOutlined,
-  PhoneOutlined, MailOutlined, ExclamationCircleOutlined,
+  PhoneOutlined, ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { companyService, employeeService, ticketService } from '../services/api';
@@ -16,11 +16,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
 const { Option } = Select;
-
-const DEPARTMENTS = [
-  'Tecnologia da Informação', 'Recursos Humanos', 'Financeiro', 'Comercial',
-  'Marketing', 'Operações', 'Jurídico', 'Administrativo', 'Suporte', 'Logística',
-];
 
 const BR_STATES = [
   'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA',
@@ -90,14 +85,14 @@ export default function CompanyDetail() {
   const openCreateEmp = () => { setEditingEmp(null); empForm.resetFields(); setEmpDrawer(true); };
   const openEditEmp = (r) => {
     setEditingEmp(r);
-    empForm.setFieldsValue({ ...r, hireDate: r.hireDate ? dayjs(r.hireDate) : null });
+    empForm.setFieldsValue({ name: r.name, phone: r.phone, position: r.position });
     setEmpDrawer(true);
   };
 
   const handleSaveEmp = async (values) => {
     setEmpSaving(true);
     try {
-      const payload = { ...values, companyId: id, hireDate: values.hireDate ? values.hireDate.toISOString() : null };
+      const payload = { ...values, companyId: id };
       if (editingEmp) {
         await employeeService.update(editingEmp.id, payload);
         message.success('Funcionário atualizado');
@@ -151,15 +146,11 @@ export default function CompanyDetail() {
           <Avatar size={32} style={{ background: '#dcfce7', color: '#16a34a', fontWeight: 700, fontSize: 13 }}>
             {r.name?.charAt(0).toUpperCase()}
           </Avatar>
-          <div>
-            <div style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.email || '—'}</div>
-          </div>
+          <span style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</span>
         </div>
       ),
     },
-    { title: 'Cargo', dataIndex: 'position', key: 'position', render: v => <span style={{ color: '#374151', fontSize: 13 }}>{v}</span> },
-    { title: 'Departamento', dataIndex: 'department', key: 'department', render: v => v ? <Tag style={{ borderRadius: 6 }}>{v}</Tag> : <span style={{ color: '#d1d5db' }}>—</span> },
+    { title: 'Cargo', dataIndex: 'position', key: 'position', render: v => <span style={{ color: '#374151', fontSize: 13 }}>{v || '—'}</span> },
     { title: 'Telefone', dataIndex: 'phone', key: 'phone', render: v => <span style={{ color: '#6b7280', fontSize: 13 }}>{v || '—'}</span> },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
@@ -330,16 +321,15 @@ export default function CompanyDetail() {
           </Space>
         }
       >
-        <div className="drawer-form-body">
+        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
           <Form form={empForm} layout="vertical" onFinish={handleSaveEmp}>
-            <div className="form-section-label">Dados Pessoais</div>
-            <Form.Item name="name" label="Nome Completo" rules={[{ required: true, message: 'Obrigatório' }]}>
-              <Input placeholder="Nome completo" size="large" />
+            <Form.Item name="name" label="Nome Completo" rules={[{ required: true, message: 'Informe o nome' }]}>
+              <Input placeholder="Nome completo do funcionário" size="large" />
             </Form.Item>
             <Row gutter={16}>
               <Col xs={24} sm={12}>
-                <Form.Item name="cpf" label="CPF">
-                  <Input placeholder="000.000.000-00" maxLength={14} size="large" />
+                <Form.Item name="position" label="Cargo" rules={[{ required: true, message: 'Informe o cargo' }]}>
+                  <Input placeholder="Ex: Analista de TI" size="large" />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
@@ -348,47 +338,6 @@ export default function CompanyDetail() {
                 </Form.Item>
               </Col>
             </Row>
-            <Form.Item name="email" label="E-mail">
-              <Input prefix={<MailOutlined style={{ color: '#9ca3af' }} />} placeholder="funcionario@empresa.com" size="large" />
-            </Form.Item>
-
-            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
-            <div className="form-section-label">Cargo e Departamento</div>
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item name="position" label="Cargo / Função" rules={[{ required: true, message: 'Obrigatório' }]}>
-                  <Input placeholder="Ex: Analista de TI" size="large" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item name="department" label="Departamento">
-                  <Select placeholder="Selecione ou digite" showSearch allowClear size="large">
-                    {DEPARTMENTS.map(d => <Option key={d} value={d}>{d}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
-            <div className="form-section-label">Contratação</div>
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item name="hireDate" label="Data de Admissão">
-                  <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Selecione a data" size="large" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item name="salary" label="Salário (R$)">
-                  <Input placeholder="0,00" type="number" size="large" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            {editingEmp && (
-              <Form.Item name="active" label="Status" valuePropName="checked">
-                <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
-              </Form.Item>
-            )}
           </Form>
         </div>
       </Drawer>
