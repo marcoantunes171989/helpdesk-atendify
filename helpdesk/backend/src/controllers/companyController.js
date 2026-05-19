@@ -38,7 +38,7 @@ exports.links = async (req, res) => {
   const { id } = req.params;
   const company = await prisma.company.findUnique({
     where: { id },
-    include: { _count: { select: { employees: true, tickets: true, categories: true, users: true } } },
+    include: { _count: { select: { employees: true, tickets: true, categories: true } } },
   });
   if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
   res.json({
@@ -46,7 +46,6 @@ exports.links = async (req, res) => {
     employees: company._count.employees,
     tickets: company._count.tickets,
     categories: company._count.categories,
-    users: company._count.users,
   });
 };
 
@@ -108,15 +107,14 @@ exports.remove = async (req, res) => {
   try {
     const company = await prisma.company.findUnique({
       where: { id },
-      include: { _count: { select: { employees: true, tickets: true, categories: true, users: true } } },
+      include: { _count: { select: { employees: true, tickets: true, categories: true } } },
     });
     if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
 
     const hasLinks =
       company._count.employees > 0 ||
       company._count.tickets > 0 ||
-      company._count.categories > 0 ||
-      company._count.users > 0;
+      company._count.categories > 0;
 
     if (hasLinks && force !== 'true') {
       return res.status(409).json({
@@ -125,7 +123,6 @@ exports.remove = async (req, res) => {
           employees: company._count.employees,
           tickets: company._count.tickets,
           categories: company._count.categories,
-          users: company._count.users,
         },
       });
     }
@@ -135,7 +132,6 @@ exports.remove = async (req, res) => {
       await tx.ticket.deleteMany({ where: { companyId: id } });
       await tx.employee.deleteMany({ where: { companyId: id } });
       await tx.category.deleteMany({ where: { companyId: id } });
-      await tx.user.deleteMany({ where: { companyId: id } });
       await tx.company.delete({ where: { id } });
     });
 

@@ -208,7 +208,7 @@ export default function Companies() {
     },
   ];
 
-  const hasLinks = deleteModal && (deleteModal.employees > 0 || deleteModal.tickets > 0 || deleteModal.categories > 0 || deleteModal.users > 0);
+  const hasLinks = deleteModal && (deleteModal.employees > 0 || deleteModal.tickets > 0 || deleteModal.categories > 0);
 
   return (
     <div>
@@ -424,12 +424,6 @@ export default function Companies() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
                       <span>🏷️ Categorias</span>
                       <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.categories}</span>
-                    </div>
-                  )}
-                  {deleteModal.users > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
-                      <span>🔑 Usuários</span>
-                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.users}</span>
                     </div>
                   )}
                 </div>
