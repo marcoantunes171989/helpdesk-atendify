@@ -77,11 +77,7 @@ export default function Users() {
     }
   };
 
-  const roleOptions = user?.role === 'SUPER_ADMIN'
-    ? Object.entries(ROLES).map(([v, { label }]) => <Option key={v} value={v}>{label}</Option>)
-    : Object.entries(ROLES)
-        .filter(([v]) => !['SUPER_ADMIN', 'ADMIN'].includes(v))
-        .map(([v, { label }]) => <Option key={v} value={v}>{label}</Option>);
+  const roleOptions = Object.entries(ROLES).map(([v, { label }]) => <Option key={v} value={v}>{label}</Option>);
 
   const columns = [
     {

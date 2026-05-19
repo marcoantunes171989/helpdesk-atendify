@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, InputNumber, Space,
-  Popconfirm, message, Tooltip, Tag,
+  Table, Button, Modal, Form, Input, InputNumber, Select, Space,
+  Popconfirm, message, Tooltip,
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { categoryService } from '../services/api';
+import { categoryService, companyService } from '../services/api';
+
+const { Option } = Select;
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -19,10 +22,17 @@ export default function Categories() {
     categoryService.list().then(setCategories).finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    companyService.list().then(setCompanies);
+  }, []);
 
   const openCreate = () => { setEditing(null); form.resetFields(); setModalOpen(true); };
-  const openEdit = (record) => { setEditing(record); form.setFieldsValue(record); setModalOpen(true); };
+  const openEdit = (record) => {
+    setEditing(record);
+    form.setFieldsValue({ ...record, companyId: record.companyId });
+    setModalOpen(true);
+  };
 
   const handleSubmit = async (values) => {
     try {
@@ -155,6 +165,13 @@ export default function Categories() {
               placeholder="24"
             />
           </Form.Item>
+          {!editing && (
+            <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
+              <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children">
+                {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+              </Select>
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </div>
