@@ -9,6 +9,7 @@ const categoryRoutes = require('./routes/categories');
 const ticketRoutes = require('./routes/tickets');
 const dashboardRoutes = require('./routes/dashboard');
 const employeeRoutes = require('./routes/employees');
+const statusRoutes = require('./routes/statuses');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/employees', employeeRoutes);
+app.use('/api/statuses', statusRoutes);
 
 // Captura erros de rotas síncronas e assíncronas
 app.use((err, req, res, next) => {

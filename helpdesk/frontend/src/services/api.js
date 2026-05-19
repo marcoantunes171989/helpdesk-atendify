@@ -64,6 +64,13 @@ export const ticketService = {
   addComment: (id, data) => api.post(`/tickets/${id}/comments`, data).then(r => r.data),
 };
 
+export const statusService = {
+  list: (params) => api.get('/statuses', { params }).then(r => r.data),
+  create: (data) => api.post('/statuses', data).then(r => r.data),
+  update: (id, data) => api.put(`/statuses/${id}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/statuses/${id}`).then(r => r.data),
+};
+
 export const dashboardService = {
   stats: () => api.get('/dashboard/stats').then(r => r.data),
 };

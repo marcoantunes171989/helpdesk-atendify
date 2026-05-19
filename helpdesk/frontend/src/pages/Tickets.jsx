@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { ticketService, categoryService, companyService, employeeService } from '../services/api';
+import { ticketService, categoryService, companyService, employeeService, statusService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
@@ -29,6 +29,7 @@ export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   const [companyEmployees, setCompanyEmployees] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,6 +52,7 @@ export default function Tickets() {
     load();
     categoryService.list().then(setCategories);
     companyService.list({ active: true }).then(setCompanies);
+    statusService.list({ active: true }).then(setStatuses);
   }, [user]);
 
   const handleCompanyChange = (companyId) => {
@@ -189,12 +191,22 @@ export default function Tickets() {
       render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
     {
-      title: 'Status', dataIndex: 'status', key: 'status',
-      render: v => (
-        <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
-          {TICKET_STATUS[v]?.label}
-        </Tag>
-      ),
+      title: 'Status', key: 'status',
+      render: (_, r) => {
+        if (r.ticketStatus) {
+          return (
+            <Tag style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: r.ticketStatus.color + '22', color: r.ticketStatus.color, borderColor: r.ticketStatus.color + '55' }}>
+              <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: r.ticketStatus.color, marginRight: 5, verticalAlign: 'middle' }} />
+              {r.ticketStatus.name}
+            </Tag>
+          );
+        }
+        return (
+          <Tag color={TICKET_STATUS[r.status]?.color} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
+            {TICKET_STATUS[r.status]?.label}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Prioridade', dataIndex: 'priority', key: 'priority',
@@ -252,10 +264,13 @@ export default function Tickets() {
         display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
         padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
       }}>
-        <Select allowClear placeholder="Todos os status" style={{ minWidth: 150, flex: 1 }} onChange={v => applyFilters({ status: v })}>
-          {Object.entries(TICKET_STATUS).map(([k, { label }]) => (
-            <Option key={k} value={k}>
-              {label} {statusCounts[k] > 0 ? `(${statusCounts[k]})` : ''}
+        <Select allowClear placeholder="Todos os status" style={{ minWidth: 150, flex: 1 }} onChange={v => applyFilters({ statusId: v })}>
+          {statuses.map(s => (
+            <Option key={s.id} value={s.id}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block' }} />
+                {s.name}
+              </span>
             </Option>
           ))}
         </Select>
@@ -373,6 +388,18 @@ export default function Tickets() {
               <Select placeholder="Selecione a categoria" size="large">
                 {categories.map(c => (
                   <Option key={c.id} value={c.id}>{c.name}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="statusId" label="Status" rules={[{ required: true, message: 'Selecione o status inicial do chamado' }]}>
+              <Select placeholder="Selecione o status" size="large">
+                {statuses.map(s => (
+                  <Option key={s.id} value={s.id}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
+                      {s.name}
+                    </span>
+                  </Option>
                 ))}
               </Select>
             </Form.Item>

@@ -6,6 +6,7 @@ const ticketInclude = {
   user: { select: { id: true, name: true, email: true } },
   assignee: { select: { id: true, name: true, email: true } },
   employee: { select: { id: true, name: true, position: true } },
+  ticketStatus: { select: { id: true, name: true, color: true } },
   category: { select: { id: true, name: true, slaHours: true } },
   company: { select: { id: true, name: true } },
   comments: {
@@ -19,11 +20,12 @@ const ticketInclude = {
 };
 
 exports.list = async (req, res) => {
-  const { status, priority, categoryId, assignedTo, userId, search, companyId } = req.query;
+  const { status, priority, categoryId, assignedTo, userId, search, companyId, statusId } = req.query;
   const where = {};
 
   if (companyId) where.companyId = companyId;
   if (status) where.status = status;
+  if (statusId) where.statusId = statusId;
   if (priority) where.priority = priority;
   if (categoryId) where.categoryId = categoryId;
   if (assignedTo) where.assignedTo = assignedTo;
@@ -42,6 +44,7 @@ exports.list = async (req, res) => {
       user: { select: { id: true, name: true } },
       assignee: { select: { id: true, name: true } },
       employee: { select: { id: true, name: true, position: true } },
+      ticketStatus: { select: { id: true, name: true, color: true } },
       category: { select: { id: true, name: true } },
       company: { select: { id: true, name: true } },
       _count: { select: { comments: true, attachments: true } },
@@ -80,6 +83,8 @@ exports.create = async (req, res) => {
     }
   }
 
+  const { statusId } = req.body;
+
   const ticket = await prisma.ticket.create({
     data: {
       title,
@@ -87,6 +92,7 @@ exports.create = async (req, res) => {
       priority: priority || 'MEDIUM',
       categoryId: categoryId || null,
       employeeId: employeeId || null,
+      statusId: statusId || null,
       userId: req.user.id,
       companyId,
       slaDeadline,
@@ -120,7 +126,8 @@ exports.update = async (req, res) => {
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  const data = { title, description, priority, categoryId, assignedTo };
+  const { statusId } = req.body;
+  const data = { title, description, priority, categoryId, assignedTo, statusId: statusId || null };
 
   if (status && status !== ticket.status) {
     data.status = status;
