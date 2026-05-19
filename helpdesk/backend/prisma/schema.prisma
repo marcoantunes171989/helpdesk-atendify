@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Company {
+  id         String     @id @default(cuid())
+  name       String
+  cnpj       String     @unique
+  email      String
+  phone      String?
+  address    String?
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  users      User[]
+  tickets    Ticket[]
+  categories Category[]
+  employees  Employee[]
+
+  @@map("companies")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  active    Boolean  @default(true)
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tickets  Ticket[]        @relation("CreatedTickets")
+  assigned Ticket[]        @relation("AssignedTickets")
+  comments TicketComment[]
+
+  @@map("users")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  AGENT
+  CLIENT
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slaHours    Int      @default(24)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  tickets     Ticket[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  status      TicketStatus @default(OPEN)
+  priority    Priority     @default(MEDIUM)
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id])
+  categoryId  String?
+  category    Category?    @relation(fields: [categoryId], references: [id])
+  userId      String
+  user        User         @relation("CreatedTickets", fields: [userId], references: [id])
+  assignedTo  String?
+  assignee    User?        @relation("AssignedTickets", fields: [assignedTo], references: [id])
+  slaDeadline DateTime?
+  resolvedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  comments    TicketComment[]
+
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  message   String
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("ticket_comments")
+}
+
+model Employee {
+  id           String    @id @default(cuid())
+  name         String
+  email        String?   @unique
+  phone        String?
+  cpf          String?   @unique
+  position     String
+  department   String?
+  salary       Decimal?  @db.Decimal(10, 2)
+  hireDate     DateTime?
+  active       Boolean   @default(true)
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("employees")
+}

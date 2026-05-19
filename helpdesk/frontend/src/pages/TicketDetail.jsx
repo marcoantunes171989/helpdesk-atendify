@@ -1,0 +1,294 @@
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  Tag, Button, Select, Space, Typography, Divider, Input,
+  Avatar, Spin, Alert, Row, Col, Tooltip, message,
+} from 'antd';
+import {
+  ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
+} from '@ant-design/icons';
+import dayjs from 'dayjs';
+import { ticketService, userService, categoryService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus } from '../utils/constants';
+
+const { Paragraph } = Typography;
+const { TextArea } = Input;
+const { Option } = Select;
+
+const roleColors = {
+  SUPER_ADMIN: { bg: '#f3e8ff', color: '#7c3aed' },
+  ADMIN: { bg: '#dbeafe', color: '#1d4ed8' },
+  AGENT: { bg: '#dcfce7', color: '#15803d' },
+  CLIENT: { bg: '#f3f4f6', color: '#374151' },
+};
+
+export default function TicketDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [ticket, setTicket] = useState(null);
+  const [agents, setAgents] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [comment, setComment] = useState('');
+
+  const load = () => {
+    ticketService.get(id)
+      .then(setTicket)
+      .catch(() => message.error('Chamado não encontrado'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+    categoryService.list().then(setCategories);
+    if (canAssignTickets(user?.role)) {
+      userService.list({ role: 'AGENT' }).then(setAgents);
+    }
+  }, [id, user]);
+
+  const handleUpdate = async (field, value) => {
+    try {
+      const updated = await ticketService.update(id, { [field]: value });
+      setTicket(updated);
+      message.success('Atualizado');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao atualizar');
+    }
+  };
+
+  const handleComment = async () => {
+    if (!comment.trim()) return;
+    setSending(true);
+    try {
+      const newComment = await ticketService.addComment(id, { message: comment });
+      setTicket(prev => ({ ...prev, comments: [...prev.comments, newComment] }));
+      setComment('');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao enviar');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+      <Spin size="large" />
+    </div>
+  );
+  if (!ticket) return <Alert type="error" message="Chamado não encontrado" />;
+
+  const isExpired = ticket.slaDeadline && !['RESOLVED', 'CLOSED', 'CANCELLED'].includes(ticket.status)
+    && dayjs(ticket.slaDeadline).isBefore(dayjs());
+
+  const isClosed = ['CLOSED', 'CANCELLED'].includes(ticket.status);
+  const canEdit = canUpdateTicketStatus(user?.role);
+
+  return (
+    <div>
+      <Button
+        type="text"
+        icon={<ArrowLeftOutlined />}
+        onClick={() => navigate('/app/tickets')}
+        style={{ color: '#6b7280', marginBottom: 16, padding: 0 }}
+      >
+        Voltar para Chamados
+      </Button>
+
+      <Row gutter={[20, 20]}>
+        {/* Coluna principal */}
+        <Col xs={24} lg={16}>
+          {/* Cabeçalho do chamado */}
+          <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 16 }}>
+            <Space wrap style={{ marginBottom: 12 }}>
+              <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6 }}>
+                {TICKET_STATUS[ticket.status]?.label}
+              </Tag>
+              <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6 }}>
+                {PRIORITY[ticket.priority]?.label}
+              </Tag>
+              {isExpired && (
+                <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6 }}>
+                  SLA Vencido
+                </Tag>
+              )}
+              <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 8px', borderRadius: 4 }}>
+                #{ticket.id.slice(-8).toUpperCase()}
+              </code>
+            </Space>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>
+              {ticket.title}
+            </h2>
+            <Paragraph style={{ color: '#374151', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.7 }}>
+              {ticket.description}
+            </Paragraph>
+          </div>
+
+          {/* Comentários */}
+          <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24 }}>
+            <h3 style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: '0 0 20px' }}>
+              Comentários ({ticket.comments.length})
+            </h3>
+
+            {ticket.comments.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#9ca3af', fontSize: 14 }}>
+                Nenhum comentário ainda. Seja o primeiro a responder.
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {ticket.comments.map(c => {
+                const isAgent = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(c.user.role);
+                return (
+                  <div key={c.id} style={{
+                    display: 'flex', gap: 12,
+                    flexDirection: isAgent ? 'row' : 'row-reverse',
+                  }}>
+                    <Avatar
+                      size={36}
+                      style={{
+                        background: roleColors[c.user.role]?.bg,
+                        color: roleColors[c.user.role]?.color,
+                        fontWeight: 700, fontSize: 14, flexShrink: 0,
+                      }}
+                    >
+                      {c.user.name?.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <div style={{ flex: 1, maxWidth: '80%' }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4,
+                        flexDirection: isAgent ? 'row' : 'row-reverse',
+                      }}>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: '#111827' }}>{c.user.name}</span>
+                        <span style={{
+                          fontSize: 11, padding: '1px 8px', borderRadius: 4,
+                          background: roleColors[c.user.role]?.bg, color: roleColors[c.user.role]?.color, fontWeight: 600,
+                        }}>
+                          {ROLES[c.user.role]?.label}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                          {dayjs(c.createdAt).format('DD/MM HH:mm')}
+                        </span>
+                      </div>
+                      <div style={{
+                        padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
+                        background: isAgent ? '#f0fdf4' : '#f9fafb',
+                        color: '#374151', whiteSpace: 'pre-wrap',
+                        border: `1px solid ${isAgent ? '#bbf7d0' : '#e5e7eb'}`,
+                      }}>
+                        {c.message}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {!isClosed && (
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #f3f4f6' }}>
+                <TextArea
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  rows={3}
+                  placeholder="Escreva um comentário..."
+                  style={{ borderRadius: 8, resize: 'none' }}
+                  onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                  <Button
+                    type="primary"
+                    icon={<SendOutlined />}
+                    loading={sending}
+                    onClick={handleComment}
+                    disabled={!comment.trim()}
+                    style={{ background: '#16a34a', borderColor: '#16a34a', borderRadius: 8 }}
+                  >
+                    Enviar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Col>
+
+        {/* Sidebar direita */}
+        <Col xs={24} lg={8}>
+          <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 20 }}>
+            <h3 style={{ fontWeight: 700, fontSize: 14, color: '#111827', margin: '0 0 16px' }}>Informações</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { label: 'Solicitante', value: ticket.user?.name },
+                { label: 'Empresa', value: ticket.company?.name },
+                { label: 'Aberto em', value: dayjs(ticket.createdAt).format('DD/MM/YYYY HH:mm') },
+                ticket.resolvedAt && { label: 'Resolvido em', value: dayjs(ticket.resolvedAt).format('DD/MM/YYYY HH:mm') },
+              ].filter(Boolean).map(item => (
+                <div key={item.label}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{item.value}</div>
+                </div>
+              ))}
+
+              {ticket.slaDeadline && (
+                <div>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+                    Prazo SLA
+                  </div>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontSize: 13, fontWeight: 600,
+                    color: isExpired ? '#dc2626' : '#16a34a',
+                  }}>
+                    <ClockCircleOutlined />
+                    {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
+                    {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11 }}>Vencido</Tag>}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {canEdit && (
+              <>
+                <Divider style={{ margin: '16px 0' }} />
+                <h3 style={{ fontWeight: 700, fontSize: 14, color: '#111827', margin: '0 0 12px' }}>Gerenciar</h3>
+                <Space direction="vertical" style={{ width: '100%' }} size={10}>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
+                    <Select value={ticket.status} style={{ width: '100%' }} onChange={v => handleUpdate('status', v)} size="small">
+                      {Object.entries(TICKET_STATUS).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
+                    </Select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>PRIORIDADE</div>
+                    <Select value={ticket.priority} style={{ width: '100%' }} onChange={v => handleUpdate('priority', v)} size="small">
+                      {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
+                    </Select>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>CATEGORIA</div>
+                    <Select value={ticket.categoryId} style={{ width: '100%' }} allowClear placeholder="Sem categoria" onChange={v => handleUpdate('categoryId', v)} size="small">
+                      {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                    </Select>
+                  </div>
+                  {canAssignTickets(user?.role) && (
+                    <div>
+                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>ATRIBUÍDO A</div>
+                      <Select value={ticket.assignedTo} style={{ width: '100%' }} allowClear placeholder="Não atribuído" onChange={v => handleUpdate('assignedTo', v || null)} size="small">
+                        {agents.map(a => <Option key={a.id} value={a.id}>{a.name}</Option>)}
+                      </Select>
+                    </div>
+                  )}
+                </Space>
+              </>
+            )}
+          </div>
+        </Col>
+      </Row>
+    </div>
+  );
+}

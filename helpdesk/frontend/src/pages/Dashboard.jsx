@@ -1,0 +1,183 @@
+import { useEffect, useState } from 'react';
+import { Row, Col, Card, Table, Tag, Typography, Spin, Alert } from 'antd';
+import {
+  ClockCircleOutlined, CheckCircleOutlined, SyncOutlined,
+  ExclamationCircleOutlined, CloseCircleOutlined, RiseOutlined,
+} from '@ant-design/icons';
+import dayjs from 'dayjs';
+import { dashboardService } from '../services/api';
+import { TICKET_STATUS, PRIORITY } from '../utils/constants';
+
+const { Text } = Typography;
+
+const StatCard = ({ title, value, icon, color, bg }) => (
+  <Card className="stat-card" style={{ borderRadius: 12, height: '100%', width: '100%' }} bodyStyle={{ padding: '20px 24px', height: '100%' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 11, color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {title}
+        </div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: '#111827', lineHeight: 1 }}>
+          {value}
+        </div>
+      </div>
+      <div style={{
+        width: 44, height: 44, borderRadius: 10, flexShrink: 0, marginLeft: 12,
+        background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ color, fontSize: 20 }}>{icon}</span>
+      </div>
+    </div>
+  </Card>
+);
+
+export default function Dashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    dashboardService.stats()
+      .then(setData)
+      .catch(() => setError('Erro ao carregar dados'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+      <Spin size="large" />
+    </div>
+  );
+  if (error) return <Alert type="error" message={error} />;
+
+  const { summary, byPriority, byCategory, recentTickets } = data;
+
+  const stats = [
+    { title: 'Total de Chamados', value: summary.total, icon: <ClockCircleOutlined />, color: '#6b7280', bg: '#f3f4f6' },
+    { title: 'Abertos', value: summary.open, icon: <ExclamationCircleOutlined />, color: '#2563eb', bg: '#eff6ff' },
+    { title: 'Em Andamento', value: summary.inProgress, icon: <SyncOutlined spin />, color: '#d97706', bg: '#fffbeb' },
+    { title: 'Resolvidos', value: summary.resolved, icon: <CheckCircleOutlined />, color: '#16a34a', bg: '#f0fdf4' },
+    { title: 'Fechados', value: summary.closed, icon: <CloseCircleOutlined />, color: '#9ca3af', bg: '#f9fafb' },
+    { title: 'SLA Vencido', value: summary.overdueSla, icon: <RiseOutlined />, color: '#dc2626', bg: '#fef2f2' },
+  ];
+
+  const columns = [
+    {
+      title: 'ID', dataIndex: 'id', key: 'id', width: 80,
+      render: v => <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>{v.slice(-6).toUpperCase()}</code>,
+    },
+    {
+      title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,
+      render: v => <span style={{ fontWeight: 500, color: '#111827' }}>{v}</span>,
+    },
+    { title: 'Solicitante', dataIndex: ['user', 'name'], key: 'user', render: v => <span style={{ color: '#6b7280' }}>{v}</span> },
+    { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', render: v => v ? <span style={{ color: '#6b7280' }}>{v}</span> : <span style={{ color: '#d1d5db' }}>—</span> },
+    {
+      title: 'Status', dataIndex: 'status', key: 'status',
+      render: v => <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6 }}>{TICKET_STATUS[v]?.label}</Tag>,
+    },
+    {
+      title: 'Prioridade', dataIndex: 'priority', key: 'priority',
+      render: v => <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6 }}>{PRIORITY[v]?.label}</Tag>,
+    },
+    {
+      title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
+      render: v => <span style={{ color: '#9ca3af', fontSize: 13 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
+    },
+  ];
+
+  return (
+    <div>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Dashboard</h1>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>Visão geral dos atendimentos</p>
+      </div>
+
+      <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
+        {stats.map(s => (
+          <Col key={s.title} xs={12} sm={8} md={4} style={{ display: 'flex' }}>
+            <StatCard {...s} />
+          </Col>
+        ))}
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+        <Col xs={24} md={10}>
+          <Card
+            title={<span style={{ fontWeight: 600, fontSize: 14 }}>Por Prioridade</span>}
+            style={{ borderRadius: 12, border: '1px solid #e5e7eb' }}
+            bodyStyle={{ padding: '16px 24px' }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {byPriority.map(p => (
+                <div key={p.priority} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Tag color={PRIORITY[p.priority]?.color} style={{ margin: 0 }}>{PRIORITY[p.priority]?.label}</Tag>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 100, height: 6, borderRadius: 3, background: '#f3f4f6', overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        width: `${Math.min((p._count / summary.total) * 100, 100)}%`,
+                        height: '100%', borderRadius: 3, background: '#16a34a',
+                      }} />
+                    </div>
+                    <Text strong style={{ fontSize: 13, minWidth: 20, textAlign: 'right' }}>{p._count}</Text>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} md={14}>
+          <Card
+            title={<span style={{ fontWeight: 600, fontSize: 14 }}>Top Categorias</span>}
+            style={{ borderRadius: 12, border: '1px solid #e5e7eb' }}
+            bodyStyle={{ padding: '16px 24px' }}
+          >
+            {byCategory.length === 0 ? (
+              <span style={{ color: '#d1d5db' }}>Sem dados disponíveis</span>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {byCategory.map((c, i) => (
+                  <div key={c.categoryId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: i === 0 ? '#16a34a' : i === 1 ? '#22c55e' : '#86efac',
+                      }} />
+                      <span style={{ fontSize: 13, color: '#374151' }}>{c.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 80, height: 6, borderRadius: 3, background: '#f3f4f6', overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${Math.min((c._count / summary.total) * 100, 100)}%`,
+                          height: '100%', borderRadius: 3, background: '#16a34a',
+                        }} />
+                      </div>
+                      <Text strong style={{ fontSize: 13, minWidth: 20, textAlign: 'right' }}>{c._count}</Text>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      <Card
+        title={<span style={{ fontWeight: 600, fontSize: 14 }}>Chamados Recentes</span>}
+        style={{ marginTop: 20, borderRadius: 12, border: '1px solid #e5e7eb' }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <Table
+          dataSource={recentTickets}
+          columns={columns}
+          rowKey="id"
+          pagination={false}
+          size="middle"
+          scroll={{ x: 800 }}
+        />
+      </Card>
+    </div>
+  );
+}
