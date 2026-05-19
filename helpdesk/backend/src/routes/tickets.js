@@ -1,12 +1,13 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
+const wrap = require('../middleware/asyncHandler');
 const ctrl = require('../controllers/ticketController');
 
-router.get('/', auth, ctrl.list);
-router.get('/:id', auth, ctrl.get);
-router.post('/', auth, ctrl.create);
-router.put('/:id', auth, ctrl.update);
-router.delete('/:id', auth, ctrl.remove);
-router.post('/:id/comments', auth, ctrl.addComment);
+router.get('/', auth, wrap(ctrl.list));
+router.get('/:id', auth, wrap(ctrl.get));
+router.post('/', auth, wrap(ctrl.create));
+router.put('/:id', auth, wrap(ctrl.update));
+router.delete('/:id', auth, wrap(ctrl.remove));
+router.post('/:id/comments', auth, wrap(ctrl.addComment));
 
 module.exports = router;

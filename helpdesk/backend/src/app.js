@@ -24,7 +24,8 @@ app.use(cors({
     else callback(new Error('Not allowed by CORS'));
   },
 }));
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/companies', companyRoutes);
@@ -34,9 +35,16 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/employees', employeeRoutes);
 
+// Captura erros de rotas síncronas e assíncronas
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Erro interno do servidor' });
+  console.error('[ERROR]', err.message);
+  const status = err.status || 500;
+  res.status(status).json({ error: err.message || 'Erro interno do servidor' });
+});
+
+// Captura unhandledRejection para evitar crash silencioso no Render
+process.on('unhandledRejection', (reason) => {
+  console.error('[UnhandledRejection]', reason);
 });
 
 const PORT = process.env.PORT || 3001;
