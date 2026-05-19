@@ -6,6 +6,7 @@ router.get('/', auth, ctrl.list);
 router.get('/:id', auth, ctrl.get);
 router.post('/', auth, ctrl.create);
 router.put('/:id', auth, ctrl.update);
+router.delete('/:id', auth, ctrl.remove);
 router.post('/:id/comments', auth, ctrl.addComment);
 
 module.exports = router;

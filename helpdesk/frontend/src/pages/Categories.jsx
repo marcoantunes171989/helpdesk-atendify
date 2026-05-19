@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, InputNumber, Select, Space,
-  Popconfirm, message, Tooltip,
+  Table, Button, Drawer, Form, Input, InputNumber, Select, Space,
+  Popconfirm, message, Tooltip, Row, Col,
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ClockCircleOutlined, AppstoreOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { categoryService, companyService } from '../services/api';
 
@@ -13,8 +13,9 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
 
   const load = () => {
@@ -27,14 +28,15 @@ export default function Categories() {
     companyService.list().then(setCompanies);
   }, []);
 
-  const openCreate = () => { setEditing(null); form.resetFields(); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => {
     setEditing(record);
     form.setFieldsValue({ ...record, companyId: record.companyId });
-    setModalOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleSubmit = async (values) => {
+    setSaving(true);
     try {
       if (editing) {
         await categoryService.update(editing.id, values);
@@ -43,10 +45,12 @@ export default function Categories() {
         await categoryService.create(values);
         message.success('Categoria criada');
       }
-      setModalOpen(false);
+      setDrawerOpen(false);
       load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -138,42 +142,66 @@ export default function Categories() {
       </div>
 
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-        <Table dataSource={categories} columns={columns} rowKey="id" loading={loading} size="middle" />
+        <Table dataSource={categories} columns={columns} rowKey="id" loading={loading} size="middle" scroll={{ x: 600 }} />
       </div>
 
-      <Modal
-        title={<span style={{ fontWeight: 700 }}>{editing ? 'Editar Categoria' : 'Nova Categoria'}</span>}
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={() => form.submit()}
-        okText="Salvar"
-        cancelText="Cancelar"
-        okButtonProps={{ style: { background: '#16a34a', borderColor: '#16a34a' } }}
+      {/* Drawer — Cadastro / Edição */}
+      <Drawer
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AppstoreOutlined style={{ color: '#d97706', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Categoria' : 'Nova Categoria'}</span>
+          </div>
+        }
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width="100%"
+        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
+        extra={
+          <Space>
+            <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} onClick={() => form.submit()}
+              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+            </Button>
+          </Space>
+        }
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 16 }}>
-          <Form.Item name="name" label="Nome" rules={[{ required: true }]}>
-            <Input placeholder="Ex: Suporte Técnico" />
-          </Form.Item>
-          <Form.Item name="description" label="Descrição">
-            <Input.TextArea rows={2} placeholder="Descreva o tipo de atendimento..." />
-          </Form.Item>
-          <Form.Item name="slaHours" label="Prazo de SLA (horas)" rules={[{ required: true }]} initialValue={24}>
-            <InputNumber
-              min={1} max={720}
-              style={{ width: '100%' }}
-              addonAfter="horas"
-              placeholder="24"
-            />
-          </Form.Item>
-          {!editing && (
-            <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
-              <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children">
-                {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-              </Select>
+        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item name="name" label="Nome da Categoria" rules={[{ required: true, message: 'Informe o nome' }]}>
+              <Input placeholder="Ex: Suporte Técnico" size="large" />
             </Form.Item>
-          )}
-        </Form>
-      </Modal>
+            <Form.Item name="description" label="Descrição">
+              <Input.TextArea rows={3} placeholder="Descreva o tipo de atendimento..." />
+            </Form.Item>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item name="slaHours" label="Prazo de SLA" rules={[{ required: true, message: 'Informe o SLA' }]} initialValue={24}>
+                  <InputNumber
+                    min={1} max={720}
+                    style={{ width: '100%' }}
+                    size="large"
+                    addonAfter="horas"
+                    placeholder="24"
+                  />
+                </Form.Item>
+              </Col>
+              {!editing && (
+                <Col xs={24} sm={12}>
+                  <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
+                    <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large">
+                      {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              )}
+            </Row>
+          </Form>
+        </div>
+      </Drawer>
     </div>
   );
 }

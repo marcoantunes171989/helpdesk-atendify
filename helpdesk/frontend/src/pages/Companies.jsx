@@ -58,6 +58,7 @@ export default function Companies() {
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -100,11 +101,14 @@ export default function Companies() {
   };
 
   const openDelete = async (record) => {
+    setDeletingId(record.id);
     try {
       const links = await companyService.checkLinks(record.id);
       setDeleteModal({ id: record.id, ...links });
     } catch {
       message.error('Erro ao verificar vínculos');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -197,7 +201,7 @@ export default function Companies() {
           </Tooltip>
           <Tooltip title="Excluir">
             <Button type="text" icon={<DeleteOutlined />} size="small"
-              danger onClick={() => openDelete(record)} />
+              danger loading={deletingId === record.id} onClick={() => openDelete(record)} />
           </Tooltip>
         </Space>
       ),
@@ -208,7 +212,6 @@ export default function Companies() {
 
   return (
     <div>
-      {/* Header */}
       <div className="page-header">
         <div>
           <h1 className="page-title">Empresas</h1>
@@ -222,7 +225,6 @@ export default function Companies() {
         </Button>
       </div>
 
-      {/* Tabela */}
       <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
           dataSource={companies} columns={columns} rowKey="id"
@@ -245,8 +247,8 @@ export default function Companies() {
         }
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={640}
-        bodyStyle={{ padding: '24px 28px' }}
+        width="100%"
+        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
         extra={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
@@ -257,18 +259,16 @@ export default function Companies() {
           </Space>
         }
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle">
+        <div className="drawer-form-body">
+          <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle">
 
-          {/* Identificação */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-              Identificação
-            </div>
+            {/* Identificação */}
+            <div className="form-section-label">Identificação</div>
             <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
               <Input placeholder="Nome oficial da empresa" />
             </Form.Item>
             <Row gutter={12}>
-              <Col span={13}>
+              <Col xs={24} sm={13}>
                 <Form.Item
                   name="cnpj" label="CNPJ"
                   rules={[
@@ -281,30 +281,26 @@ export default function Companies() {
                   <Input placeholder="00.000.000/0001-00" maxLength={18} />
                 </Form.Item>
               </Col>
-              <Col span={11}>
+              <Col xs={24} sm={11}>
                 <Form.Item name="stateRegistration" label="Inscrição Estadual" normalize={v => maskStateReg(v)} style={{ marginBottom: 12 }}>
                   <Input placeholder="000.000.000.000" maxLength={18} />
                 </Form.Item>
               </Col>
             </Row>
-          </div>
 
-          <Divider style={{ margin: '4px 0 16px', borderColor: '#f3f4f6' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
 
-          {/* Contato */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-              Contato
-            </div>
+            {/* Contato */}
+            <div className="form-section-label">Contato</div>
             <Row gutter={12}>
-              <Col span={14}>
+              <Col xs={24} sm={14}>
                 <Form.Item name="email" label="E-mail"
                   rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail inválido' }]}
                   style={{ marginBottom: 12 }}>
                   <Input placeholder="contato@empresa.com.br" />
                 </Form.Item>
               </Col>
-              <Col span={10}>
+              <Col xs={24} sm={10}>
                 <Form.Item name="phone" label="Telefone" normalize={v => maskPhone(v)} style={{ marginBottom: 12 }}>
                   <Input placeholder="(11) 99999-9999" maxLength={15} />
                 </Form.Item>
@@ -313,51 +309,47 @@ export default function Companies() {
             <Form.Item name="website" label="Website" style={{ marginBottom: 12 }}>
               <Input placeholder="https://www.empresa.com.br" />
             </Form.Item>
-          </div>
 
-          <Divider style={{ margin: '4px 0 16px', borderColor: '#f3f4f6' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
 
-          {/* Endereço */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-              Endereço
-            </div>
+            {/* Endereço */}
+            <div className="form-section-label">Endereço</div>
             <Row gutter={12}>
-              <Col span={8}>
+              <Col xs={24} sm={8}>
                 <Form.Item name="zipCode" label="CEP" normalize={v => maskCEP(v)} style={{ marginBottom: 12 }}>
                   <Input placeholder="00000-000" maxLength={9} />
                 </Form.Item>
               </Col>
-              <Col span={16}>
+              <Col xs={24} sm={16}>
                 <Form.Item name="street" label="Logradouro" style={{ marginBottom: 12 }}>
                   <Input placeholder="Rua, Avenida, Travessa..." />
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={12}>
-              <Col span={6}>
+              <Col xs={8} sm={6}>
                 <Form.Item name="addressNumber" label="Número" normalize={v => onlyNumbers(v)} style={{ marginBottom: 12 }}>
                   <Input placeholder="Nº" maxLength={10} inputMode="numeric" />
                 </Form.Item>
               </Col>
-              <Col span={18}>
+              <Col xs={16} sm={18}>
                 <Form.Item name="complement" label="Complemento" style={{ marginBottom: 12 }}>
                   <Input placeholder="Sala, Andar, Bloco..." />
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={12}>
-              <Col span={10}>
+              <Col xs={24} sm={10}>
                 <Form.Item name="neighborhood" label="Bairro" style={{ marginBottom: 12 }}>
                   <Input placeholder="Nome do bairro" />
                 </Form.Item>
               </Col>
-              <Col span={10}>
+              <Col xs={16} sm={10}>
                 <Form.Item name="city" label="Cidade" style={{ marginBottom: 12 }}>
                   <Input placeholder="Nome da cidade" />
                 </Form.Item>
               </Col>
-              <Col span={4}>
+              <Col xs={8} sm={4}>
                 <Form.Item name="state" label="UF" style={{ marginBottom: 12 }}>
                   <Select placeholder="UF" showSearch>
                     {BR_STATES.map(s => <Option key={s} value={s}>{s}</Option>)}
@@ -365,29 +357,25 @@ export default function Companies() {
                 </Form.Item>
               </Col>
             </Row>
-          </div>
 
-          <Divider style={{ margin: '4px 0 16px', borderColor: '#f3f4f6' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
 
-          {/* Observações */}
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-              Observações
-            </div>
+            {/* Observações */}
+            <div className="form-section-label">Observações</div>
             <Form.Item name="notes" style={{ marginBottom: 12 }}>
               <TextArea rows={3} placeholder="Informações adicionais sobre a empresa..." />
             </Form.Item>
-          </div>
 
-          {editing && (
-            <>
-              <Divider style={{ margin: '4px 0 16px', borderColor: '#f3f4f6' }} />
-              <Form.Item name="active" label="Status da empresa" valuePropName="checked" style={{ marginBottom: 0 }}>
-                <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
-              </Form.Item>
-            </>
-          )}
-        </Form>
+            {editing && (
+              <>
+                <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
+                <Form.Item name="active" label="Status da empresa" valuePropName="checked" style={{ marginBottom: 0 }}>
+                  <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </div>
       </Drawer>
 
       {/* Modal — Confirmar exclusão */}
@@ -414,35 +402,32 @@ export default function Companies() {
             <p style={{ color: '#374151', marginBottom: 16 }}>
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-
             {hasLinks ? (
-              <>
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '14px 16px', marginBottom: 4 }}>
-                  <div style={{ fontWeight: 600, color: '#dc2626', fontSize: 13, marginBottom: 10 }}>
-                    Os seguintes registros vinculados também serão excluídos:
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {deleteModal.employees > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
-                        <span>👤 Funcionários</span>
-                        <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.employees}</span>
-                      </div>
-                    )}
-                    {deleteModal.tickets > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
-                        <span>🎫 Chamados (e comentários)</span>
-                        <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.tickets}</span>
-                      </div>
-                    )}
-                    {deleteModal.categories > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
-                        <span>🏷️ Categorias</span>
-                        <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.categories}</span>
-                      </div>
-                    )}
-                  </div>
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: '#dc2626', fontSize: 13, marginBottom: 10 }}>
+                  Os seguintes registros vinculados também serão excluídos:
                 </div>
-              </>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {deleteModal.employees > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
+                      <span>👤 Funcionários</span>
+                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.employees}</span>
+                    </div>
+                  )}
+                  {deleteModal.tickets > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
+                      <span>🎫 Chamados (e comentários)</span>
+                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.tickets}</span>
+                    </div>
+                  )}
+                  {deleteModal.categories > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
+                      <span>🏷️ Categorias</span>
+                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.categories}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : (
               <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#166534' }}>
                 Esta empresa não possui registros vinculados.

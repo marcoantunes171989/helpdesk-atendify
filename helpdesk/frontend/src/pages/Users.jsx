@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Select, Tag, Space,
+  Table, Button, Drawer, Modal, Form, Input, Select, Tag, Space,
   message, Switch, Tooltip, Avatar, Popconfirm,
 } from 'antd';
-import { PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined, TeamOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,9 +21,10 @@ const roleColors = {
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [pwdModal, setPwdModal] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const [pwdForm] = Form.useForm();
   const { user } = useAuth();
@@ -33,14 +34,13 @@ export default function Users() {
     userService.list().then(setUsers).finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    load();
-  }, [user]);
+  useEffect(() => { load(); }, [user]);
 
-  const openCreate = () => { setEditing(null); form.resetFields(); setModalOpen(true); };
-  const openEdit = (record) => { setEditing(record); form.setFieldsValue({ ...record }); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
+  const openEdit = (record) => { setEditing(record); form.setFieldsValue({ ...record }); setDrawerOpen(true); };
 
   const handleSubmit = async (values) => {
+    setSaving(true);
     try {
       if (editing) {
         await userService.update(editing.id, values);
@@ -49,10 +49,12 @@ export default function Users() {
         await userService.create(values);
         message.success('Usuário criado');
       }
-      setModalOpen(false);
+      setDrawerOpen(false);
       load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -159,38 +161,56 @@ export default function Users() {
         <Table dataSource={users} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle" />
       </div>
 
-      <Modal
-        title={<span style={{ fontWeight: 700 }}>{editing ? 'Editar Usuário' : 'Novo Usuário'}</span>}
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={() => form.submit()}
-        okText="Salvar"
-        cancelText="Cancelar"
-        okButtonProps={{ style: { background: '#16a34a', borderColor: '#16a34a' } }}
+      {/* Drawer — Cadastro / Edição */}
+      <Drawer
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TeamOutlined style={{ color: '#1d4ed8', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Usuário' : 'Novo Usuário'}</span>
+          </div>
+        }
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width="100%"
+        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
+        extra={
+          <Space>
+            <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} onClick={() => form.submit()}
+              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+            </Button>
+          </Space>
+        }
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 16 }}>
-          <Form.Item name="name" label="Nome" rules={[{ required: true }]}>
-            <Input placeholder="Nome completo" />
-          </Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: true }, { type: 'email' }]}>
-            <Input placeholder="email@exemplo.com" />
-          </Form.Item>
-          {!editing && (
-            <Form.Item name="password" label="Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
-              <Input.Password placeholder="Mínimo 6 caracteres" />
+        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item name="name" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
+              <Input placeholder="Nome completo" size="large" />
             </Form.Item>
-          )}
-          <Form.Item name="role" label="Perfil" rules={[{ required: true }]}>
-            <Select placeholder="Selecione o perfil">{roleOptions}</Select>
-          </Form.Item>
-          {editing && (
-            <Form.Item name="active" label="Ativo" valuePropName="checked">
-              <Switch />
+            <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail inválido' }]}>
+              <Input placeholder="email@exemplo.com" size="large" />
             </Form.Item>
-          )}
-        </Form>
-      </Modal>
+            {!editing && (
+              <Form.Item name="password" label="Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
+                <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
+              </Form.Item>
+            )}
+            <Form.Item name="role" label="Perfil" rules={[{ required: true, message: 'Selecione o perfil' }]}>
+              <Select placeholder="Selecione o perfil" size="large">{roleOptions}</Select>
+            </Form.Item>
+            {editing && (
+              <Form.Item name="active" label="Status" valuePropName="checked">
+                <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
+              </Form.Item>
+            )}
+          </Form>
+        </div>
+      </Drawer>
 
+      {/* Modal — Redefinir Senha */}
       <Modal
         title={<span style={{ fontWeight: 700 }}>Redefinir Senha</span>}
         open={!!pwdModal}
@@ -199,10 +219,11 @@ export default function Users() {
         okText="Redefinir"
         cancelText="Cancelar"
         okButtonProps={{ style: { background: '#16a34a', borderColor: '#16a34a' } }}
+        width={400}
       >
         <Form form={pwdForm} layout="vertical" onFinish={handleResetPassword} style={{ marginTop: 16 }}>
           <Form.Item name="password" label="Nova Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
-            <Input.Password placeholder="Mínimo 6 caracteres" />
+            <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
           </Form.Item>
         </Form>
       </Modal>

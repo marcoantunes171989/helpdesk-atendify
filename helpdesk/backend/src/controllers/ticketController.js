@@ -113,6 +113,24 @@ exports.update = async (req, res) => {
   res.json(updated);
 };
 
+exports.remove = async (req, res) => {
+  const { id } = req.params;
+
+  const ticket = await prisma.ticket.findUnique({ where: { id } });
+  if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
+
+  if (['CLOSED', 'CANCELLED'].includes(ticket.status)) {
+    return res.status(409).json({ error: 'Chamados fechados ou cancelados não podem ser excluídos' });
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.ticketComment.deleteMany({ where: { ticketId: id } });
+    await tx.ticket.delete({ where: { id } });
+  });
+
+  res.json({ message: 'Chamado excluído com sucesso' });
+};
+
 exports.addComment = async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Mensagem é obrigatória' });

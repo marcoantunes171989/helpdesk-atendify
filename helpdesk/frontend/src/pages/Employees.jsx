@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Select, Switch, Space,
-  Popconfirm, message, Tooltip, Avatar, Tag, InputNumber, DatePicker,
+  Table, Button, Drawer, Modal, Form, Input, Select, Switch, Space,
+  message, Tooltip, Avatar, Tag, InputNumber, DatePicker, Row, Col,
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, StopOutlined, SearchOutlined,
-  UserOutlined, PhoneOutlined, MailOutlined, BankOutlined,
+  PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined,
+  UserOutlined, PhoneOutlined, MailOutlined, IdcardOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { employeeService, companyService } from '../services/api';
@@ -42,8 +43,11 @@ export default function Employees() {
   const [companies, setCompanies] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [filterDept, setFilterDept] = useState(null);
   const [form] = Form.useForm();
@@ -67,11 +71,7 @@ export default function Employees() {
     load({ ...params, ...extra });
   };
 
-  const openCreate = () => {
-    setEditing(null);
-    form.resetFields();
-    setModalOpen(true);
-  };
+  const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
 
   const openEdit = (record) => {
     setEditing(record);
@@ -80,17 +80,17 @@ export default function Employees() {
       salary: record.salary ? Number(record.salary) : null,
       hireDate: record.hireDate ? dayjs(record.hireDate) : null,
     });
-    setModalOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleSubmit = async (values) => {
+    setSaving(true);
     try {
       const payload = {
         ...values,
         hireDate: values.hireDate ? values.hireDate.toISOString() : null,
         salary: values.salary || null,
       };
-
       if (editing) {
         await employeeService.update(editing.id, payload);
         message.success('Funcionário atualizado com sucesso');
@@ -98,24 +98,31 @@ export default function Employees() {
         await employeeService.create(payload);
         message.success('Funcionário cadastrado com sucesso');
       }
-      setModalOpen(false);
+      setDrawerOpen(false);
       load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar funcionário');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDeactivate = async (id) => {
+  const handleDelete = async () => {
+    setDeleteLoading(true);
     try {
-      await employeeService.remove(id);
-      message.success('Funcionário desativado');
+      await employeeService.remove(deleteModal.id);
+      message.success('Funcionário excluído com sucesso');
+      setDeleteModal(null);
       load();
-    } catch {
-      message.error('Erro ao desativar funcionário');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao excluir funcionário');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const activeCount = employees.filter(e => e.active).length;
+  const allDepts = [...new Set([...DEPARTMENTS, ...departments])];
 
   const columns = [
     {
@@ -128,10 +135,7 @@ export default function Employees() {
         const c = getAvatarColor(r.name);
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Avatar
-              size={36}
-              style={{ background: c.bg, color: c.color, fontWeight: 700, fontSize: 14, flexShrink: 0 }}
-            >
+            <Avatar size={36} style={{ background: c.bg, color: c.color, fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
               {r.name?.charAt(0).toUpperCase()}
             </Avatar>
             <div>
@@ -171,35 +175,17 @@ export default function Employees() {
     },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
-      render: v => (
-        <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>
-          {v ? 'Ativo' : 'Inativo'}
-        </Tag>
-      ),
+      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
     },
     {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
         <Space>
           <Tooltip title="Editar">
-            <Button
-              type="text" icon={<EditOutlined />} size="small"
-              style={{ color: '#6b7280' }} onClick={() => openEdit(record)}
-            />
+            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
           </Tooltip>
-          {record.active && (
-            <Popconfirm
-              title="Desativar funcionário?"
-              description="O funcionário não aparecerá mais nas listagens ativas."
-              onConfirm={() => handleDeactivate(record.id)}
-              okText="Desativar" cancelText="Cancelar"
-              okButtonProps={{ danger: true }}
-            >
-              <Tooltip title="Desativar">
-                <Button type="text" icon={<StopOutlined />} size="small" danger />
-              </Tooltip>
-            </Popconfirm>
-          )}
+          <Button type="text" icon={<DeleteOutlined />} size="small" danger
+            onClick={() => setDeleteModal({ id: record.id, name: record.name })} />
         </Space>
       ),
     },
@@ -207,7 +193,6 @@ export default function Employees() {
 
   return (
     <div>
-      {/* Header */}
       <div className="page-header">
         <div>
           <h1 className="page-title">Funcionários</h1>
@@ -215,15 +200,12 @@ export default function Employees() {
             {activeCount} ativo{activeCount !== 1 ? 's' : ''} · {employees.length} total
           </p>
         </div>
-        <Button
-          type="primary" icon={<PlusOutlined />} onClick={openCreate}
-          style={{ borderRadius: 8, fontWeight: 600 }}
-        >
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
           Novo Funcionário
         </Button>
       </div>
 
-      {/* Resumo em cards */}
+      {/* Resumo */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         {[
           { label: 'Total', value: employees.length, color: '#6b7280', bg: '#f3f4f6' },
@@ -232,7 +214,7 @@ export default function Employees() {
           { label: 'Departamentos', value: new Set(employees.map(e => e.department).filter(Boolean)).size, color: '#2563eb', bg: '#eff6ff' },
         ].map(c => (
           <div key={c.label} style={{
-            flex: '1 1 140px', padding: '14px 18px', borderRadius: 10,
+            flex: '1 1 130px', padding: '14px 18px', borderRadius: 10,
             background: '#fff', border: '1px solid #e5e7eb',
           }}>
             <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.label}</div>
@@ -249,7 +231,7 @@ export default function Employees() {
         <Input
           prefix={<SearchOutlined style={{ color: '#9ca3af' }} />}
           placeholder="Buscar por nome, email, cargo ou CPF..."
-          style={{ flex: 1, minWidth: 220 }}
+          style={{ flex: 1, minWidth: 200 }}
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -262,14 +244,9 @@ export default function Employees() {
           value={filterDept}
           onChange={v => { setFilterDept(v); applyFilters({ department: v }); }}
         >
-          {[...new Set([...DEPARTMENTS, ...departments])].map(d => (
-            <Option key={d} value={d}>{d}</Option>
-          ))}
+          {allDepts.map(d => <Option key={d} value={d}>{d}</Option>)}
         </Select>
-        <Button
-          type="primary" ghost onClick={() => applyFilters()}
-          style={{ borderColor: '#16a34a', color: '#16a34a' }}
-        >
+        <Button type="primary" ghost onClick={() => applyFilters()} style={{ borderColor: '#16a34a', color: '#16a34a' }}>
           Buscar
         </Button>
       </div>
@@ -277,120 +254,149 @@ export default function Employees() {
       {/* Tabela */}
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
-          dataSource={employees}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          scroll={{ x: 900 }}
-          size="middle"
-          pagination={{
-            pageSize: 15, showSizeChanger: false,
-            showTotal: t => `${t} funcionário${t !== 1 ? 's' : ''}`,
-          }}
+          dataSource={employees} columns={columns} rowKey="id" loading={loading}
+          scroll={{ x: 900 }} size="middle"
+          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} funcionário${t !== 1 ? 's' : ''}` }}
         />
       </div>
 
-      {/* Modal CRUD */}
+      {/* Modal — Confirmar exclusão */}
       <Modal
-        title={<span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Funcionário' : 'Novo Funcionário'}</span>}
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={() => form.submit()}
-        okText={editing ? 'Salvar Alterações' : 'Cadastrar'}
-        cancelText="Cancelar"
-        okButtonProps={{ style: { background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 } }}
-        width={600}
+        open={!!deleteModal}
+        onCancel={() => setDeleteModal(null)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Excluir funcionário</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+              Excluir permanentemente
+            </Button>
+          </div>
+        }
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Form.Item
-              name="name" label="Nome Completo"
-              rules={[{ required: true, message: 'Informe o nome' }]}
-              style={{ gridColumn: '1 / -1' }}
-            >
-              <Input prefix={<UserOutlined style={{ color: '#9ca3af' }} />} placeholder="Nome completo do funcionário" />
+        {deleteModal && (
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ color: '#374151', marginBottom: 16 }}>
+              Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
+            </p>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+              O funcionário será removido do sistema e não poderá ser recuperado.
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Drawer — Cadastro / Edição */}
+      <Drawer
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IdcardOutlined style={{ color: '#16a34a', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Funcionário' : 'Novo Funcionário'}</span>
+          </div>
+        }
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width="100%"
+        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
+        extra={
+          <Space>
+            <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} onClick={() => form.submit()}
+              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+            </Button>
+          </Space>
+        }
+      >
+        <div className="drawer-form-body">
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+
+            <div className="form-section-label">Dados Pessoais</div>
+            <Form.Item name="name" label="Nome Completo" rules={[{ required: true, message: 'Informe o nome' }]}>
+              <Input prefix={<UserOutlined style={{ color: '#9ca3af' }} />} placeholder="Nome completo do funcionário" size="large" />
             </Form.Item>
 
-            <Form.Item
-              name="position" label="Cargo / Função"
-              rules={[{ required: true, message: 'Informe o cargo' }]}
-            >
-              <Input placeholder="Ex: Analista de Suporte" />
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item name="cpf" label="CPF">
+                  <Input placeholder="000.000.000-00" maxLength={14} size="large" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item name="phone" label="Telefone">
+                  <Input prefix={<PhoneOutlined style={{ color: '#9ca3af' }} />} placeholder="(11) 99999-9999" size="large" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item name="email" label="E-mail" rules={[{ type: 'email', message: 'E-mail inválido' }]}>
+              <Input prefix={<MailOutlined style={{ color: '#9ca3af' }} />} placeholder="funcionario@empresa.com.br" size="large" />
             </Form.Item>
 
-            <Form.Item name="department" label="Departamento / Setor">
-              <Select placeholder="Selecione ou digite" showSearch allowClear>
-                {[...new Set([...DEPARTMENTS, ...departments])].map(d => (
-                  <Option key={d} value={d}>{d}</Option>
-                ))}
-              </Select>
-            </Form.Item>
+            <div className="form-section-label" style={{ marginTop: 8 }}>Cargo e Empresa</div>
 
-            <Form.Item name="cpf" label="CPF">
-              <Input placeholder="000.000.000-00" maxLength={14} />
-            </Form.Item>
-
-            <Form.Item name="phone" label="Telefone">
-              <Input prefix={<PhoneOutlined style={{ color: '#9ca3af' }} />} placeholder="(11) 99999-9999" />
-            </Form.Item>
-
-            <Form.Item
-              name="email" label="E-mail"
-              rules={[{ type: 'email', message: 'E-mail inválido' }]}
-              style={{ gridColumn: '1 / -1' }}
-            >
-              <Input prefix={<MailOutlined style={{ color: '#9ca3af' }} />} placeholder="funcionario@empresa.com.br" />
-            </Form.Item>
-
-            <Form.Item name="hireDate" label="Data de Admissão">
-              <DatePicker
-                format="DD/MM/YYYY"
-                placeholder="Selecione a data"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-
-            <Form.Item name="salary" label="Salário (R$)">
-              <InputNumber
-                placeholder="0,00"
-                style={{ width: '100%' }}
-                min={0}
-                precision={2}
-                decimalSeparator=","
-                formatter={v => v ? `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                parser={v => v.replace(/\./g, '').replace(',', '.')}
-              />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item name="position" label="Cargo / Função" rules={[{ required: true, message: 'Informe o cargo' }]}>
+                  <Input placeholder="Ex: Analista de Suporte" size="large" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item name="department" label="Departamento / Setor">
+                  <Select placeholder="Selecione ou digite" showSearch allowClear size="large">
+                    {allDepts.map(d => <Option key={d} value={d}>{d}</Option>)}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
 
             {!editing && (
-              <Form.Item
-                name="companyId" label="Empresa"
-                rules={[{ required: true, message: 'Selecione a empresa' }]}
-                style={{ gridColumn: '1 / -1' }}
-              >
-                <Select
-                  placeholder="Selecione a empresa"
-                  showSearch
-                  optionFilterProp="children"
-                  prefix={<BankOutlined />}
-                >
+              <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
+                <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large">
                   {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
                 </Select>
               </Form.Item>
             )}
 
+            <div className="form-section-label" style={{ marginTop: 8 }}>Contratação</div>
+
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item name="hireDate" label="Data de Admissão">
+                  <DatePicker format="DD/MM/YYYY" placeholder="Selecione a data" style={{ width: '100%' }} size="large" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item name="salary" label="Salário (R$)">
+                  <InputNumber
+                    placeholder="0,00"
+                    style={{ width: '100%' }}
+                    size="large"
+                    min={0}
+                    precision={2}
+                    decimalSeparator=","
+                    formatter={v => v ? `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                    parser={v => v.replace(/\./g, '').replace(',', '.')}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
             {editing && (
               <Form.Item name="active" label="Status" valuePropName="checked">
-                <Switch
-                  checkedChildren="Ativo"
-                  unCheckedChildren="Inativo"
-                  style={{ background: form.getFieldValue('active') ? '#16a34a' : undefined }}
-                />
+                <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
               </Form.Item>
             )}
-          </div>
-        </Form>
-      </Modal>
+          </Form>
+        </div>
+      </Drawer>
     </div>
   );
 }

@@ -107,8 +107,8 @@ exports.remove = async (req, res) => {
   const existing = await prisma.employee.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ error: 'Funcionário não encontrado' });
 
-  await prisma.employee.update({ where: { id }, data: { active: false } });
-  res.json({ message: 'Funcionário desativado com sucesso' });
+  await prisma.employee.delete({ where: { id } });
+  res.json({ message: 'Funcionário excluído com sucesso' });
 };
 
 exports.departments = async (req, res) => {

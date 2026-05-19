@@ -17,8 +17,10 @@ h1, h2, h3, h4, h5 {
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .page-title {
@@ -26,6 +28,27 @@ h1, h2, h3, h4, h5 {
   font-weight: 700;
   color: #111827;
   margin: 0;
+}
+
+@media (max-width: 575px) {
+  .page-title { font-size: 17px; }
+  .page-header { flex-direction: column; align-items: stretch; }
+  .page-header > *:last-child { display: flex; }
+  .page-header > *:last-child .ant-btn { flex: 1; }
+}
+
+.form-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #16a34a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+
+.drawer-form-body {
+  max-width: 780px;
+  margin: 0 auto;
 }
 
 .ant-layout-sider {

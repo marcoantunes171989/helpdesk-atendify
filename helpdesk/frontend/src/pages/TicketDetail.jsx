@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Tag, Button, Select, Space, Typography, Divider, Input,
+  Tag, Button, Select, Space, Typography, Divider, Input, Modal,
   Avatar, Spin, Alert, Row, Col, Tooltip, message,
 } from 'antd';
 import {
-  ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
+  ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined, DeleteOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { ticketService, userService, categoryService } from '../services/api';
@@ -34,6 +34,8 @@ export default function TicketDetail() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [comment, setComment] = useState('');
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const load = () => {
     ticketService.get(id)
@@ -57,6 +59,18 @@ export default function TicketDetail() {
       message.success('Atualizado');
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao atualizar');
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleteLoading(true);
+    try {
+      await ticketService.remove(id);
+      message.success('Chamado excluído com sucesso');
+      navigate('/app/tickets');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao excluir chamado');
+      setDeleteLoading(false);
     }
   };
 
@@ -252,6 +266,19 @@ export default function TicketDetail() {
               )}
             </div>
 
+            {!isClosed && canEdit && (
+              <>
+                <Divider style={{ margin: '16px 0' }} />
+                <Button
+                  danger block icon={<DeleteOutlined />}
+                  onClick={() => setDeleteModal(true)}
+                  style={{ borderRadius: 8, fontWeight: 600 }}
+                >
+                  Excluir chamado
+                </Button>
+              </>
+            )}
+
             {canEdit && (
               <>
                 <Divider style={{ margin: '16px 0' }} />
@@ -289,6 +316,33 @@ export default function TicketDetail() {
           </div>
         </Col>
       </Row>
+      <Modal
+        open={deleteModal}
+        onCancel={() => setDeleteModal(false)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Excluir chamado</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setDeleteModal(false)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+              Excluir permanentemente
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '8px 0' }}>
+          <p style={{ color: '#374151', marginBottom: 16 }}>
+            Você está prestes a excluir o chamado <strong>"{ticket?.title}"</strong> permanentemente. Esta ação não pode ser desfeita.
+          </p>
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+            Todos os comentários vinculados também serão removidos.
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
