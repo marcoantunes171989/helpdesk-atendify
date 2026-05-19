@@ -17,16 +17,7 @@ exports.list = async (req, res) => {
   const { status, priority, categoryId, assignedTo, userId, search, companyId } = req.query;
   const where = {};
 
-  if (req.user.role === 'CLIENT') {
-    where.userId = req.user.id;
-  } else if (req.user.role === 'AGENT') {
-    where.companyId = req.user.companyId;
-  } else if (req.user.role === 'ADMIN') {
-    where.companyId = req.user.companyId;
-  } else if (req.user.role === 'SUPER_ADMIN' && companyId) {
-    where.companyId = companyId;
-  }
-
+  if (companyId) where.companyId = companyId;
   if (status) where.status = status;
   if (priority) where.priority = priority;
   if (categoryId) where.categoryId = categoryId;
@@ -62,19 +53,16 @@ exports.get = async (req, res) => {
   });
 
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
-
-  if (req.user.role === 'CLIENT' && ticket.userId !== req.user.id) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
-
   res.json(ticket);
 };
 
 exports.create = async (req, res) => {
-  const { title, description, priority, categoryId } = req.body;
+  const { title, description, priority, categoryId, companyId } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: 'Título e descrição são obrigatórios' });
   }
+
+  const targetCompanyId = companyId || req.user.companyId;
 
   let slaDeadline = null;
   if (categoryId) {
@@ -91,7 +79,7 @@ exports.create = async (req, res) => {
       priority: priority || 'MEDIUM',
       categoryId,
       userId: req.user.id,
-      companyId: req.user.companyId,
+      companyId: targetCompanyId,
       slaDeadline,
     },
     include: ticketInclude,
@@ -106,10 +94,6 @@ exports.update = async (req, res) => {
 
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
-
-  if (req.user.role === 'CLIENT') {
-    return res.status(403).json({ error: 'Clientes não podem editar chamados' });
-  }
 
   const data = { title, description, priority, categoryId, assignedTo };
 
@@ -135,10 +119,6 @@ exports.addComment = async (req, res) => {
 
   const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
-
-  if (req.user.role === 'CLIENT' && ticket.userId !== req.user.id) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
 
   if (ticket.status === 'CLOSED') {
     return res.status(400).json({ error: 'Chamado fechado não aceita comentários' });

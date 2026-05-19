@@ -1,13 +1,12 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
-const authorize = require('../middleware/authorize');
 const ctrl = require('../controllers/userController');
 
-router.get('/', auth, authorize('SUPER_ADMIN', 'ADMIN', 'AGENT'), ctrl.list);
+router.get('/', auth, ctrl.list);
 router.get('/:id', auth, ctrl.get);
-router.post('/', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.create);
-router.put('/:id', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.update);
-router.put('/:id/reset-password', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.resetPassword);
-router.delete('/:id', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.remove);
+router.post('/', auth, ctrl.create);
+router.put('/:id', auth, ctrl.update);
+router.put('/:id/reset-password', auth, ctrl.resetPassword);
+router.delete('/:id', auth, ctrl.remove);
 
 module.exports = router;

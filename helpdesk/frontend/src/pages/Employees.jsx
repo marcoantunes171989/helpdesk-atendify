@@ -57,7 +57,7 @@ export default function Employees() {
   useEffect(() => {
     load();
     employeeService.departments().then(setDepartments);
-    if (user?.role === 'SUPER_ADMIN') companyService.list().then(setCompanies);
+    companyService.list().then(setCompanies);
   }, [user]);
 
   const applyFilters = (extra = {}) => {
@@ -215,14 +215,12 @@ export default function Employees() {
             {activeCount} ativo{activeCount !== 1 ? 's' : ''} · {employees.length} total
           </p>
         </div>
-        {['SUPER_ADMIN', 'ADMIN'].includes(user?.role) && (
-          <Button
-            type="primary" icon={<PlusOutlined />} onClick={openCreate}
-            style={{ borderRadius: 8, fontWeight: 600 }}
-          >
-            Novo Funcionário
-          </Button>
-        )}
+        <Button
+          type="primary" icon={<PlusOutlined />} onClick={openCreate}
+          style={{ borderRadius: 8, fontWeight: 600 }}
+        >
+          Novo Funcionário
+        </Button>
       </div>
 
       {/* Resumo em cards */}
@@ -364,7 +362,7 @@ export default function Employees() {
               />
             </Form.Item>
 
-            {user?.role === 'SUPER_ADMIN' && !editing && (
+            {!editing && (
               <Form.Item
                 name="companyId" label="Empresa"
                 rules={[{ required: true, message: 'Selecione a empresa' }]}

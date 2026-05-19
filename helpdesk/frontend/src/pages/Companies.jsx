@@ -111,12 +111,10 @@ export default function Companies() {
           <Tooltip title="Ver detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#16a34a' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
           </Tooltip>
-          {canManageCompanies(user?.role) && (
-            <Tooltip title="Editar">
-              <Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
-            </Tooltip>
-          )}
-          {canManageCompanies(user?.role) && record.active && (
+          <Tooltip title="Editar">
+            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+          </Tooltip>
+          {record.active && (
             <Popconfirm title="Desativar empresa?" onConfirm={() => handleDeactivate(record.id)} okText="Sim" cancelText="Não">
               <Tooltip title="Desativar">
                 <Button type="text" icon={<StopOutlined />} size="small" danger />
@@ -137,11 +135,9 @@ export default function Companies() {
             {companies.length} empresa{companies.length !== 1 ? 's' : ''} cadastrada{companies.length !== 1 ? 's' : ''}
           </p>
         </div>
-        {canManageCompanies(user?.role) && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-            Nova Empresa
-          </Button>
-        )}
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
+          Nova Empresa
+        </Button>
       </div>
 
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>

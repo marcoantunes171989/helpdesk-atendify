@@ -3,14 +3,8 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.list = async (req, res) => {
-  const { search, department, active, companyId } = req.query;
+  const { search, department, active } = req.query;
   const where = {};
-
-  if (req.user.role === 'SUPER_ADMIN') {
-    if (companyId) where.companyId = companyId;
-  } else {
-    where.companyId = req.user.companyId;
-  }
 
   if (search) {
     where.OR = [
@@ -40,11 +34,6 @@ exports.get = async (req, res) => {
   });
 
   if (!employee) return res.status(404).json({ error: 'Funcionário não encontrado' });
-
-  if (req.user.role !== 'SUPER_ADMIN' && employee.companyId !== req.user.companyId) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
-
   res.json(employee);
 };
 
@@ -55,7 +44,7 @@ exports.create = async (req, res) => {
     return res.status(400).json({ error: 'Nome e cargo são obrigatórios' });
   }
 
-  const targetCompanyId = req.user.role === 'SUPER_ADMIN' ? companyId : req.user.companyId;
+  const targetCompanyId = companyId || req.user.companyId;
   if (!targetCompanyId) return res.status(400).json({ error: 'Empresa é obrigatória' });
 
   if (email) {
@@ -93,10 +82,6 @@ exports.update = async (req, res) => {
   const existing = await prisma.employee.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ error: 'Funcionário não encontrado' });
 
-  if (req.user.role !== 'SUPER_ADMIN' && existing.companyId !== req.user.companyId) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
-
   const employee = await prisma.employee.update({
     where: { id },
     data: {
@@ -122,21 +107,13 @@ exports.remove = async (req, res) => {
   const existing = await prisma.employee.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ error: 'Funcionário não encontrado' });
 
-  if (req.user.role !== 'SUPER_ADMIN' && existing.companyId !== req.user.companyId) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
-
   await prisma.employee.update({ where: { id }, data: { active: false } });
   res.json({ message: 'Funcionário desativado com sucesso' });
 };
 
 exports.departments = async (req, res) => {
-  const companyId = req.user.role === 'SUPER_ADMIN' ? req.query.companyId : req.user.companyId;
-  const where = { department: { not: null }, active: true };
-  if (companyId) where.companyId = companyId;
-
   const result = await prisma.employee.findMany({
-    where,
+    where: { department: { not: null }, active: true },
     select: { department: true },
     distinct: ['department'],
     orderBy: { department: 'asc' },

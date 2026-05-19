@@ -3,10 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.list = async (req, res) => {
-  const companyId = req.user.role === 'SUPER_ADMIN'
-    ? req.query.companyId
-    : req.user.companyId;
-
+  const { companyId } = req.query;
   const where = companyId ? { companyId } : {};
 
   const categories = await prisma.category.findMany({
@@ -35,7 +32,7 @@ exports.create = async (req, res) => {
   const { name, description, slaHours, companyId } = req.body;
   if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
-  const targetCompanyId = req.user.role === 'SUPER_ADMIN' ? companyId : req.user.companyId;
+  const targetCompanyId = companyId || req.user.companyId;
 
   const category = await prisma.category.create({
     data: { name, description, slaHours: slaHours || 24, companyId: targetCompanyId },

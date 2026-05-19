@@ -6,10 +6,6 @@ exports.list = async (req, res) => {
   const { search, active } = req.query;
   const where = {};
 
-  if (!['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
-    where.id = req.user.companyId;
-  }
-
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
@@ -35,10 +31,6 @@ exports.list = async (req, res) => {
 
 exports.get = async (req, res) => {
   const { id } = req.params;
-
-  if (!['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) && req.user.companyId !== id) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
 
   const company = await prisma.company.findUnique({
     where: { id },
@@ -68,12 +60,8 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id } = req.params;
-
-  if (!['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) && req.user.companyId !== id) {
-    return res.status(403).json({ error: 'Acesso negado' });
-  }
-
   const { name, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes, active } = req.body;
+
   const company = await prisma.company.update({
     where: { id },
     data: { name, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes, active },
