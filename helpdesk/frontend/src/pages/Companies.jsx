@@ -70,6 +70,10 @@ export default function Companies() {
 
   const columns = [
     {
+      title: '#', dataIndex: 'code', key: 'code', width: 70,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+    },
+    {
       title: 'Empresa', key: 'name',
       render: (_, r) => (
         <div>

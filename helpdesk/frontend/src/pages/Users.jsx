@@ -85,6 +85,10 @@ export default function Users() {
 
   const columns = [
     {
+      title: '#', dataIndex: 'code', key: 'code', width: 70,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+    },
+    {
       title: 'Usuário', key: 'name',
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
