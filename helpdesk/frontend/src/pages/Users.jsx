@@ -5,7 +5,7 @@ import {
 } from 'antd';
 import { PlusOutlined, EditOutlined, KeyOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { userService, companyService } from '../services/api';
+import { userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLES } from '../utils/constants';
 
@@ -20,7 +20,6 @@ const roleColors = {
 
 export default function Users() {
   const [users, setUsers] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [pwdModal, setPwdModal] = useState(null);
@@ -36,7 +35,6 @@ export default function Users() {
 
   useEffect(() => {
     load();
-    if (user?.role === 'SUPER_ADMIN') companyService.list().then(setCompanies);
   }, [user]);
 
   const openCreate = () => { setEditing(null); form.resetFields(); setModalOpen(true); };
@@ -164,13 +162,6 @@ export default function Users() {
           <Form.Item name="role" label="Perfil" rules={[{ required: true }]}>
             <Select placeholder="Selecione o perfil">{roleOptions}</Select>
           </Form.Item>
-          {user?.role === 'SUPER_ADMIN' && !editing && (
-            <Form.Item name="companyId" label="Empresa" rules={[{ required: true }]}>
-              <Select placeholder="Selecione a empresa">
-                {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-              </Select>
-            </Form.Item>
-          )}
           {editing && (
             <Form.Item name="active" label="Ativo" valuePropName="checked">
               <Switch />

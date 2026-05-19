@@ -53,13 +53,13 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { name, email, password, role, companyId } = req.body;
+  const { name, email, password, role } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
   }
 
-  const targetCompanyId = req.user.role === 'SUPER_ADMIN' ? companyId : req.user.companyId;
-  if (!targetCompanyId) return res.status(400).json({ error: 'Empresa é obrigatória' });
+  const targetCompanyId = req.user.companyId;
+  if (!targetCompanyId) return res.status(400).json({ error: 'Empresa não encontrada para o usuário logado' });
 
   if (req.user.role === 'ADMIN' && ['SUPER_ADMIN', 'ADMIN'].includes(role)) {
     return res.status(403).json({ error: 'Sem permissão para criar este perfil' });
