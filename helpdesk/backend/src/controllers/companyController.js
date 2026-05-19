@@ -6,7 +6,7 @@ exports.list = async (req, res) => {
   const { search, active } = req.query;
   const where = {};
 
-  if (req.user.role !== 'SUPER_ADMIN') {
+  if (!['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
     where.id = req.user.companyId;
   }
 
@@ -36,7 +36,7 @@ exports.list = async (req, res) => {
 exports.get = async (req, res) => {
   const { id } = req.params;
 
-  if (req.user.role !== 'SUPER_ADMIN' && req.user.companyId !== id) {
+  if (!['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) && req.user.companyId !== id) {
     return res.status(403).json({ error: 'Acesso negado' });
   }
 
@@ -69,7 +69,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   const { id } = req.params;
 
-  if (req.user.role !== 'SUPER_ADMIN' && req.user.companyId !== id) {
+  if (!['SUPER_ADMIN', 'ADMIN'].includes(req.user.role) && req.user.companyId !== id) {
     return res.status(403).json({ error: 'Acesso negado' });
   }
 
