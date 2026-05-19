@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 const { Option } = Select;
 
 const avatarColors = [
-  { bg: '#dcfce7', color: '#16a34a' },
+  { bg: '#dbeafe', color: '#2563eb' },
   { bg: '#dbeafe', color: '#1d4ed8' },
   { bg: '#fce7f3', color: '#be185d' },
   { bg: '#fef3c7', color: '#d97706' },
@@ -91,7 +91,7 @@ export default function Employees() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -212,8 +212,8 @@ export default function Employees() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IdcardOutlined style={{ color: '#16a34a', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IdcardOutlined style={{ color: '#2563eb', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Funcionário' : 'Novo Funcionário'}
@@ -228,7 +228,7 @@ export default function Employees() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

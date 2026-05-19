@@ -79,7 +79,7 @@ export default function AppLayout() {
       }}>
         <div style={{
           width: 32, height: 32, borderRadius: 8,
-          background: 'linear-gradient(135deg, #16a34a, #22c55e)',
+          background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
           <CustomerServiceOutlined style={{ color: '#fff', fontSize: 16 }} />
@@ -103,7 +103,7 @@ export default function AppLayout() {
           padding: '12px 16px', borderTop: '1px solid #e5e7eb', background: '#fff',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Avatar size={30} style={{ background: '#dcfce7', color: '#16a34a', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+            <Avatar size={30} style={{ background: '#dbeafe', color: '#2563eb', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
               {user?.name?.charAt(0).toUpperCase()}
             </Avatar>
             <div style={{ overflow: 'hidden' }}>
@@ -119,7 +119,7 @@ export default function AppLayout() {
   );
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f4f9f6' }}>
+    <Layout style={{ minHeight: '100vh', background: '#f0f7ff' }}>
       {/* Desktop Sidebar */}
       {!isMobile && (
         <Sider
@@ -171,7 +171,7 @@ export default function AppLayout() {
                 display: 'flex', alignItems: 'center', gap: 8,
                 cursor: 'pointer', padding: '4px 8px', borderRadius: 8,
               }}>
-                <Avatar size={32} style={{ background: '#dcfce7', color: '#16a34a', fontWeight: 700, fontSize: 13 }}>
+                <Avatar size={32} style={{ background: '#dbeafe', color: '#2563eb', fontWeight: 700, fontSize: 13 }}>
                   {user?.name?.charAt(0).toUpperCase()}
                 </Avatar>
                 {!isMobile && (

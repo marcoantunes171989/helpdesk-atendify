@@ -80,7 +80,7 @@ export default function Categories() {
     },
     {
       title: 'Chamados', key: 'tickets',
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#16a34a', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
@@ -176,7 +176,7 @@ export default function Categories() {
                 Atenção: {deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''} perderá a categoria ao confirmar.
               </div>
             ) : (
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#166534' }}>
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
                 Esta categoria não possui chamados vinculados.
               </div>
             )}
@@ -202,7 +202,7 @@ export default function Categories() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

@@ -16,7 +16,7 @@ const PRESET_COLORS = [
   { label: 'Cinza',    value: '#6b7280' },
   { label: 'Azul',    value: '#1d4ed8' },
   { label: 'Amarelo', value: '#d97706' },
-  { label: 'Verde',   value: '#16a34a' },
+  { label: 'Verde',   value: '#2563eb' },
   { label: 'Roxo',    value: '#7c3aed' },
   { label: 'Vermelho',value: '#dc2626' },
   { label: 'Rosa',    value: '#be185d' },
@@ -116,7 +116,7 @@ export default function Status() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {String(v).padStart(4, '0')}
         </span>
       ),
@@ -142,7 +142,7 @@ export default function Status() {
     {
       title: 'Chamados', key: 'tickets',
       render: (_, r) => (
-        <span style={{ fontWeight: 600, color: '#16a34a', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
+        <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
     },
     {
@@ -242,7 +242,7 @@ export default function Status() {
                 Este status está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
               </div>
             ) : (
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#166534' }}>
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
                 Este status não possui chamados vinculados e pode ser removido com segurança.
               </div>
             )}
@@ -270,7 +270,7 @@ export default function Status() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

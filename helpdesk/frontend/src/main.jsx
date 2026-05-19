@@ -15,30 +15,30 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       locale={ptBR}
       theme={{
         token: {
-          colorPrimary: '#16a34a',
-          colorPrimaryHover: '#15803d',
-          colorPrimaryActive: '#166534',
+          colorPrimary: '#2563eb',
+          colorPrimaryHover: '#1d4ed8',
+          colorPrimaryActive: '#1e40af',
           borderRadius: 8,
           colorBgContainer: '#ffffff',
-          colorBgLayout: '#f4f9f6',
+          colorBgLayout: '#f0f7ff',
           colorBorderSecondary: '#e5e7eb',
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         },
         components: {
           Button: {
-            colorPrimary: '#16a34a',
+            colorPrimary: '#2563eb',
             algorithm: true,
           },
           Menu: {
-            itemSelectedBg: '#dcfce7',
-            itemSelectedColor: '#16a34a',
-            itemHoverBg: '#f0fdf4',
-            itemHoverColor: '#16a34a',
+            itemSelectedBg: '#dbeafe',
+            itemSelectedColor: '#2563eb',
+            itemHoverBg: '#eff6ff',
+            itemHoverColor: '#2563eb',
           },
           Table: {
             headerBg: '#f9fafb',
             headerColor: '#6b7280',
-            rowHoverBg: '#f0fdf4',
+            rowHoverBg: '#eff6ff',
           },
           Card: {
             boxShadowTertiary: '0 1px 3px rgba(0,0,0,0.06)',

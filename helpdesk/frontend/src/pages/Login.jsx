@@ -52,7 +52,7 @@ export default function Login() {
           {/* Faixa verde sutil na base — identidade da marca */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 200,
-            background: 'linear-gradient(to top, rgba(15,92,50,0.65) 0%, transparent 100%)',
+            background: 'linear-gradient(to top, rgba(29,78,216,0.65) 0%, transparent 100%)',
           }} />
 
           {/* Conteúdo sobre a foto */}
@@ -90,7 +90,7 @@ export default function Login() {
               {/* Linha decorativa */}
               <div style={{
                 width: 40, height: 3, borderRadius: 2,
-                background: 'linear-gradient(90deg, #22c55e, #16a34a)',
+                background: 'linear-gradient(90deg, #3b82f6, #2563eb)',
                 marginBottom: 18,
               }} />
 
@@ -156,7 +156,7 @@ export default function Login() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 10,
-              background: '#16a34a',
+              background: '#2563eb',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -218,10 +218,10 @@ export default function Login() {
               loading={loading}
               style={{
                 height: 50, borderRadius: 9,
-                background: 'linear-gradient(135deg, #16a34a, #22c55e)',
+                background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
                 border: 'none',
                 fontWeight: 700, fontSize: 15,
-                boxShadow: '0 4px 14px rgba(22,163,74,0.4)',
+                boxShadow: '0 4px 14px rgba(37,99,235,0.4)',
                 letterSpacing: '0.01em',
               }}
             >

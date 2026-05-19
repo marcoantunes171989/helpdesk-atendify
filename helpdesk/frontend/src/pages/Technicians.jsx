@@ -84,7 +84,7 @@ export default function Technicians() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {String(v ?? 0).padStart(4, '0')}
         </span>
       ),
@@ -107,7 +107,7 @@ export default function Technicians() {
     {
       title: 'Chamados', key: 'tickets',
       render: (_, r) => (
-        <span style={{ fontWeight: 600, color: '#16a34a', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
+        <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
     },
     {
@@ -207,7 +207,7 @@ export default function Technicians() {
                 Este técnico está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
               </div>
             ) : (
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#166534' }}>
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
                 Este técnico não possui chamados vinculados e pode ser removido com segurança.
               </div>
             )}
@@ -220,7 +220,7 @@ export default function Technicians() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ToolOutlined style={{ color: '#16a34a', fontSize: 16 }} />
+              <ToolOutlined style={{ color: '#2563eb', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Técnico' : 'Novo Técnico'}
@@ -235,7 +235,7 @@ export default function Technicians() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

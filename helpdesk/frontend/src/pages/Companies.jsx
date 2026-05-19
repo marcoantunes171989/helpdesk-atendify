@@ -21,7 +21,7 @@ const BR_STATES = [
 ];
 
 const avatarColors = [
-  ['#dcfce7','#16a34a'], ['#dbeafe','#1d4ed8'], ['#fce7f3','#be185d'],
+  ['#dbeafe','#2563eb'], ['#dbeafe','#1d4ed8'], ['#fce7f3','#be185d'],
   ['#fef3c7','#d97706'], ['#ede9fe','#7c3aed'], ['#fee2e2','#dc2626'],
 ];
 const getColor = (name = '') => avatarColors[(name.charCodeAt(0) || 0) % avatarColors.length];
@@ -131,7 +131,7 @@ export default function Companies() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 60,
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 12 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 12 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -170,7 +170,7 @@ export default function Companies() {
     },
     {
       title: 'Funcionários', key: 'employees',
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#16a34a', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
@@ -194,7 +194,7 @@ export default function Companies() {
         <Space size={4}>
           <Tooltip title="Ver detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small"
-              style={{ color: '#16a34a' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
+              style={{ color: '#2563eb' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
           </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
@@ -253,8 +253,8 @@ export default function Companies() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BankOutlined style={{ color: '#16a34a', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BankOutlined style={{ color: '#2563eb', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Empresa' : 'Nova Empresa'}
@@ -269,7 +269,7 @@ export default function Companies() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -445,7 +445,7 @@ export default function Companies() {
                 </div>
               </div>
             ) : (
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#166534' }}>
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
                 Esta empresa não possui registros vinculados.
               </div>
             )}

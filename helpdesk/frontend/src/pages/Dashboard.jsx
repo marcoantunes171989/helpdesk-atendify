@@ -69,7 +69,7 @@ export default function Dashboard() {
     { title: 'Total de Chamados', value: summary.total, icon: <ClockCircleOutlined />, color: '#6b7280', bg: '#f3f4f6' },
     { title: 'Abertos', value: summary.open, icon: <ExclamationCircleOutlined />, color: '#2563eb', bg: '#eff6ff' },
     { title: 'Em Andamento', value: summary.inProgress, icon: <SyncOutlined spin />, color: '#d97706', bg: '#fffbeb' },
-    { title: 'Resolvidos', value: summary.resolved, icon: <CheckCircleOutlined />, color: '#16a34a', bg: '#f0fdf4' },
+    { title: 'Resolvidos', value: summary.resolved, icon: <CheckCircleOutlined />, color: '#2563eb', bg: '#eff6ff' },
     { title: 'Fechados', value: summary.closed, icon: <CloseCircleOutlined />, color: '#9ca3af', bg: '#f9fafb' },
     { title: 'SLA Vencido', value: summary.overdueSla, icon: <RiseOutlined />, color: '#dc2626', bg: '#fef2f2' },
   ];
@@ -101,7 +101,7 @@ export default function Dashboard() {
       title: '', key: 'actions', width: 50,
       render: (_, r) => (
         <Tooltip title="Ver detalhes">
-          <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#16a34a' }}
+          <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#2563eb' }}
             onClick={() => navigate(`/app/tickets/${r.id}`)} />
         </Tooltip>
       ),
@@ -140,7 +140,7 @@ export default function Dashboard() {
                     }}>
                       <div style={{
                         width: `${Math.min((p._count / summary.total) * 100, 100)}%`,
-                        height: '100%', borderRadius: 3, background: '#16a34a',
+                        height: '100%', borderRadius: 3, background: '#2563eb',
                       }} />
                     </div>
                     <Text strong style={{ fontSize: 13, minWidth: 20, textAlign: 'right' }}>{p._count}</Text>
@@ -165,7 +165,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{
                         width: 6, height: 6, borderRadius: '50%',
-                        background: i === 0 ? '#16a34a' : i === 1 ? '#22c55e' : '#86efac',
+                        background: i === 0 ? '#2563eb' : i === 1 ? '#3b82f6' : '#86efac',
                       }} />
                       <span style={{ fontSize: 13, color: '#374151' }}>{c.name}</span>
                     </div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
                       <div style={{ width: 80, height: 6, borderRadius: 3, background: '#f3f4f6', overflow: 'hidden' }}>
                         <div style={{
                           width: `${Math.min((c._count / summary.total) * 100, 100)}%`,
-                          height: '100%', borderRadius: 3, background: '#16a34a',
+                          height: '100%', borderRadius: 3, background: '#2563eb',
                         }} />
                       </div>
                       <Text strong style={{ fontSize: 13, minWidth: 20, textAlign: 'right' }}>{c._count}</Text>

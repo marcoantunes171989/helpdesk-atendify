@@ -27,7 +27,7 @@ const { Option } = Select;
 const roleColors = {
   SUPER_ADMIN: { bg: '#f3e8ff', color: '#7c3aed' },
   ADMIN: { bg: '#dbeafe', color: '#1d4ed8' },
-  AGENT: { bg: '#dcfce7', color: '#15803d' },
+  AGENT: { bg: '#dbeafe', color: '#1d4ed8' },
   CLIENT: { bg: '#f3f4f6', color: '#374151' },
 };
 
@@ -393,7 +393,7 @@ export default function TicketDetail() {
           )}
           <Tooltip title="Baixar">
             <Button type="text" icon={<DownloadOutlined />} size="small"
-              style={{ color: '#16a34a' }} onClick={() => downloadAttachment(att)} />
+              style={{ color: '#2563eb' }} onClick={() => downloadAttachment(att)} />
           </Tooltip>
         </div>
       </div>
@@ -449,7 +449,7 @@ export default function TicketDetail() {
                   <Button
                     icon={<LockOutlined />}
                     size="small"
-                    style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: '#15803d', borderColor: '#15803d' }}
+                    style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: '#1d4ed8', borderColor: '#1d4ed8' }}
                     onClick={() => setReopenModal(true)}
                   >
                     Reabrir
@@ -578,7 +578,7 @@ export default function TicketDetail() {
                     type="primary"
                     loading={editSaving}
                     onClick={handleSaveEdit}
-                    style={{ background: '#16a34a', borderColor: '#16a34a', borderRadius: 8, fontWeight: 600 }}
+                    style={{ background: '#2563eb', borderColor: '#2563eb', borderRadius: 8, fontWeight: 600 }}
                   >
                     Salvar Alterações
                   </Button>
@@ -616,7 +616,7 @@ export default function TicketDetail() {
           {/* Trâmites */}
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <Badge count={ticket.comments.length} color="#16a34a" size="small">
+              <Badge count={ticket.comments.length} color="#2563eb" size="small">
                 <MessageOutlined style={{ fontSize: 16, color: '#374151' }} />
               </Badge>
               <h3 style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: 0 }}>
@@ -639,12 +639,12 @@ export default function TicketDetail() {
                   return (
                     <div key={c.id}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
-                        <div style={{ flex: 1, height: 1, background: isSysResolved ? '#bbf7d0' : '#fed7aa' }} />
+                        <div style={{ flex: 1, height: 1, background: isSysResolved ? '#bfdbfe' : '#fed7aa' }} />
                         <div style={{
-                          background: isSysResolved ? '#f0fdf4' : '#fff7ed',
+                          background: isSysResolved ? '#eff6ff' : '#fff7ed',
                           border: `1px solid ${isSysResolved ? '#86efac' : '#fdba74'}`,
                           borderRadius: 20, padding: '3px 14px', fontSize: 12,
-                          color: isSysResolved ? '#15803d' : '#c2410c', fontWeight: 600,
+                          color: isSysResolved ? '#1d4ed8' : '#c2410c', fontWeight: 600,
                           display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                         }}>
                           {isSysResolved ? <CheckCircleOutlined /> : <UnlockOutlined />}
@@ -654,12 +654,12 @@ export default function TicketDetail() {
                           {' · '}
                           {c.user.name}
                         </div>
-                        <div style={{ flex: 1, height: 1, background: isSysResolved ? '#bbf7d0' : '#fed7aa' }} />
+                        <div style={{ flex: 1, height: 1, background: isSysResolved ? '#bfdbfe' : '#fed7aa' }} />
                       </div>
                       {sysMsg && (
                         <div style={{
                           margin: '4px 40px 8px', padding: '8px 14px', borderRadius: 8, fontSize: 13,
-                          background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#374151',
+                          background: '#eff6ff', border: '1px solid #bfdbfe', color: '#374151',
                           whiteSpace: 'pre-wrap', lineHeight: 1.6,
                         }}>
                           {sysMsg}
@@ -788,7 +788,7 @@ export default function TicketDetail() {
                                       <PaperClipOutlined style={{ fontSize: 15 }} />
                                     </Badge>
                                   }
-                                  style={{ color: editingCommentFiles.length > 0 ? '#16a34a' : '#9ca3af' }}
+                                  style={{ color: editingCommentFiles.length > 0 ? '#2563eb' : '#9ca3af' }}
                                 />
                               </Tooltip>
                             </Upload>
@@ -799,7 +799,7 @@ export default function TicketDetail() {
                                 type="primary"
                                 loading={editingCommentSaving}
                                 onClick={() => handleUpdateComment(c.id)}
-                                style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                                style={{ background: '#2563eb', borderColor: '#2563eb' }}
                               >
                                 Salvar
                               </Button>
@@ -810,9 +810,9 @@ export default function TicketDetail() {
                         <>
                           <div style={{
                             padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
-                            background: isAgent ? '#f0fdf4' : '#f9fafb',
+                            background: isAgent ? '#eff6ff' : '#f9fafb',
                             color: '#374151', whiteSpace: 'pre-wrap',
-                            border: `1px solid ${isAgent ? '#bbf7d0' : '#e5e7eb'}`,
+                            border: `1px solid ${isAgent ? '#bfdbfe' : '#e5e7eb'}`,
                           }}>
                             {c.message}
                           </div>
@@ -882,7 +882,7 @@ export default function TicketDetail() {
                             <PaperClipOutlined style={{ fontSize: 17 }} />
                           </Badge>
                         }
-                        style={{ color: commentFiles.length > 0 ? '#16a34a' : '#9ca3af' }}
+                        style={{ color: commentFiles.length > 0 ? '#2563eb' : '#9ca3af' }}
                       />
                     </Tooltip>
                   </Upload>
@@ -893,8 +893,8 @@ export default function TicketDetail() {
                     onClick={handleComment}
                     disabled={!comment.trim()}
                     style={{
-                      background: comment.trim() ? '#16a34a' : undefined,
-                      borderColor: comment.trim() ? '#16a34a' : undefined,
+                      background: comment.trim() ? '#2563eb' : undefined,
+                      borderColor: comment.trim() ? '#2563eb' : undefined,
                       borderRadius: 8,
                       fontWeight: 600,
                       color: '#fff',
@@ -937,7 +937,7 @@ export default function TicketDetail() {
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     fontSize: 13, fontWeight: 600,
-                    color: isExpired ? '#dc2626' : '#16a34a',
+                    color: isExpired ? '#dc2626' : '#2563eb',
                   }}>
                     <ClockCircleOutlined />
                     {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
@@ -1025,7 +1025,7 @@ export default function TicketDetail() {
         onCancel={() => { setResolveModal(false); setResolveMessage(''); }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CheckCircleOutlined style={{ color: '#16a34a', fontSize: 20 }} />
+            <CheckCircleOutlined style={{ color: '#2563eb', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Finalizar Chamado</span>
           </div>
         }
@@ -1037,7 +1037,7 @@ export default function TicketDetail() {
               loading={resolveSaving}
               disabled={!resolveMessage.trim()}
               onClick={handleResolveConfirm}
-              style={{ background: '#16a34a', borderColor: '#16a34a' }}
+              style={{ background: '#2563eb', borderColor: '#2563eb' }}
             >
               Finalizar
             </Button>

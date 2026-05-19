@@ -143,7 +143,7 @@ export default function CompanyDetail() {
       title: 'Funcionário', key: 'name',
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar size={32} style={{ background: '#dcfce7', color: '#16a34a', fontWeight: 700, fontSize: 13 }}>
+          <Avatar size={32} style={{ background: '#dbeafe', color: '#2563eb', fontWeight: 700, fontSize: 13 }}>
             {r.name?.charAt(0).toUpperCase()}
           </Avatar>
           <span style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</span>
@@ -196,8 +196,8 @@ export default function CompanyDetail() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/app/companies')} style={{ color: '#6b7280', padding: '4px 8px' }} />
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BankOutlined style={{ color: '#16a34a', fontSize: 20 }} />
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BankOutlined style={{ color: '#2563eb', fontSize: 20 }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -219,7 +219,7 @@ export default function CompanyDetail() {
       {/* Stats */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={12} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="#16a34a" bg="#dcfce7" />
+          <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="#2563eb" bg="#dbeafe" />
         </Col>
         <Col xs={12} sm={8} style={{ display: 'flex' }}>
           <StatCard icon={<CustomerServiceOutlined />} label="Chamados" value={tickets.length} color="#d97706" bg="#fffbeb" />
@@ -244,7 +244,7 @@ export default function CompanyDetail() {
                   {canEdit && (
                     <div style={{ padding: '16px 24px 8px', display: 'flex', justifyContent: 'flex-end' }}>
                       <Button type="primary" icon={<PlusOutlined />} onClick={openCreateEmp}
-                        style={{ background: '#16a34a', borderColor: '#16a34a', borderRadius: 8, fontWeight: 600 }}>
+                        style={{ background: '#2563eb', borderColor: '#2563eb', borderRadius: 8, fontWeight: 600 }}>
                         Novo Funcionário
                       </Button>
                     </div>
@@ -301,8 +301,8 @@ export default function CompanyDetail() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IdcardOutlined style={{ color: '#16a34a', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IdcardOutlined style={{ color: '#2563eb', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editingEmp ? 'Editar Funcionário' : 'Novo Funcionário'}</span>
           </div>
@@ -315,7 +315,7 @@ export default function CompanyDetail() {
           <Space>
             <Button onClick={() => setEmpDrawer(false)}>Cancelar</Button>
             <Button type="primary" loading={empSaving} onClick={() => empForm.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editingEmp ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -346,8 +346,8 @@ export default function CompanyDetail() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BankOutlined style={{ color: '#16a34a', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BankOutlined style={{ color: '#2563eb', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>Editar Empresa</span>
           </div>
@@ -360,7 +360,7 @@ export default function CompanyDetail() {
           <Space>
             <Button onClick={() => setCompDrawer(false)}>Cancelar</Button>
             <Button type="primary" loading={compSaving} onClick={() => compForm.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               Salvar Alterações
             </Button>
           </Space>

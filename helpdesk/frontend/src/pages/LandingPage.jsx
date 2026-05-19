@@ -4,7 +4,7 @@ import './LandingPage.css';
 
 const FEATURES = [
   {
-    icon: '🎫', bg: '#f0fdf4', color: '#16a34a',
+    icon: '🎫', bg: '#eff6ff', color: '#2563eb',
     title: 'Gestão de Chamados',
     desc: 'Abra, acompanhe e resolva tickets com controle completo de status, prioridade e histórico de atendimento.',
   },
@@ -29,7 +29,7 @@ const FEATURES = [
     desc: 'Gerencie vários clientes ou unidades de negócio em um único sistema com isolamento total de dados.',
   },
   {
-    icon: '🔒', bg: '#f0fdf4', color: '#16a34a',
+    icon: '🔒', bg: '#eff6ff', color: '#2563eb',
     title: 'Perfis de Acesso',
     desc: 'Controle granular de permissões: Super Admin, Administrador, Agente e Cliente com acessos distintos.',
   },
@@ -150,7 +150,7 @@ export default function LandingPage() {
                   <span className="lp-mockup-btn">+ Novo Chamado</span>
                 </div>
                 <div className="lp-mockup-stat-row">
-                  {[{ v: '24', l: 'Abertos', c: '#2563eb' }, { v: '8', l: 'Em andamento', c: '#d97706' }, { v: '142', l: 'Resolvidos', c: '#16a34a' }].map(s => (
+                  {[{ v: '24', l: 'Abertos', c: '#2563eb' }, { v: '8', l: 'Em andamento', c: '#d97706' }, { v: '142', l: 'Resolvidos', c: '#2563eb' }].map(s => (
                     <div key={s.l} className="lp-mockup-stat">
                       <div className="lp-mockup-stat-val" style={{ color: s.c }}>{s.v}</div>
                       <div className="lp-mockup-stat-label">{s.l}</div>
@@ -160,7 +160,7 @@ export default function LandingPage() {
                 {[
                   { t: 'Erro no sistema de login', tag: 'Alta', tc: '#fee2e2', tcc: '#dc2626', st: 'Aberto', sc: '#dbeafe', scc: '#2563eb' },
                   { t: 'Solicitação de acesso VPN', tag: 'Média', tc: '#fef3c7', tcc: '#d97706', st: 'Em andamento', sc: '#fef3c7', scc: '#d97706' },
-                  { t: 'Atualização de cadastro', tag: 'Baixa', tc: '#f3f4f6', tcc: '#6b7280', st: 'Resolvido', sc: '#dcfce7', scc: '#16a34a' },
+                  { t: 'Atualização de cadastro', tag: 'Baixa', tc: '#f3f4f6', tcc: '#6b7280', st: 'Resolvido', sc: '#dbeafe', scc: '#2563eb' },
                 ].map((r, i) => (
                   <div key={i} className="lp-mockup-row">
                     <span className="lp-mockup-row-title">{r.t}</span>
@@ -175,7 +175,7 @@ export default function LandingPage() {
 
             {/* Float cards */}
             <div className="lp-float-card lp-float-card-1">
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>✅</div>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>✅</div>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>SLA Cumprido</div>
                 <div style={{ fontSize: 11, color: '#9ca3af' }}>98% dos chamados</div>
@@ -184,7 +184,7 @@ export default function LandingPage() {
 
             <div className="lp-float-card lp-float-card-2">
               <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>TEMPO MÉDIO</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#16a34a' }}>2.4h</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#2563eb' }}>2.4h</div>
               <div style={{ fontSize: 10, color: '#9ca3af' }}>de resolução</div>
             </div>
           </div>

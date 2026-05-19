@@ -248,7 +248,7 @@ export default function Tickets() {
       render: (_, r) => (
         <Space size={4}>
           <Tooltip title="Ver detalhes">
-            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#16a34a' }}
+            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#2563eb' }}
               onClick={() => navigate(`/app/tickets/${r.id}`)} />
           </Tooltip>
           {!['CLOSED', 'CANCELLED'].includes(r.status) && (
@@ -370,7 +370,7 @@ export default function Tickets() {
           <Space>
             <Button onClick={closeDrawer}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               Abrir Chamado
             </Button>
           </Space>
@@ -449,7 +449,7 @@ export default function Tickets() {
             <Form.Item
               label={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Badge count={fileList.length} size="small" color="#16a34a" offset={[4, -2]}>
+                  <Badge count={fileList.length} size="small" color="#2563eb" offset={[4, -2]}>
                     <PaperClipOutlined style={{ fontSize: 15, color: '#374151' }} />
                   </Badge>
                   <span>Anexos</span>

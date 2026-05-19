@@ -17,7 +17,7 @@ const { Option } = Select;
 const roleColors = {
   SUPER_ADMIN: { bg: '#f3e8ff', color: '#7c3aed' },
   ADMIN: { bg: '#dbeafe', color: '#1d4ed8' },
-  AGENT: { bg: '#dcfce7', color: '#15803d' },
+  AGENT: { bg: '#dbeafe', color: '#1d4ed8' },
   CLIENT: { bg: '#f3f4f6', color: '#374151' },
 };
 
@@ -106,7 +106,7 @@ export default function Users() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#16a34a', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
       title: 'Usuário', key: 'name',
@@ -256,7 +256,7 @@ export default function Users() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#16a34a', borderColor: '#16a34a', fontWeight: 600 }}>
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -295,7 +295,7 @@ export default function Users() {
         onOk={() => pwdForm.submit()}
         okText="Redefinir"
         cancelText="Cancelar"
-        okButtonProps={{ style: { background: '#16a34a', borderColor: '#16a34a' } }}
+        okButtonProps={{ style: { background: '#2563eb', borderColor: '#2563eb' } }}
         width={400}
       >
         <Form form={pwdForm} layout="vertical" onFinish={handleResetPassword} style={{ marginTop: 16 }}>
