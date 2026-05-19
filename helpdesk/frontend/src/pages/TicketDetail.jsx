@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Tag, Button, Select, Space, Typography, Divider, Input, Modal,
   Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload, Popconfirm,
+  DatePicker,
 } from 'antd';
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
@@ -69,7 +70,9 @@ export default function TicketDetail() {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState('');
   const [editingCommentFiles, setEditingCommentFiles] = useState([]);
+  const [editingCommentDate, setEditingCommentDate] = useState(null);
   const [editingCommentSaving, setEditingCommentSaving] = useState(false);
+  const [commentDate, setCommentDate] = useState(dayjs());
 
   const load = () => {
     ticketService.get(id)
@@ -186,10 +189,15 @@ export default function TicketDetail() {
     if (!comment.trim()) return;
     setSending(true);
     try {
-      const newComment = await ticketService.addComment(id, { message: comment, attachments: commentFiles });
+      const newComment = await ticketService.addComment(id, {
+        message: comment,
+        attachments: commentFiles,
+        createdAt: commentDate?.toISOString(),
+      });
       setTicket(prev => ({ ...prev, comments: [...prev.comments, newComment] }));
       setComment('');
       setCommentFiles([]);
+      setCommentDate(dayjs());
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao enviar');
     } finally {
@@ -204,6 +212,7 @@ export default function TicketDetail() {
       const updated = await ticketService.updateComment(id, commentId, {
         message: editingCommentText,
         attachments: editingCommentFiles,
+        createdAt: editingCommentDate?.toISOString(),
       });
       setTicket(prev => ({
         ...prev,
@@ -211,6 +220,7 @@ export default function TicketDetail() {
       }));
       setEditingCommentId(null);
       setEditingCommentFiles([]);
+      setEditingCommentDate(null);
       message.success('Trâmite atualizado');
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao atualizar');
@@ -620,7 +630,7 @@ export default function TicketDetail() {
                                 icon={<EditOutlined />}
                                 size="small"
                                 style={{ color: '#d1d5db', padding: 0, height: 'auto' }}
-                                onClick={() => { setEditingCommentId(c.id); setEditingCommentText(c.message); }}
+                                onClick={() => { setEditingCommentId(c.id); setEditingCommentText(c.message); setEditingCommentDate(dayjs(c.createdAt)); }}
                               />
                             </Tooltip>
                             <Popconfirm
@@ -674,6 +684,18 @@ export default function TicketDetail() {
                               ))}
                             </div>
                           )}
+                          <div style={{ marginBottom: 8 }}>
+                            <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>DATA / HORA DO TRÂMITE</div>
+                            <DatePicker
+                              showTime={{ format: 'HH:mm' }}
+                              format="DD/MM/YYYY HH:mm"
+                              value={editingCommentDate}
+                              onChange={setEditingCommentDate}
+                              allowClear={false}
+                              style={{ width: '100%', borderRadius: 8 }}
+                              placeholder="Selecione a data e hora"
+                            />
+                          </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Upload multiple beforeUpload={addEditingCommentFile} showUploadList={false}>
                               <Tooltip title="Anexar arquivo">
@@ -690,7 +712,7 @@ export default function TicketDetail() {
                               </Tooltip>
                             </Upload>
                             <Space>
-                              <Button size="small" onClick={() => { setEditingCommentId(null); setEditingCommentFiles([]); }}>Cancelar</Button>
+                              <Button size="small" onClick={() => { setEditingCommentId(null); setEditingCommentFiles([]); setEditingCommentDate(null); }}>Cancelar</Button>
                               <Button
                                 size="small"
                                 type="primary"
@@ -757,6 +779,18 @@ export default function TicketDetail() {
                     ))}
                   </div>
                 )}
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>DATA / HORA DO TRÂMITE</div>
+                  <DatePicker
+                    showTime={{ format: 'HH:mm' }}
+                    format="DD/MM/YYYY HH:mm"
+                    value={commentDate}
+                    onChange={setCommentDate}
+                    allowClear={false}
+                    style={{ width: '100%', borderRadius: 8 }}
+                    placeholder="Selecione a data e hora"
+                  />
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                   <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
                     <Tooltip title="Anexar arquivo">

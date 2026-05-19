@@ -191,7 +191,7 @@ const commentInclude = {
 };
 
 exports.addComment = async (req, res) => {
-  const { message, attachments } = req.body;
+  const { message, attachments, createdAt } = req.body;
   if (!message) return res.status(400).json({ error: 'Mensagem é obrigatória' });
 
   const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
@@ -206,6 +206,7 @@ exports.addComment = async (req, res) => {
       message,
       ticketId: ticket.id,
       userId: req.user.id,
+      ...(createdAt && { createdAt: new Date(createdAt) }),
       ...(attachments?.length > 0 && {
         attachments: {
           createMany: {
@@ -239,7 +240,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 exports.updateComment = async (req, res) => {
-  const { message, attachments } = req.body;
+  const { message, attachments, createdAt } = req.body;
   const { id, commentId } = req.params;
   if (!message) return res.status(400).json({ error: 'Mensagem é obrigatória' });
 
@@ -254,6 +255,7 @@ exports.updateComment = async (req, res) => {
     where: { id: commentId },
     data: {
       message,
+      ...(createdAt && { createdAt: new Date(createdAt) }),
       ...(attachments?.length > 0 && {
         attachments: {
           createMany: {
