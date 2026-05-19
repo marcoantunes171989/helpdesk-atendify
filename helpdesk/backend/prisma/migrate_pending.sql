@@ -6,9 +6,14 @@
 ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_companyId_fkey";
 ALTER TABLE "users" DROP COLUMN IF EXISTS "companyId";
 
--- 2. Tornar companyId opcional em categories
+-- 2. Ajustes em categories: companyId opcional + campo active + unique em name
 ALTER TABLE "categories" DROP CONSTRAINT IF EXISTS "categories_companyId_fkey";
 ALTER TABLE "categories" ALTER COLUMN "companyId" DROP NOT NULL;
+ALTER TABLE "categories" ADD COLUMN IF NOT EXISTS "active" BOOLEAN NOT NULL DEFAULT true;
+-- Remove duplicatas mantendo o registro mais antigo antes de criar a constraint unique
+DELETE FROM "categories" a USING "categories" b
+  WHERE a."createdAt" > b."createdAt" AND a."name" = b."name";
+CREATE UNIQUE INDEX IF NOT EXISTS "categories_name_key" ON "categories"("name");
 
 -- 3. Adicionar campo employeeId em tickets
 ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "employeeId" TEXT;

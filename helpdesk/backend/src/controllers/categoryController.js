@@ -3,7 +3,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.list = async (req, res) => {
+  const { active } = req.query;
+  const where = {};
+  if (active !== undefined) where.active = active === 'true';
+
   const categories = await prisma.category.findMany({
+    where,
     include: { _count: { select: { tickets: true } } },
     orderBy: { name: 'asc' },
   });
@@ -22,6 +27,11 @@ exports.create = async (req, res) => {
   const { name, description } = req.body;
   if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
+  const existing = await prisma.category.findFirst({
+    where: { name: { equals: name, mode: 'insensitive' } },
+  });
+  if (existing) return res.status(409).json({ error: 'Já existe uma categoria com este nome' });
+
   const category = await prisma.category.create({
     data: { name, description },
   });
@@ -29,10 +39,17 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, active } = req.body;
+  if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
+
+  const existing = await prisma.category.findFirst({
+    where: { name: { equals: name, mode: 'insensitive' }, NOT: { id: req.params.id } },
+  });
+  if (existing) return res.status(409).json({ error: 'Já existe uma categoria com este nome' });
+
   const category = await prisma.category.update({
     where: { id: req.params.id },
-    data: { name, description },
+    data: { name, description, active },
   });
   res.json(category);
 };

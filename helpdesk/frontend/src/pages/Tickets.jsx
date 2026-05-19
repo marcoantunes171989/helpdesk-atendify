@@ -50,7 +50,11 @@ export default function Tickets() {
 
   useEffect(() => {
     load();
-    categoryService.list().then(setCategories);
+    categoryService.list({ active: 'true' }).then(list => {
+      const unique = list.filter((c, i, arr) => arr.findIndex(x => x.name.toLowerCase() === c.name.toLowerCase()) === i);
+      unique.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      setCategories(unique);
+    });
     companyService.list({ active: true }).then(setCompanies);
     statusService.list({ active: true }).then(setStatuses);
   }, [user]);
@@ -378,14 +382,12 @@ export default function Tickets() {
                 notFoundContent={loadingEmployees ? 'Carregando...' : 'Nenhum funcionário ativo para esta empresa'}
               >
                 {companyEmployees.map(e => (
-                  <Option key={e.id} value={e.id}>
-                    {e.name}{e.position ? ` — ${e.position}` : ''}
-                  </Option>
+                  <Option key={e.id} value={e.id}>{e.name}</Option>
                 ))}
               </Select>
             </Form.Item>
             <Form.Item name="categoryId" label="Categoria" rules={[{ required: true, message: 'Selecione a categoria do chamado' }]}>
-              <Select placeholder="Selecione a categoria" size="large">
+              <Select placeholder="Selecione a categoria" size="large" showSearch optionFilterProp="children">
                 {categories.map(c => (
                   <Option key={c.id} value={c.id}>{c.name}</Option>
                 ))}

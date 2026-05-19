@@ -62,9 +62,10 @@ enum Role {
 
 model Category {
   id          String    @id @default(cuid())
-  name        String
+  name        String    @unique
   description String?
   slaHours    Int       @default(24)
+  active      Boolean   @default(true)
   companyId   String?
   company     Company?  @relation(fields: [companyId], references: [id])
   tickets     Ticket[]
