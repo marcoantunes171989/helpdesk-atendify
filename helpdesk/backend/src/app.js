@@ -12,7 +12,18 @@ const employeeRoutes = require('./routes/employees');
 
 const app = express();
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://helpdesk-atendify.vercel.app',
+  'https://www.atendexa.com.br',
+  'https://atendexa.com.br',
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
