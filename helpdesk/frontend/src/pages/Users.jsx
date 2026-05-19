@@ -102,7 +102,6 @@ export default function Users() {
         </span>
       ),
     },
-    { title: 'Empresa', key: 'company', render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.company?.name || '—'}</span> },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
       render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>{v ? 'Ativo' : 'Inativo'}</Tag>,

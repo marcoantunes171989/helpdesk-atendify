@@ -26,7 +26,7 @@ exports.list = async (req, res) => {
     where,
     select: {
       id: true, name: true, email: true, role: true, active: true,
-      companyId: true, createdAt: true, company: { select: { name: true } },
+      companyId: true, createdAt: true,
     },
     orderBy: { name: 'asc' },
   });
@@ -40,7 +40,7 @@ exports.get = async (req, res) => {
     where: { id },
     select: {
       id: true, name: true, email: true, role: true, active: true,
-      companyId: true, createdAt: true, company: { select: { id: true, name: true } },
+      companyId: true, createdAt: true,
     },
   });
 
