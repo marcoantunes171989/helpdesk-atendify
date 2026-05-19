@@ -14,7 +14,7 @@ const ticketInclude = {
 };
 
 exports.list = async (req, res) => {
-  const { status, priority, categoryId, assignedTo, userId, search } = req.query;
+  const { status, priority, categoryId, assignedTo, userId, search, companyId } = req.query;
   const where = {};
 
   if (req.user.role === 'CLIENT') {
@@ -23,6 +23,8 @@ exports.list = async (req, res) => {
     where.companyId = req.user.companyId;
   } else if (req.user.role === 'ADMIN') {
     where.companyId = req.user.companyId;
+  } else if (req.user.role === 'SUPER_ADMIN' && companyId) {
+    where.companyId = companyId;
   }
 
   if (status) where.status = status;

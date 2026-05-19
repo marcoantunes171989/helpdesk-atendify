@@ -3,8 +3,9 @@ import {
   Table, Button, Modal, Form, Input, Tag, Space,
   Popconfirm, message, Switch, Tooltip,
 } from 'antd';
-import { PlusOutlined, EditOutlined, StopOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, StopOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import { companyService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,6 +16,7 @@ export default function Companies() {
   const [editing, setEditing] = useState(null);
   const [form] = Form.useForm();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const load = () => {
     setLoading(true);
@@ -89,9 +91,12 @@ export default function Companies() {
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
-      title: '', key: 'actions', width: 80,
+      title: '', key: 'actions', width: 110,
       render: (_, record) => (
         <Space>
+          <Tooltip title="Ver detalhes">
+            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#16a34a' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
+          </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
           </Tooltip>

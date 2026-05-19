@@ -11,6 +11,7 @@ import Categories from './pages/Categories';
 import Tickets from './pages/Tickets';
 import TicketDetail from './pages/TicketDetail';
 import Employees from './pages/Employees';
+import CompanyDetail from './pages/CompanyDetail';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -32,6 +33,7 @@ function AppRoutes() {
       <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="companies" element={<Companies />} />
+        <Route path="companies/:id" element={<CompanyDetail />} />
         <Route path="users" element={<Users />} />
         <Route path="categories" element={<Categories />} />
         <Route path="tickets" element={<Tickets />} />
