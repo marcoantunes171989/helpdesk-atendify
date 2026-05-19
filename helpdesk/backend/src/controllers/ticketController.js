@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const ticketInclude = {
   user: { select: { id: true, name: true, email: true } },
   assignee: { select: { id: true, name: true, email: true } },
+  employee: { select: { id: true, name: true, position: true } },
   category: { select: { id: true, name: true, slaHours: true } },
   company: { select: { id: true, name: true } },
   comments: {
@@ -61,12 +62,14 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { title, description, priority, categoryId, companyId, attachments } = req.body;
+  const { title, description, priority, categoryId, companyId, employeeId, attachments } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: 'Título e descrição são obrigatórios' });
   }
 
-  const targetCompanyId = companyId || req.user.companyId;
+  if (!companyId) {
+    return res.status(400).json({ error: 'Empresa é obrigatória' });
+  }
 
   let slaDeadline = null;
   if (categoryId) {
@@ -81,9 +84,10 @@ exports.create = async (req, res) => {
       title,
       description,
       priority: priority || 'MEDIUM',
-      categoryId,
+      categoryId: categoryId || null,
+      employeeId: employeeId || null,
       userId: req.user.id,
-      companyId: targetCompanyId,
+      companyId,
       slaDeadline,
     },
   });

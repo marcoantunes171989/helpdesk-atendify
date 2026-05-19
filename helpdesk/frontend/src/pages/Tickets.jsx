@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { ticketService, categoryService, companyService } from '../services/api';
+import { ticketService, categoryService, companyService, employeeService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
 
@@ -29,6 +29,8 @@ export default function Tickets() {
   const [tickets, setTickets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [companyEmployees, setCompanyEmployees] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,18 +50,30 @@ export default function Tickets() {
   useEffect(() => {
     load();
     categoryService.list().then(setCategories);
-    companyService.list().then(setCompanies);
+    companyService.list({ active: true }).then(setCompanies);
   }, [user]);
+
+  const handleCompanyChange = (companyId) => {
+    form.setFieldValue('employeeId', undefined);
+    setCompanyEmployees([]);
+    if (!companyId) return;
+    setLoadingEmployees(true);
+    employeeService.list({ companyId, active: 'true' })
+      .then(setCompanyEmployees)
+      .finally(() => setLoadingEmployees(false));
+  };
 
   const openDrawer = () => {
     form.resetFields();
     setFileList([]);
+    setCompanyEmployees([]);
     setDrawerOpen(true);
   };
 
   const closeDrawer = () => {
     setDrawerOpen(false);
     setFileList([]);
+    setCompanyEmployees([]);
   };
 
   const beforeUpload = (file) => {
@@ -299,8 +313,29 @@ export default function Tickets() {
               <TextArea rows={5} placeholder="Detalhe o problema com o máximo de informações possível..." />
             </Form.Item>
             <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
-              <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large">
+              <Select
+                placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large"
+                onChange={handleCompanyChange}
+              >
                 {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+              </Select>
+            </Form.Item>
+            <Form.Item name="employeeId" label="Funcionário">
+              <Select
+                allowClear
+                placeholder="Selecione o funcionário (opcional)"
+                showSearch
+                optionFilterProp="children"
+                size="large"
+                loading={loadingEmployees}
+                disabled={companyEmployees.length === 0 && !loadingEmployees}
+                notFoundContent={loadingEmployees ? 'Carregando...' : 'Nenhum funcionário ativo para esta empresa'}
+              >
+                {companyEmployees.map(e => (
+                  <Option key={e.id} value={e.id}>
+                    {e.name}{e.position ? ` — ${e.position}` : ''}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item name="categoryId" label="Categoria">

@@ -10,7 +10,18 @@ ALTER TABLE "users" DROP COLUMN IF EXISTS "companyId";
 ALTER TABLE "categories" DROP CONSTRAINT IF EXISTS "categories_companyId_fkey";
 ALTER TABLE "categories" ALTER COLUMN "companyId" DROP NOT NULL;
 
--- 3. Criar tabela de anexos de chamados (se ainda não existir)
+-- 3. Adicionar campo employeeId em tickets (funcionário que abriu o chamado)
+ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "employeeId" TEXT;
+
+ALTER TABLE "tickets"
+    DROP CONSTRAINT IF EXISTS "tickets_employeeId_fkey";
+
+ALTER TABLE "tickets"
+    ADD CONSTRAINT "tickets_employeeId_fkey"
+    FOREIGN KEY ("employeeId") REFERENCES "employees"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- 4. Criar tabela de anexos de chamados (se ainda não existir)
 CREATE TABLE IF NOT EXISTS "ticket_attachments" (
     "id"        TEXT         NOT NULL,
     "ticketId"  TEXT         NOT NULL,

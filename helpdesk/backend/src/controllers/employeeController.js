@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.list = async (req, res) => {
-  const { search, active } = req.query;
+  const { search, active, companyId } = req.query;
   const where = {};
 
   if (search) {
@@ -14,6 +14,7 @@ exports.list = async (req, res) => {
   }
 
   if (active !== undefined) where.active = active === 'true';
+  if (companyId) where.companyId = companyId;
 
   const employees = await prisma.employee.findMany({
     where,
