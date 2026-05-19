@@ -513,20 +513,6 @@ export default function TicketDetail() {
                     {technicians.map(t => <Option key={t.id} value={t.id}>{t.name}</Option>)}
                   </Select>
                 </div>
-                {canAssignTickets(user?.role) && (
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>ATRIBUÍDO A</div>
-                    <Select
-                      value={editAssignedTo}
-                      style={{ width: '100%' }}
-                      onChange={setEditAssignedTo}
-                      allowClear
-                      placeholder="Não atribuído"
-                    >
-                      {agents.map(a => <Option key={a.id} value={a.id}>{a.name}</Option>)}
-                    </Select>
-                  </div>
-                )}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
                   <Button onClick={() => setEditMode(false)}>Cancelar</Button>
                   <Button
@@ -902,14 +888,6 @@ export default function TicketDetail() {
                       {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
                     </Select>
                   </div>
-                  {canAssignTickets(user?.role) && (
-                    <div>
-                      <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>ATRIBUÍDO A</div>
-                      <Select value={ticket.assignedTo} style={{ width: '100%' }} allowClear placeholder="Não atribuído" onChange={v => handleUpdate('assignedTo', v || null)} size="small">
-                        {agents.map(a => <Option key={a.id} value={a.id}>{a.name}</Option>)}
-                      </Select>
-                    </div>
-                  )}
                 </Space>
               </>
             )}
