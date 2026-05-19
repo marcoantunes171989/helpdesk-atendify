@@ -97,6 +97,28 @@ exports.update = async (req, res) => {
   res.json(user);
 };
 
+exports.remove = async (req, res) => {
+  const { id } = req.params;
+
+  if (req.user.id === id) {
+    return res.status(400).json({ error: 'Não é possível excluir seu próprio usuário' });
+  }
+
+  const target = await prisma.user.findUnique({ where: { id } });
+  if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+  if (req.user.role !== 'SUPER_ADMIN' && target.companyId !== req.user.companyId) {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  if (target.role === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ error: 'Sem permissão para excluir este perfil' });
+  }
+
+  await prisma.user.delete({ where: { id } });
+  res.json({ message: 'Usuário excluído com sucesso' });
+};
+
 exports.resetPassword = async (req, res) => {
   const { id } = req.params;
   const { password } = req.body;

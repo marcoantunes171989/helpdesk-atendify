@@ -8,5 +8,6 @@ router.get('/:id', auth, ctrl.get);
 router.post('/', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.create);
 router.put('/:id', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.update);
 router.put('/:id/reset-password', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.resetPassword);
+router.delete('/:id', auth, authorize('SUPER_ADMIN', 'ADMIN'), ctrl.remove);
 
 module.exports = router;

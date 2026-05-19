@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Modal, Form, Input, Select, Tag, Space,
-  message, Switch, Tooltip, Avatar,
+  message, Switch, Tooltip, Avatar, Popconfirm,
 } from 'antd';
-import { PlusOutlined, EditOutlined, KeyOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -53,6 +53,16 @@ export default function Users() {
       load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await userService.remove(id);
+      message.success('Usuário excluído com sucesso');
+      load();
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao excluir usuário');
     }
   };
 
@@ -111,11 +121,23 @@ export default function Users() {
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
-      title: '', key: 'actions', width: 80,
+      title: '', key: 'actions', width: 110,
       render: (_, record) => (
         <Space>
           <Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} /></Tooltip>
           <Tooltip title="Redefinir senha"><Button type="text" icon={<KeyOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => setPwdModal(record.id)} /></Tooltip>
+          {record.id !== user?.id && (
+            <Popconfirm
+              title="Excluir usuário?"
+              description="Esta ação não pode ser desfeita."
+              onConfirm={() => handleDelete(record.id)}
+              okText="Excluir"
+              cancelText="Cancelar"
+              okButtonProps={{ danger: true }}
+            >
+              <Tooltip title="Excluir"><Button type="text" icon={<DeleteOutlined />} size="small" danger /></Tooltip>
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
