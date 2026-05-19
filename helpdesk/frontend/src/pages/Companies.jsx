@@ -60,6 +60,7 @@ export default function Companies() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   const load = () => {
@@ -210,13 +211,17 @@ export default function Companies() {
 
   const hasLinks = deleteModal && (deleteModal.employees > 0 || deleteModal.tickets > 0 || deleteModal.categories > 0);
 
+  const filteredCompanies = search
+    ? (() => { const q = search.toLowerCase(); return companies.filter(c => [c.name, c.cnpj, c.email, c.phone, c.city, c.state].some(f => (f || '').toLowerCase().includes(q))); })()
+    : companies;
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1 className="page-title">Empresas</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
-            {companies.filter(c => c.active).length} ativa{companies.filter(c => c.active).length !== 1 ? 's' : ''} · {companies.length} total
+            {filteredCompanies.filter(c => c.active).length} ativa{filteredCompanies.filter(c => c.active).length !== 1 ? 's' : ''} · {filteredCompanies.length} total
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
@@ -225,9 +230,19 @@ export default function Companies() {
         </Button>
       </div>
 
+      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar por nome, CNPJ, e-mail, telefone ou localização..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ maxWidth: 500 }}
+        />
+      </div>
+
       <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
-          dataSource={companies} columns={columns} rowKey="id"
+          dataSource={filteredCompanies} columns={columns} rowKey="id"
           loading={loading} scroll={{ x: 900 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} empresa${t !== 1 ? 's' : ''}` }}
         />

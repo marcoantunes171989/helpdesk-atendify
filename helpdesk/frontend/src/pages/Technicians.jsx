@@ -21,6 +21,7 @@ export default function Technicians() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -138,13 +139,17 @@ export default function Technicians() {
     },
   ];
 
+  const filteredTechnicians = search
+    ? (() => { const q = search.toLowerCase(); return technicians.filter(t => [t.name, t.description, t.observation].some(f => (f || '').toLowerCase().includes(q))); })()
+    : technicians;
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1 className="page-title">Técnicos</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
-            {technicians.length} técnico{technicians.length !== 1 ? 's' : ''} cadastrado{technicians.length !== 1 ? 's' : ''}
+            {filteredTechnicians.length} técnico{filteredTechnicians.length !== 1 ? 's' : ''} cadastrado{filteredTechnicians.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
@@ -153,9 +158,19 @@ export default function Technicians() {
         </Button>
       </div>
 
+      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar por nome, descrição ou observação..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ maxWidth: 420 }}
+        />
+      </div>
+
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
-          dataSource={technicians} columns={columns} rowKey="id"
+          dataSource={filteredTechnicians} columns={columns} rowKey="id"
           loading={loading} size="middle" scroll={{ x: 700 }}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} técnico${t !== 1 ? 's' : ''}` }}
         />

@@ -51,6 +51,7 @@ export default function Status() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -173,13 +174,17 @@ export default function Status() {
     },
   ];
 
+  const filteredStatuses = search
+    ? (() => { const q = search.toLowerCase(); return statuses.filter(s => [s.name, s.description, s.observation].some(f => (f || '').toLowerCase().includes(q))); })()
+    : statuses;
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1 className="page-title">Status de Chamados</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
-            {statuses.length} status cadastrado{statuses.length !== 1 ? 's' : ''}
+            {filteredStatuses.length} status cadastrado{filteredStatuses.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
@@ -188,9 +193,19 @@ export default function Status() {
         </Button>
       </div>
 
+      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar por nome, descrição ou observação..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ maxWidth: 420 }}
+        />
+      </div>
+
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
-          dataSource={statuses} columns={columns} rowKey="id"
+          dataSource={filteredStatuses} columns={columns} rowKey="id"
           loading={loading} size="middle" scroll={{ x: 700 }}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} status` }}
         />

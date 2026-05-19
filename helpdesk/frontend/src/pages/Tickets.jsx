@@ -39,6 +39,7 @@ export default function Tickets() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [filters, setFilters] = useState({});
+  const [search, setSearch] = useState('');
   const [fileList, setFileList] = useState([]);
   const [form] = Form.useForm();
   const { user } = useAuth();
@@ -142,6 +143,19 @@ export default function Tickets() {
   const isSlaExpired = (t) =>
     t.slaDeadline && !['RESOLVED', 'CLOSED', 'CANCELLED'].includes(t.status)
     && dayjs(t.slaDeadline).isBefore(dayjs());
+
+  const filteredTickets = search
+    ? (() => {
+        const q = search.toLowerCase();
+        return tickets.filter(r => [
+          r.id, r.title, r.description,
+          r.company?.name, r.employee?.name, r.employee?.position,
+          r.technician?.name, r.category?.name,
+          r.ticketStatus?.name, TICKET_STATUS[r.status]?.label,
+          PRIORITY[r.priority]?.label,
+        ].some(f => (f || '').toLowerCase().includes(q)));
+      })()
+    : tickets;
 
   const statusCounts = Object.keys(TICKET_STATUS).reduce((acc, k) => {
     acc[k] = tickets.filter(t => t.status === k).length;
@@ -252,7 +266,7 @@ export default function Tickets() {
         <div>
           <h1 className="page-title">Chamados</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
-            {tickets.length} chamado{tickets.length !== 1 ? 's' : ''} · {' '}
+            {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''}{search ? ` (de ${tickets.length})` : ''} · {' '}
             {Object.entries(TICKET_STATUS).map(([k, { label, color }]) =>
               statusCounts[k] > 0 ? (
                 <Tag key={k} color={color} style={{ fontSize: 11, marginRight: 4 }}>
@@ -290,16 +304,17 @@ export default function Tickets() {
           {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
         </Select>
         <Input.Search
-          placeholder="Buscar por título ou descrição..."
+          placeholder="Buscar em todos os campos..."
           style={{ flex: 2, minWidth: 200 }}
           allowClear
-          onSearch={v => applyFilters({ search: v })}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
         />
       </div>
 
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
         <Table
-          dataSource={tickets} columns={columns} rowKey="id" loading={loading}
+          dataSource={filteredTickets} columns={columns} rowKey="id" loading={loading}
           scroll={{ x: 1300 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} chamados` }}
         />
