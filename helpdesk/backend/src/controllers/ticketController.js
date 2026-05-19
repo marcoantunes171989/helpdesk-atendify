@@ -63,13 +63,13 @@ exports.get = async (req, res) => {
 
 exports.create = async (req, res) => {
   const { title, description, priority, categoryId, companyId, employeeId, attachments } = req.body;
-  if (!title || !description) {
-    return res.status(400).json({ error: 'Título e descrição são obrigatórios' });
-  }
 
-  if (!companyId) {
-    return res.status(400).json({ error: 'Empresa é obrigatória' });
-  }
+  if (!title) return res.status(400).json({ error: 'Título é obrigatório' });
+  if (!description) return res.status(400).json({ error: 'Descrição é obrigatória' });
+  if (!companyId) return res.status(400).json({ error: 'Empresa é obrigatória' });
+  if (!categoryId) return res.status(400).json({ error: 'Categoria é obrigatória' });
+  if (!employeeId) return res.status(400).json({ error: 'Funcionário é obrigatório' });
+  if (!priority) return res.status(400).json({ error: 'Prioridade é obrigatória' });
 
   let slaDeadline = null;
   if (categoryId) {

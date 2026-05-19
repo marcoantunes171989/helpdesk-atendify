@@ -320,10 +320,9 @@ export default function Tickets() {
                 {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
               </Select>
             </Form.Item>
-            <Form.Item name="employeeId" label="Funcionário">
+            <Form.Item name="employeeId" label="Funcionário" rules={[{ required: true, message: 'Selecione o funcionário responsável pelo chamado' }]}>
               <Select
-                allowClear
-                placeholder="Selecione o funcionário (opcional)"
+                placeholder={companyEmployees.length === 0 && !loadingEmployees ? 'Selecione uma empresa primeiro' : 'Selecione o funcionário'}
                 showSearch
                 optionFilterProp="children"
                 size="large"
@@ -338,14 +337,14 @@ export default function Tickets() {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="categoryId" label="Categoria">
-              <Select allowClear placeholder="Selecione a categoria" size="large">
+            <Form.Item name="categoryId" label="Categoria" rules={[{ required: true, message: 'Selecione a categoria do chamado' }]}>
+              <Select placeholder="Selecione a categoria" size="large">
                 {categories.map(c => (
                   <Option key={c.id} value={c.id}>{c.name}</Option>
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name="priority" label="Prioridade" initialValue="MEDIUM">
+            <Form.Item name="priority" label="Prioridade" initialValue="MEDIUM" rules={[{ required: true, message: 'Selecione a prioridade' }]}>
               <Select size="large">
                 {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
               </Select>
