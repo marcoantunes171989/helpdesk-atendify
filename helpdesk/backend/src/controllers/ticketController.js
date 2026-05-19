@@ -224,6 +224,20 @@ exports.addComment = async (req, res) => {
   res.status(201).json(comment);
 };
 
+exports.deleteComment = async (req, res) => {
+  const { id, commentId } = req.params;
+
+  const comment = await prisma.ticketComment.findFirst({ where: { id: commentId, ticketId: id } });
+  if (!comment) return res.status(404).json({ error: 'Trâmite não encontrado' });
+
+  if (comment.userId !== req.user.id && !['SUPER_ADMIN', 'ADMIN'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Sem permissão para excluir este trâmite' });
+  }
+
+  await prisma.ticketComment.delete({ where: { id: commentId } });
+  res.json({ message: 'Trâmite removido com sucesso' });
+};
+
 exports.updateComment = async (req, res) => {
   const { message } = req.body;
   const { id, commentId } = req.params;

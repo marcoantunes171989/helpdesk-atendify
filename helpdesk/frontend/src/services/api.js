@@ -63,6 +63,7 @@ export const ticketService = {
   remove: (id) => api.delete(`/tickets/${id}`).then(r => r.data),
   addComment: (id, data) => api.post(`/tickets/${id}/comments`, data).then(r => r.data),
   updateComment: (id, commentId, data) => api.put(`/tickets/${id}/comments/${commentId}`, data).then(r => r.data),
+  deleteComment: (id, commentId) => api.delete(`/tickets/${id}/comments/${commentId}`).then(r => r.data),
 };
 
 export const technicianService = {

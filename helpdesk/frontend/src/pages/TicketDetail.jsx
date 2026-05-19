@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Tag, Button, Select, Space, Typography, Divider, Input, Modal,
-  Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload,
+  Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload, Popconfirm,
 } from 'antd';
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
   DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined, EditOutlined,
-  EyeOutlined,
+  EyeOutlined, MessageOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -211,6 +211,16 @@ export default function TicketDetail() {
       message.error(err.response?.data?.error || 'Erro ao atualizar');
     } finally {
       setEditingCommentSaving(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await ticketService.deleteComment(id, commentId);
+      setTicket(prev => ({ ...prev, comments: prev.comments.filter(c => c.id !== commentId) }));
+      message.success('Trâmite removido');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao remover trâmite');
     }
   };
 
@@ -535,9 +545,14 @@ export default function TicketDetail() {
 
           {/* Trâmites */}
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24 }}>
-            <h3 style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: '0 0 20px' }}>
-              Trâmites ({ticket.comments.length})
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              <Badge count={ticket.comments.length} color="#16a34a" size="small">
+                <MessageOutlined style={{ fontSize: 16, color: '#374151' }} />
+              </Badge>
+              <h3 style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: 0 }}>
+                Trâmites ({ticket.comments.length})
+              </h3>
+            </div>
 
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: '#9ca3af', fontSize: 14 }}>
@@ -583,15 +598,34 @@ export default function TicketDetail() {
                           </Badge>
                         )}
                         {canEditComment && !isEditingThis && !isClosed && (
-                          <Tooltip title="Editar trâmite">
-                            <Button
-                              type="text"
-                              icon={<EditOutlined />}
-                              size="small"
-                              style={{ color: '#d1d5db', padding: 0, height: 'auto' }}
-                              onClick={() => { setEditingCommentId(c.id); setEditingCommentText(c.message); }}
-                            />
-                          </Tooltip>
+                          <>
+                            <Tooltip title="Editar trâmite">
+                              <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                size="small"
+                                style={{ color: '#d1d5db', padding: 0, height: 'auto' }}
+                                onClick={() => { setEditingCommentId(c.id); setEditingCommentText(c.message); }}
+                              />
+                            </Tooltip>
+                            <Popconfirm
+                              title="Remover trâmite"
+                              description="Tem certeza que deseja remover este trâmite?"
+                              okText="Remover"
+                              cancelText="Cancelar"
+                              okButtonProps={{ danger: true }}
+                              onConfirm={() => handleDeleteComment(c.id)}
+                            >
+                              <Tooltip title="Remover trâmite">
+                                <Button
+                                  type="text"
+                                  icon={<DeleteOutlined />}
+                                  size="small"
+                                  style={{ color: '#d1d5db', padding: 0, height: 'auto' }}
+                                />
+                              </Tooltip>
+                            </Popconfirm>
+                          </>
                         )}
                       </div>
 
@@ -691,7 +725,13 @@ export default function TicketDetail() {
                     loading={sending}
                     onClick={handleComment}
                     disabled={!comment.trim()}
-                    style={{ background: '#16a34a', borderColor: '#16a34a', borderRadius: 8 }}
+                    style={{
+                      background: comment.trim() ? '#16a34a' : undefined,
+                      borderColor: comment.trim() ? '#16a34a' : undefined,
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      color: '#fff',
+                    }}
                   >
                     Enviar
                   </Button>

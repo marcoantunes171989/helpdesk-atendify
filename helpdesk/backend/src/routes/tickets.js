@@ -10,5 +10,6 @@ router.put('/:id', auth, wrap(ctrl.update));
 router.delete('/:id', auth, wrap(ctrl.remove));
 router.post('/:id/comments', auth, wrap(ctrl.addComment));
 router.put('/:id/comments/:commentId', auth, wrap(ctrl.updateComment));
+router.delete('/:id/comments/:commentId', auth, wrap(ctrl.deleteComment));
 
 module.exports = router;
