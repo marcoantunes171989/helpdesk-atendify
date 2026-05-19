@@ -52,7 +52,7 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { name, cnpj, email, phone, address } = req.body;
+  const { name, cnpj, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes } = req.body;
   if (!name || !cnpj || !email) {
     return res.status(400).json({ error: 'Nome, CNPJ e email são obrigatórios' });
   }
@@ -61,7 +61,7 @@ exports.create = async (req, res) => {
   if (existing) return res.status(409).json({ error: 'CNPJ já cadastrado' });
 
   const company = await prisma.company.create({
-    data: { name, cnpj, email, phone, address },
+    data: { name, cnpj, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes },
   });
   res.status(201).json(company);
 };
@@ -73,10 +73,10 @@ exports.update = async (req, res) => {
     return res.status(403).json({ error: 'Acesso negado' });
   }
 
-  const { name, email, phone, address, active } = req.body;
+  const { name, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes, active } = req.body;
   const company = await prisma.company.update({
     where: { id },
-    data: { name, email, phone, address, active },
+    data: { name, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes, active },
   });
   res.json(company);
 };

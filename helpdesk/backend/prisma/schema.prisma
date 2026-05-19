@@ -9,19 +9,28 @@ datasource db {
 }
 
 model Company {
-  id         String     @id @default(cuid())
-  name       String
-  cnpj       String     @unique
-  email      String
-  phone      String?
-  address    String?
-  active     Boolean    @default(true)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  users      User[]
-  tickets    Ticket[]
-  categories Category[]
-  employees  Employee[]
+  id                String     @id @default(cuid())
+  name              String
+  cnpj              String     @unique
+  stateRegistration String?
+  email             String
+  phone             String?
+  website           String?
+  zipCode           String?
+  street            String?
+  addressNumber     String?
+  complement        String?
+  neighborhood      String?
+  city              String?
+  state             String?
+  notes             String?
+  active            Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  users             User[]
+  tickets           Ticket[]
+  categories        Category[]
+  employees         Employee[]
 
   @@map("companies")
 }
