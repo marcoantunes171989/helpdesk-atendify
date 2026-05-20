@@ -70,6 +70,14 @@ export default function Categories() {
 
   const columns = [
     {
+      title: '#', dataIndex: 'code', key: 'code', width: 70,
+      render: v => (
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
+          {v ? String(v).padStart(4, '0') : '—'}
+        </span>
+      ),
+    },
+    {
       title: 'Categoria', key: 'name',
       render: (_, r) => (
         <div>

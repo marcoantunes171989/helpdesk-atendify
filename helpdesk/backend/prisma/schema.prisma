@@ -63,6 +63,7 @@ enum Role {
 
 model Category {
   id          String    @id @default(cuid())
+  code        Int?      @unique
   name        String    @unique
   description String?
   slaHours    Int       @default(24)

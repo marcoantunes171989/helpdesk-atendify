@@ -10,7 +10,7 @@ exports.list = async (req, res) => {
   const categories = await prisma.category.findMany({
     where,
     include: { _count: { select: { tickets: true } } },
-    orderBy: { name: 'asc' },
+    orderBy: { code: { sort: 'asc', nulls: 'last' } },
   });
   res.json(categories);
 };
@@ -32,8 +32,11 @@ exports.create = async (req, res) => {
   });
   if (existing) return res.status(409).json({ error: 'Já existe uma categoria com este nome' });
 
+  const last = await prisma.category.findFirst({ orderBy: { code: 'desc' } });
+  const code = (last?.code ?? 0) + 1;
+
   const category = await prisma.category.create({
-    data: { name, description },
+    data: { name, description, code },
   });
   res.status(201).json(category);
 };
