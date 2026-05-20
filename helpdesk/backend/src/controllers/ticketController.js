@@ -27,27 +27,40 @@ const ticketInclude = {
 };
 
 exports.list = async (req, res) => {
-  const { status, priority, categoryId, assignedTo, userId, search, companyId, statusId, excludeResolved } = req.query;
-  const where = {};
+  const { priority, categoryId, assignedTo, userId, search, companyId, excludeResolved, includeResolved } = req.query;
+  const rawStatusIds = req.query.statusIds;
+  const statusIdArr = rawStatusIds ? (Array.isArray(rawStatusIds) ? rawStatusIds : [rawStatusIds]) : [];
+  const shouldIncludeResolved = includeResolved === 'true';
 
+  const where = {};
   if (companyId) where.companyId = companyId;
-  if (status) {
-    where.status = status;
-  } else if (excludeResolved === 'true') {
-    where.status = { not: 'RESOLVED' };
-  }
-  if (statusId) where.statusId = statusId;
   if (priority) where.priority = priority;
   if (categoryId) where.categoryId = categoryId;
   if (assignedTo) where.assignedTo = assignedTo;
   if (userId) where.userId = userId;
 
-  if (search) {
-    where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { description: { contains: search, mode: 'insensitive' } },
-    ];
+  const andConditions = [];
+
+  const statusConditions = [];
+  if (statusIdArr.length > 0) statusConditions.push({ statusId: { in: statusIdArr } });
+  if (shouldIncludeResolved) statusConditions.push({ status: 'RESOLVED' });
+
+  if (statusConditions.length > 0) {
+    andConditions.push(statusConditions.length === 1 ? statusConditions[0] : { OR: statusConditions });
+  } else if (excludeResolved === 'true') {
+    andConditions.push({ status: { not: 'RESOLVED' } });
   }
+
+  if (search) {
+    andConditions.push({
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  if (andConditions.length > 0) where.AND = andConditions;
 
   const tickets = await prisma.ticket.findMany({
     where,

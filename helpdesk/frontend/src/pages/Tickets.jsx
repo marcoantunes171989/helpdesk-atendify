@@ -52,7 +52,7 @@ export default function Tickets() {
 
   const buildApiParams = (f) => {
     const params = { ...f };
-    if (!params.statusId && !params.status) params.excludeResolved = 'true';
+    if (!params.statusIds?.length && !params.includeResolved) params.excludeResolved = 'true';
     return params;
   };
 
@@ -146,14 +146,16 @@ export default function Tickets() {
     load(buildApiParams(newFilters));
   };
 
-  const handleStatusFilterChange = (v) => {
-    if (!v) {
-      applyFilters({ statusId: undefined, status: undefined });
-    } else if (v === '__RESOLVED__') {
-      applyFilters({ status: 'RESOLVED', statusId: undefined });
-    } else {
-      applyFilters({ statusId: v, status: undefined });
-    }
+  const handleStatusFilterChange = (values) => {
+    const customIds = values.filter(v => v !== '__RESOLVED__');
+    const includeResolved = values.includes('__RESOLVED__');
+    const newFilters = { ...filters };
+    delete newFilters.statusIds;
+    delete newFilters.includeResolved;
+    if (customIds.length > 0) newFilters.statusIds = customIds;
+    if (includeResolved) newFilters.includeResolved = true;
+    setFilters(newFilters);
+    load(buildApiParams(newFilters));
   };
 
   const isSlaExpired = (t) =>
@@ -304,7 +306,14 @@ export default function Tickets() {
         display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
         padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
       }}>
-        <Select allowClear placeholder="Todos os status" style={{ minWidth: 150, flex: 1 }} onChange={handleStatusFilterChange}>
+        <Select
+          mode="multiple"
+          allowClear
+          placeholder="Todos os status (sem resolvidos)"
+          style={{ minWidth: 180, flex: 1 }}
+          maxTagCount="responsive"
+          onChange={handleStatusFilterChange}
+        >
           {statuses.map(s => (
             <Option key={s.id} value={s.id}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
