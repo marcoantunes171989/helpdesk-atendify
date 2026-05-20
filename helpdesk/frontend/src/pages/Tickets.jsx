@@ -167,7 +167,7 @@ export default function Tickets() {
         const q = search.toLowerCase();
         return tickets.filter(r => [
           r.id, r.title, r.description,
-          r.company?.name, r.employee?.name, r.employee?.position,
+          r.company?.name, r.company?.fantasia, r.employee?.name, r.employee?.position,
           r.technician?.name, r.category?.name,
           r.ticketStatus?.name, TICKET_STATUS[r.status]?.label,
           PRIORITY[r.priority]?.label,
@@ -212,7 +212,14 @@ export default function Tickets() {
     },
     {
       title: 'Empresa', key: 'company',
-      render: (_, r) => <span style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</span>,
+      render: (_, r) => (
+        <div>
+          <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          {r.company?.fantasia && (
+            <div style={{ fontSize: 11, color: '#6b7280' }}>{r.company.fantasia}</div>
+          )}
+        </div>
+      ),
     },
     {
       title: 'Funcionário', key: 'employee',

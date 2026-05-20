@@ -71,7 +71,7 @@ exports.list = async (req, res) => {
       technician: { select: { id: true, name: true } },
       ticketStatus: { select: { id: true, name: true, color: true } },
       category: { select: { id: true, name: true } },
-      company: { select: { id: true, name: true } },
+      company: { select: { id: true, name: true, fantasia: true } },
       _count: { select: { comments: true, attachments: true } },
     },
     orderBy: { createdAt: 'desc' },
