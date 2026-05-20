@@ -74,11 +74,13 @@ export default function TicketDetail() {
   const [editingCommentSaving, setEditingCommentSaving] = useState(false);
   const [commentDate, setCommentDate] = useState(dayjs());
 
-  const [resolveModal, setResolveModal] = useState(false);
-  const [resolveMessage, setResolveMessage] = useState('');
-  const [resolveSaving, setResolveSaving] = useState(false);
-  const [reopenModal, setReopenModal] = useState(false);
-  const [reopenSaving, setReopenSaving] = useState(false);
+  const [statusChangeModal, setStatusChangeModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
+  const [statusChangeComment, setStatusChangeComment] = useState('');
+  const [statusChangeDate, setStatusChangeDate] = useState(dayjs());
+  const [statusChangeFiles, setStatusChangeFiles] = useState([]);
+  const [statusChangeSaving, setStatusChangeSaving] = useState(false);
+  const [commentStatus, setCommentStatus] = useState(null);
 
   const load = () => {
     ticketService.get(id)
@@ -86,6 +88,10 @@ export default function TicketDetail() {
       .catch(() => message.error('Chamado não encontrado'))
       .finally(() => setLoading(false));
   };
+
+  useEffect(() => {
+    if (ticket?.status) setCommentStatus(ticket.status);
+  }, [ticket?.status]);
 
   useEffect(() => {
     load();
@@ -169,45 +175,50 @@ export default function TicketDetail() {
     }
   };
 
-  const handleStatusChange = (v) => {
-    if (v === 'RESOLVED') {
-      setResolveMessage('');
-      setResolveModal(true);
-    } else {
-      handleUpdate('status', v);
+  const openStatusChangeModal = (status) => {
+    setPendingStatus(status);
+    setStatusChangeComment('');
+    setStatusChangeDate(dayjs());
+    setStatusChangeFiles([]);
+    setStatusChangeModal(true);
+  };
+
+  const handleStatusChange = (v) => openStatusChangeModal(v);
+
+  const handleStatusChangeConfirm = async () => {
+    if (!statusChangeComment.trim()) { message.warning('Informe um trâmite para a mudança de status'); return; }
+    setStatusChangeSaving(true);
+    try {
+      let msg = statusChangeComment.trim();
+      if (pendingStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
+      else if (pendingStatus === 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
+      await ticketService.addComment(id, {
+        message: msg,
+        attachments: statusChangeFiles,
+        createdAt: statusChangeDate?.toISOString(),
+      });
+      const updated = await ticketService.update(id, {
+        status: pendingStatus,
+        statusId: pendingStatus === 'RESOLVED' ? null : undefined,
+      });
+      setTicket(updated);
+      setStatusChangeModal(false);
+      message.success('Status atualizado');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao atualizar status');
+    } finally {
+      setStatusChangeSaving(false);
     }
   };
 
-  const handleResolveConfirm = async () => {
-    if (!resolveMessage.trim()) { message.warning('Informe a conclusão do chamado'); return; }
-    setResolveSaving(true);
-    try {
-      await ticketService.addComment(id, { message: `::SYS_RESOLVED:: ${resolveMessage.trim()}` });
-      const updated = await ticketService.update(id, { status: 'RESOLVED', statusId: null });
-      setTicket(updated);
-      setResolveModal(false);
-      setResolveMessage('');
-      message.success('Chamado finalizado');
-    } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao finalizar');
-    } finally {
-      setResolveSaving(false);
-    }
-  };
-
-  const handleReopenConfirm = async () => {
-    setReopenSaving(true);
-    try {
-      await ticketService.addComment(id, { message: '::SYS_REOPENED::' });
-      const updated = await ticketService.update(id, { status: 'OPEN' });
-      setTicket(updated);
-      setReopenModal(false);
-      message.success('Chamado reaberto');
-    } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao reabrir');
-    } finally {
-      setReopenSaving(false);
-    }
+  const addStatusChangeFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      setStatusChangeFiles(prev => [...prev, { name: file.name, mimeType: file.type, size: file.size, data: base64 }]);
+    };
+    reader.readAsDataURL(file);
+    return false;
   };
 
   const handleUpdate = async (field, value) => {
@@ -233,20 +244,28 @@ export default function TicketDetail() {
   };
 
   const handleComment = async () => {
-    if (!comment.trim()) return;
+    if (!comment.trim()) { message.warning('Escreva um trâmite'); return; }
+    if (!commentStatus) { message.warning('Selecione um status'); return; }
     setSending(true);
     try {
-      const newComment = await ticketService.addComment(id, {
-        message: comment,
+      let msg = comment.trim();
+      if (commentStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
+      else if (commentStatus === 'OPEN' && ticket.status !== 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
+      await ticketService.addComment(id, {
+        message: msg,
         attachments: commentFiles,
         createdAt: commentDate?.toISOString(),
       });
-      setTicket(prev => ({ ...prev, comments: [...prev.comments, newComment] }));
+      const updated = await ticketService.update(id, {
+        status: commentStatus,
+        statusId: commentStatus === 'RESOLVED' ? null : undefined,
+      });
+      setTicket(updated);
       setComment('');
       setCommentFiles([]);
       setCommentDate(dayjs());
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao enviar');
+      message.error(err.response?.data?.error || 'Erro ao gravar trâmite');
     } finally {
       setSending(false);
     }
@@ -450,7 +469,7 @@ export default function TicketDetail() {
                     icon={<LockOutlined />}
                     size="small"
                     style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: '#1d4ed8', borderColor: '#1d4ed8' }}
-                    onClick={() => setReopenModal(true)}
+                    onClick={() => openStatusChangeModal('OPEN')}
                   >
                     Reabrir
                   </Button>
@@ -635,7 +654,8 @@ export default function TicketDetail() {
                 const isSysResolved = c.message.startsWith('::SYS_RESOLVED::');
                 const isSysReopened = c.message.startsWith('::SYS_REOPENED::');
                 if (isSysResolved || isSysReopened) {
-                  const sysMsg = isSysResolved ? c.message.slice('::SYS_RESOLVED::'.length).trim() : null;
+                  const prefix = isSysResolved ? '::SYS_RESOLVED::' : '::SYS_REOPENED::';
+                  const sysMsg = c.message.slice(prefix.length).trim();
                   return (
                     <div key={c.id}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
@@ -659,8 +679,9 @@ export default function TicketDetail() {
                       {sysMsg && (
                         <div style={{
                           margin: '4px 40px 8px', padding: '8px 14px', borderRadius: 8, fontSize: 13,
-                          background: '#eff6ff', border: '1px solid #bfdbfe', color: '#374151',
-                          whiteSpace: 'pre-wrap', lineHeight: 1.6,
+                          background: isSysResolved ? '#eff6ff' : '#fff7ed',
+                          border: `1px solid ${isSysResolved ? '#bfdbfe' : '#fed7aa'}`,
+                          color: '#374151', whiteSpace: 'pre-wrap', lineHeight: 1.6,
                         }}>
                           {sysMsg}
                         </div>
@@ -861,6 +882,20 @@ export default function TicketDetail() {
                   </div>
                 )}
                 <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
+                  <Select
+                    value={commentStatus}
+                    style={{ width: '100%', borderRadius: 8 }}
+                    onChange={setCommentStatus}
+                    placeholder="Selecione um status obrigatório"
+                    size="middle"
+                  >
+                    {Object.entries(TICKET_STATUS).map(([k, { label }]) => (
+                      <Option key={k} value={k}>{label}</Option>
+                    ))}
+                  </Select>
+                </div>
+                <div style={{ marginTop: 8 }}>
                   <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>DATA / HORA DO TRÂMITE</div>
                   <DatePicker
                     showTime={{ format: 'HH:mm' }}
@@ -891,16 +926,16 @@ export default function TicketDetail() {
                     icon={<SendOutlined />}
                     loading={sending}
                     onClick={handleComment}
-                    disabled={!comment.trim()}
+                    disabled={!comment.trim() || !commentStatus}
                     style={{
-                      background: comment.trim() ? '#2563eb' : undefined,
-                      borderColor: comment.trim() ? '#2563eb' : undefined,
+                      background: comment.trim() && commentStatus ? '#2563eb' : undefined,
+                      borderColor: comment.trim() && commentStatus ? '#2563eb' : undefined,
                       borderRadius: 8,
                       fontWeight: 600,
                       color: '#fff',
                     }}
                   >
-                    Enviar
+                    Gravar
                   </Button>
                 </div>
               </div>
@@ -1019,73 +1054,81 @@ export default function TicketDetail() {
         </div>
       </Modal>
 
-      {/* Modal — Finalizar chamado */}
+      {/* Modal — Mudança de status com trâmite obrigatório */}
       <Modal
-        open={resolveModal}
-        onCancel={() => { setResolveModal(false); setResolveMessage(''); }}
+        open={statusChangeModal}
+        onCancel={() => setStatusChangeModal(false)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CheckCircleOutlined style={{ color: '#2563eb', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Finalizar Chamado</span>
+            {pendingStatus === 'RESOLVED' && <CheckCircleOutlined style={{ color: '#2563eb', fontSize: 20 }} />}
+            {pendingStatus === 'OPEN' && <UnlockOutlined style={{ color: '#c2410c', fontSize: 20 }} />}
+            {pendingStatus && !['RESOLVED', 'OPEN'].includes(pendingStatus) && <ExclamationCircleOutlined style={{ color: '#d97706', fontSize: 20 }} />}
+            <span style={{ fontWeight: 700 }}>
+              Alterar status para: {TICKET_STATUS[pendingStatus]?.label}
+            </span>
           </div>
         }
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button onClick={() => { setResolveModal(false); setResolveMessage(''); }}>Cancelar</Button>
+            <Button onClick={() => setStatusChangeModal(false)}>Cancelar</Button>
             <Button
               type="primary"
-              loading={resolveSaving}
-              disabled={!resolveMessage.trim()}
-              onClick={handleResolveConfirm}
+              loading={statusChangeSaving}
+              disabled={!statusChangeComment.trim()}
+              onClick={handleStatusChangeConfirm}
               style={{ background: '#2563eb', borderColor: '#2563eb' }}
             >
-              Finalizar
+              Confirmar
             </Button>
           </div>
         }
       >
-        <div style={{ padding: '8px 0' }}>
-          <p style={{ color: '#374151', marginBottom: 12 }}>
-            Informe a conclusão do chamado. Este trâmite será registrado e o chamado será marcado como <strong>Resolvido</strong>.
-          </p>
+        <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <TextArea
             rows={4}
-            value={resolveMessage}
-            onChange={e => setResolveMessage(e.target.value)}
-            placeholder="Descreva como o chamado foi resolvido..."
+            value={statusChangeComment}
+            onChange={e => setStatusChangeComment(e.target.value)}
+            placeholder="Descreva o trâmite desta mudança de status..."
             style={{ borderRadius: 8, resize: 'vertical' }}
             autoFocus
           />
-        </div>
-      </Modal>
-
-      {/* Modal — Reabrir chamado */}
-      <Modal
-        open={reopenModal}
-        onCancel={() => setReopenModal(false)}
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <UnlockOutlined style={{ color: '#c2410c', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Reabrir Chamado</span>
+          <div>
+            <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>DATA / HORA</div>
+            <DatePicker
+              showTime={{ format: 'HH:mm' }}
+              format="DD/MM/YYYY HH:mm"
+              value={statusChangeDate}
+              onChange={setStatusChangeDate}
+              allowClear={false}
+              style={{ width: '100%', borderRadius: 8 }}
+            />
           </div>
-        }
-        footer={
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button onClick={() => setReopenModal(false)}>Cancelar</Button>
-            <Button
-              loading={reopenSaving}
-              onClick={handleReopenConfirm}
-              style={{ background: '#f97316', borderColor: '#f97316', color: '#fff', fontWeight: 600 }}
-            >
-              Reabrir
-            </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Upload multiple beforeUpload={addStatusChangeFile} showUploadList={false}>
+              <Button icon={<PaperClipOutlined />} size="small" style={{ borderRadius: 6 }}>
+                Anexar arquivo
+              </Button>
+            </Upload>
+            {statusChangeFiles.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {statusChangeFiles.map((f, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    background: '#f3f4f6', borderRadius: 6, padding: '2px 8px', fontSize: 11,
+                  }}>
+                    <FileOutlined style={{ color: '#6b7280', fontSize: 10 }} />
+                    <span style={{ color: '#374151', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {f.name}
+                    </span>
+                    <button
+                      onClick={() => setStatusChangeFiles(prev => prev.filter((_, idx) => idx !== i))}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, lineHeight: 1 }}
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        }
-      >
-        <div style={{ padding: '8px 0' }}>
-          <p style={{ color: '#374151' }}>
-            Deseja reabrir o chamado? O status será alterado para <strong>Aberto</strong> e um trâmite de reabertura será registrado automaticamente.
-          </p>
         </div>
       </Modal>
 
