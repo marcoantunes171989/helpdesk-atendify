@@ -70,15 +70,18 @@ export default function Login() {
         .glass-form .ant-form-item-required::before { color: #fca5a5 !important; }
 
         /* Bloqueia a cor de autofill do browser */
+        .glass-form .ant-input {
+          color-scheme: dark;
+        }
         .glass-form .ant-input:-webkit-autofill,
         .glass-form .ant-input:-webkit-autofill:hover,
         .glass-form .ant-input:-webkit-autofill:focus,
         .glass-form .ant-input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 1000px rgba(28,28,32,0.92) inset !important;
-          box-shadow: 0 0 0 1000px rgba(28,28,32,0.92) inset !important;
+          -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,0.08) inset !important;
+          box-shadow: 0 0 0 1000px rgba(255,255,255,0.08) inset !important;
           -webkit-text-fill-color: #fff !important;
           caret-color: #fff !important;
-          transition: background-color 9999s ease !important;
+          transition: background-color 9999s ease, box-shadow 0s !important;
         }
       `}</style>
 
