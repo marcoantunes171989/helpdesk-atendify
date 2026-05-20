@@ -12,6 +12,7 @@ model Company {
   id                String     @id @default(cuid())
   code              Int?       @unique
   name              String
+  fantasia          String?
   cnpj              String     @unique
   stateRegistration String?
   email             String

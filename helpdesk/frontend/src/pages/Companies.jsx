@@ -283,6 +283,9 @@ export default function Companies() {
             <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
               <Input placeholder="Nome oficial da empresa" />
             </Form.Item>
+            <Form.Item name="fantasia" label="Nome Fantasia" style={{ marginBottom: 12 }}>
+              <Input placeholder="Nome comercial / fantasia" />
+            </Form.Item>
             <Row gutter={12}>
               <Col xs={24} sm={13}>
                 <Form.Item

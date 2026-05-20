@@ -50,7 +50,7 @@ exports.links = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { name, cnpj, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes } = req.body;
+  const { name, fantasia, cnpj, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes } = req.body;
 
   if (!name || !cnpj || !email) {
     return res.status(400).json({ error: 'Nome, CNPJ e email são obrigatórios' });
@@ -71,14 +71,14 @@ exports.create = async (req, res) => {
   if (byPhone) return res.status(409).json({ error: 'Telefone já cadastrado para outra empresa' });
 
   const company = await prisma.company.create({
-    data: { name, cnpj: cnpjClean, stateRegistration, email, phone: phoneClean, website, zipCode: zipClean, street, addressNumber, complement, neighborhood, city, state, notes },
+    data: { name, fantasia: fantasia || null, cnpj: cnpjClean, stateRegistration, email, phone: phoneClean, website, zipCode: zipClean, street, addressNumber, complement, neighborhood, city, state, notes },
   });
   res.status(201).json(company);
 };
 
 exports.update = async (req, res) => {
   const { id } = req.params;
-  const { name, cnpj, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes, active } = req.body;
+  const { name, fantasia, cnpj, stateRegistration, email, phone, website, zipCode, street, addressNumber, complement, neighborhood, city, state, notes, active } = req.body;
 
   const cnpjClean = cnpj ? cnpj.replace(/\D/g, '') : undefined;
   const phoneClean = phone ? phone.replace(/\D/g, '') : null;
@@ -96,7 +96,7 @@ exports.update = async (req, res) => {
 
   const company = await prisma.company.update({
     where: { id },
-    data: { name, cnpj: cnpjClean, stateRegistration, email, phone: phoneClean, website, zipCode: zipClean, street, addressNumber, complement, neighborhood, city, state, notes, active },
+    data: { name, fantasia: fantasia ?? null, cnpj: cnpjClean, stateRegistration, email, phone: phoneClean, website, zipCode: zipClean, street, addressNumber, complement, neighborhood, city, state, notes, active },
   });
   res.json(company);
 };

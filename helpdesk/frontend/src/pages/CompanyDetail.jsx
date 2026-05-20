@@ -371,6 +371,9 @@ export default function CompanyDetail() {
             <Form.Item name="name" label="Razão Social" rules={[{ required: true }]}>
               <Input placeholder="Razão social" size="large" />
             </Form.Item>
+            <Form.Item name="fantasia" label="Nome Fantasia">
+              <Input placeholder="Nome comercial / fantasia" size="large" />
+            </Form.Item>
             <Row gutter={16}>
               <Col xs={24} sm={14}>
                 <Form.Item name="email" label="E-mail" rules={[{ required: true }, { type: 'email' }]}>
