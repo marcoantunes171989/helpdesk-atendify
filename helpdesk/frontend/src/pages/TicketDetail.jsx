@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Tag, Button, Select, Space, Typography, Divider, Input, Modal,
+  Tag, Button, Select, Space, Typography, Divider, Input, Modal, Drawer,
   Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload, Popconfirm,
   DatePicker,
 } from 'antd';
@@ -81,6 +81,26 @@ export default function TicketDetail() {
   const [statusChangeFiles, setStatusChangeFiles] = useState([]);
   const [statusChangeSaving, setStatusChangeSaving] = useState(false);
   const [commentStatusId, setCommentStatusId] = useState(null);
+
+  const disabledDate = (current) => current && current.isAfter(dayjs(), 'day');
+  const disabledTime = (current) => {
+    if (!current || !current.isSame(dayjs(), 'day')) return {};
+    const now = dayjs();
+    const h = now.hour();
+    const m = now.minute();
+    return {
+      disabledHours: () => Array.from({ length: 23 - h }, (_, i) => h + 1 + i),
+      disabledMinutes: (hour) => hour === h
+        ? Array.from({ length: 59 - m }, (_, i) => m + 1 + i)
+        : [],
+    };
+  };
+  const datePickerFooter = () => (
+    <div style={{ padding: '4px 2px', fontSize: 12, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 5 }}>
+      <ExclamationCircleOutlined style={{ fontSize: 11 }} />
+      Datas e horários futuros não são permitidos
+    </div>
+  );
 
   const load = () => {
     ticketService.get(id)
@@ -969,18 +989,22 @@ export default function TicketDetail() {
         </div>
       </Modal>
 
-      {/* Modal — Novo trâmite */}
-      <Modal
-        open={tramiteModal}
-        onCancel={() => setTramiteModal(false)}
+      {/* Drawer — Novo trâmite */}
+      <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <MessageOutlined style={{ color: '#2563eb', fontSize: 18 }} />
-            <span style={{ fontWeight: 700 }}>Novo Trâmite</span>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <MessageOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>Novo Trâmite</span>
           </div>
         }
-        footer={
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        open={tramiteModal}
+        onClose={() => setTramiteModal(false)}
+        width="100%"
+        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
+        extra={
+          <Space>
             <Button onClick={() => setTramiteModal(false)}>Cancelar</Button>
             <Button
               type="primary"
@@ -992,91 +1016,97 @@ export default function TicketDetail() {
             >
               Gravar
             </Button>
-          </div>
+          </Space>
         }
-        width={600}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '8px 0' }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-              TRÂMITE <span style={{ color: '#dc2626' }}>*</span>
-            </div>
-            <TextArea
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              rows={4}
-              placeholder="Descreva o trâmite..."
-              style={{ borderRadius: 8, resize: 'vertical' }}
-              autoFocus
-              onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
-            />
-          </div>
-
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-              STATUS <span style={{ color: '#dc2626' }}>*</span>
-            </div>
-            <Select
-              value={commentStatusId}
-              style={{ width: '100%' }}
-              onChange={setCommentStatusId}
-              placeholder="Selecione o status do chamado"
-              status={!commentStatusId ? 'warning' : ''}
-            >
-              {statuses.map(s => (
-                <Option key={s.id} value={s.id}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
-                    {s.name}
-                  </span>
-                </Option>
-              ))}
-            </Select>
-          </div>
-
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-              DATA / HORA DO LANÇAMENTO <span style={{ color: '#dc2626' }}>*</span>
-            </div>
-            <DatePicker
-              showTime={{ format: 'HH:mm' }}
-              format="DD/MM/YYYY HH:mm"
-              value={commentDate}
-              onChange={setCommentDate}
-              allowClear={false}
-              style={{ width: '100%', borderRadius: 8 }}
-            />
-          </div>
-
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>ANEXOS</div>
-            <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
-              <Button icon={<PaperClipOutlined />} style={{ borderRadius: 8 }}>
-                Adicionar arquivo
-              </Button>
-            </Upload>
-            {commentFiles.length > 0 && (
-              <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {commentFiles.map((f, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    background: '#f3f4f6', borderRadius: 6, padding: '3px 10px', fontSize: 12,
-                  }}>
-                    <FileOutlined style={{ color: '#6b7280', fontSize: 11 }} />
-                    <span style={{ color: '#374151', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {f.name}
-                    </span>
-                    <button
-                      onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, fontSize: 14, lineHeight: 1 }}
-                    >×</button>
-                  </div>
-                ))}
+        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Trâmite <span style={{ color: '#dc2626' }}>*</span>
               </div>
-            )}
+              <TextArea
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                rows={8}
+                placeholder="Descreva o trâmite..."
+                style={{ borderRadius: 8, resize: 'vertical' }}
+                autoFocus
+                onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
+              />
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Status <span style={{ color: '#dc2626' }}>*</span>
+              </div>
+              <Select
+                value={commentStatusId}
+                style={{ width: '100%' }}
+                size="large"
+                onChange={setCommentStatusId}
+                placeholder="Selecione o status do chamado"
+                status={!commentStatusId ? 'warning' : ''}
+              >
+                {statuses.map(s => (
+                  <Option key={s.id} value={s.id}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
+                      {s.name}
+                    </span>
+                  </Option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Data / Hora do Lançamento <span style={{ color: '#dc2626' }}>*</span>
+              </div>
+              <DatePicker
+                showTime={{ format: 'HH:mm' }}
+                format="DD/MM/YYYY HH:mm"
+                value={commentDate}
+                onChange={setCommentDate}
+                allowClear={false}
+                size="large"
+                style={{ width: '100%', borderRadius: 8 }}
+                disabledDate={disabledDate}
+                disabledTime={disabledTime}
+                renderExtraFooter={datePickerFooter}
+              />
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Anexos</div>
+              <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
+                <Button icon={<PaperClipOutlined />} size="large" style={{ borderRadius: 8 }}>
+                  Adicionar arquivo
+                </Button>
+              </Upload>
+              {commentFiles.length > 0 && (
+                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {commentFiles.map((f, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: '#f3f4f6', borderRadius: 6, padding: '4px 12px', fontSize: 13,
+                    }}>
+                      <FileOutlined style={{ color: '#6b7280', fontSize: 12 }} />
+                      <span style={{ color: '#374151', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {f.name}
+                      </span>
+                      <button
+                        onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, fontSize: 16, lineHeight: 1 }}
+                      >×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
       {/* Modal — Mudança de status com trâmite obrigatório */}
       <Modal
@@ -1129,6 +1159,9 @@ export default function TicketDetail() {
               onChange={setStatusChangeDate}
               allowClear={false}
               style={{ width: '100%', borderRadius: 8 }}
+              disabledDate={disabledDate}
+              disabledTime={disabledTime}
+              renderExtraFooter={datePickerFooter}
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
