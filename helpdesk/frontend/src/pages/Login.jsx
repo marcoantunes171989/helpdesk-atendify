@@ -115,27 +115,7 @@ export default function Login() {
           justifyContent: 'space-between',
           padding: '48px 56px 52px',
         }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 38, height: 38, borderRadius: 10,
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.18)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="white" />
-              </svg>
-            </div>
-            <span style={{
-              color: 'rgba(255,255,255,0.92)', fontSize: 20, fontWeight: 700,
-              fontFamily: "'Poppins', sans-serif",
-              textShadow: '0 1px 8px rgba(0,0,0,0.6)',
-            }}>
-              Atendexa
-            </span>
-          </div>
+          <div />
 
           {/* Tagline + features */}
           <div style={{ maxWidth: 380 }}>
