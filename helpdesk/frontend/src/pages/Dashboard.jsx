@@ -59,7 +59,8 @@ export default function Dashboard() {
     ? (() => {
         const q = search.toLowerCase();
         return recentTickets.filter(r => [
-          r.id, r.title, r.user?.name, r.category?.name,
+          r.id, r.title, r.category?.name,
+          r.company?.name, r.company?.fantasia, r.employee?.name,
           TICKET_STATUS[r.status]?.label, PRIORITY[r.priority]?.label,
         ].some(f => (f || '').toLowerCase().includes(q)));
       })()
@@ -83,7 +84,23 @@ export default function Dashboard() {
       title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,
       render: v => <span style={{ fontWeight: 500, color: '#111827' }}>{v}</span>,
     },
-    { title: 'Solicitante', dataIndex: ['user', 'name'], key: 'user', render: v => <span style={{ color: '#6b7280' }}>{v}</span> },
+    {
+      title: 'Empresa', key: 'company',
+      render: (_, r) => (
+        <div>
+          <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          {r.company?.fantasia && (
+            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{r.company.fantasia}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: 'Funcionário', key: 'employee',
+      render: (_, r) => r.employee?.name
+        ? <span style={{ color: '#6b7280', fontSize: 13 }}>{r.employee.name}</span>
+        : <span style={{ color: '#d1d5db' }}>—</span>,
+    },
     { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', render: v => v ? <span style={{ color: '#6b7280' }}>{v}</span> : <span style={{ color: '#d1d5db' }}>—</span> },
     {
       title: 'Status', dataIndex: 'status', key: 'status',

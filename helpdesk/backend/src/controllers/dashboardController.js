@@ -58,6 +58,8 @@ exports.stats = async (req, res) => {
     include: {
       user: { select: { name: true } },
       category: { select: { name: true } },
+      company: { select: { name: true, fantasia: true } },
+      employee: { select: { name: true } },
     },
   });
 
