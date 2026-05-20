@@ -79,6 +79,7 @@ model Category {
 
 model Ticket {
   id          String       @id @default(cuid())
+  code        Int?         @unique
   title       String
   description String
   status      TicketStatus @default(OPEN)

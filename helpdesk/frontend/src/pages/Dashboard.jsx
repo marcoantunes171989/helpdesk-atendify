@@ -77,9 +77,13 @@ export default function Dashboard() {
 
   const columns = [
     {
-      title: 'ID', dataIndex: 'id', key: 'id', width: 80,
-      sorter: (a, b) => a.id.localeCompare(b.id),
-      render: v => <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>{v.slice(-6).toUpperCase()}</code>,
+      title: '#', dataIndex: 'code', key: 'code', width: 70,
+      sorter: (a, b) => (a.code || 0) - (b.code || 0),
+      render: v => (
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
+          {v ? String(v).padStart(4, '0') : '—'}
+        </span>
+      ),
     },
     {
       title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,

@@ -74,7 +74,7 @@ exports.list = async (req, res) => {
       company: { select: { id: true, name: true, fantasia: true } },
       _count: { select: { comments: true, attachments: true } },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { code: { sort: 'asc', nulls: 'last' } },
   });
 
   res.json(tickets);
@@ -111,8 +111,12 @@ exports.create = async (req, res) => {
 
   const { statusId } = req.body;
 
+  const lastTicket = await prisma.ticket.findFirst({ orderBy: { code: 'desc' } });
+  const code = (lastTicket?.code ?? 0) + 1;
+
   const ticket = await prisma.ticket.create({
     data: {
+      code,
       title,
       description,
       priority: priority || 'MEDIUM',
