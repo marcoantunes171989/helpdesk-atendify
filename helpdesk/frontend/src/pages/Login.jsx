@@ -38,10 +38,18 @@ export default function Login() {
           position: 'relative',
           overflow: 'hidden',
           backgroundColor: '#111827',
-          backgroundImage: `url('${PHOTO_URL}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center center',
         }}>
+          {/* Imagem completa sem cortes */}
+          <img
+            src={PHOTO_URL}
+            alt=""
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'contain',
+              objectPosition: 'center center',
+            }}
+          />
           {/* Overlay gradiente escuro para legibilidade */}
           <div style={{
             position: 'absolute', inset: 0,
