@@ -14,7 +14,7 @@ h1, h2, h3, h4, h5 {
   font-family: 'Poppins', 'Inter', sans-serif;
 }
 
-/* ── Page structure ── */
+/* -- Page structure -- */
 .page-wrap {
   margin: -24px;
   padding: 28px 28px 48px;
@@ -53,7 +53,7 @@ h1, h2, h3, h4, h5 {
   .page-header > *:last-child .ant-btn { flex: 1; }
 }
 
-/* ── Glass table container ── */
+/* -- Glass table container -- */
 .page-table-wrap {
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(20px);
@@ -64,7 +64,7 @@ h1, h2, h3, h4, h5 {
   box-shadow: 0 4px 28px rgba(0,0,0,0.35);
 }
 
-/* ── Dark filter bar ── */
+/* -- Dark filter bar -- */
 .filter-bar {
   display: flex;
   gap: 10px;
@@ -78,7 +78,7 @@ h1, h2, h3, h4, h5 {
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* ── Form section labels ── */
+/* -- Form section labels -- */
 .form-section-label {
   font-size: 11px;
   font-weight: 700;
@@ -93,17 +93,35 @@ h1, h2, h3, h4, h5 {
   margin: 0 auto;
 }
 
-/* ════════════════════════════════════════
-   Ant Design dark overrides — Table
-   ════════════════════════════════════════ */
+/* ============================================================
+   Ant Design dark overrides - Table
+   ============================================================ */
+
+/* Zerar todos os backgrounds da cadeia de wrappers */
+.page-table-wrap .ant-table-wrapper,
+.page-table-wrap .ant-spin-nested-loading,
+.page-table-wrap .ant-spin-container,
 .page-table-wrap .ant-table,
-.db-dark .ant-table {
+.page-table-wrap .ant-table-container,
+.page-table-wrap .ant-table-content,
+.page-table-wrap .ant-table-body,
+.page-table-wrap .ant-table-header,
+.db-dark .ant-table-wrapper,
+.db-dark .ant-spin-nested-loading,
+.db-dark .ant-spin-container,
+.db-dark .ant-table,
+.db-dark .ant-table-container,
+.db-dark .ant-table-content,
+.db-dark .ant-table-body {
   background: transparent !important;
   color: rgba(255,255,255,0.82) !important;
 }
 
+/* Cabecalho */
 .page-table-wrap .ant-table-thead > tr > th,
-.db-dark .ant-table-thead > tr > th {
+.page-table-wrap .ant-table-thead > tr > td,
+.db-dark .ant-table-thead > tr > th,
+.db-dark .ant-table-thead > tr > td {
   background: rgba(255,255,255,0.04) !important;
   color: rgba(255,255,255,0.38) !important;
   border-bottom: 1px solid rgba(255,255,255,0.07) !important;
@@ -114,23 +132,57 @@ h1, h2, h3, h4, h5 {
   padding: 10px 12px !important;
 }
 
+/* Linhas - sem background */
+.page-table-wrap .ant-table-tbody > tr,
+.page-table-wrap .ant-table-tbody > tr.ant-table-row,
+.db-dark .ant-table-tbody > tr,
+.db-dark .ant-table-tbody > tr.ant-table-row {
+  background: transparent !important;
+}
+
+/* Celulas - sem background (incluindo ant-table-cell-row-hover do Ant Design 5) */
 .page-table-wrap .ant-table-tbody > tr > td,
-.db-dark .ant-table-tbody > tr > td {
+.page-table-wrap .ant-table-tbody > tr > td.ant-table-cell,
+.page-table-wrap .ant-table-tbody > tr > td.ant-table-cell-row-hover,
+.page-table-wrap .ant-table-tbody > tr.ant-table-row > td,
+.db-dark .ant-table-tbody > tr > td,
+.db-dark .ant-table-tbody > tr > td.ant-table-cell,
+.db-dark .ant-table-tbody > tr > td.ant-table-cell-row-hover,
+.db-dark .ant-table-tbody > tr.ant-table-row > td {
   border-bottom: 1px solid rgba(255,255,255,0.05) !important;
   background: transparent !important;
   color: rgba(255,255,255,0.75) !important;
 }
 
+/* Hover sutil */
+.page-table-wrap .ant-table-tbody > tr.ant-table-row:hover > td,
 .page-table-wrap .ant-table-tbody > tr:hover > td,
+.db-dark .ant-table-tbody > tr.ant-table-row:hover > td,
 .db-dark .ant-table-tbody > tr:hover > td {
   background: rgba(255,255,255,0.04) !important;
 }
 
+/* Ultima linha sem borda */
 .page-table-wrap .ant-table-tbody > tr:last-child > td,
 .db-dark .ant-table-tbody > tr:last-child > td {
   border-bottom: none !important;
 }
 
+/* Linha selecionada */
+.page-table-wrap .ant-table-tbody > tr.ant-table-row-selected > td,
+.db-dark .ant-table-tbody > tr.ant-table-row-selected > td {
+  background: rgba(37,99,235,0.12) !important;
+}
+
+/* Placeholder vazio */
+.page-table-wrap .ant-table-placeholder,
+.db-dark .ant-table-placeholder { background: transparent !important; }
+.page-table-wrap .ant-table-placeholder td,
+.db-dark .ant-table-placeholder td { background: transparent !important; border-bottom: none !important; }
+.page-table-wrap .ant-empty-description,
+.db-dark .ant-empty-description { color: rgba(255,255,255,0.3) !important; }
+
+/* Sorter */
 .page-table-wrap .ant-table-column-sorter,
 .db-dark .ant-table-column-sorter { color: rgba(255,255,255,0.2) !important; }
 
@@ -139,11 +191,7 @@ h1, h2, h3, h4, h5 {
 .db-dark .ant-table-column-sorter-up.active,
 .db-dark .ant-table-column-sorter-down.active { color: #60a5fa !important; }
 
-.page-table-wrap .ant-table-container { background: transparent !important; }
-.page-table-wrap .ant-spin-nested-loading { background: transparent !important; }
-.page-table-wrap .ant-spin-container { background: transparent !important; }
-
-/* Pagination */
+/* Paginacao */
 .page-table-wrap .ant-pagination-item,
 .db-dark .ant-pagination-item {
   background: rgba(255,255,255,0.05) !important;
@@ -174,9 +222,9 @@ h1, h2, h3, h4, h5 {
 }
 .page-table-wrap .ant-pagination .ant-select-arrow { color: rgba(255,255,255,0.3) !important; }
 
-/* ════════════════════════════════════════
-   Ant Design dark overrides — Inputs / Selects in filter-bar
-   ════════════════════════════════════════ */
+/* ============================================================
+   Ant Design dark overrides - Inputs / Selects em filter-bar
+   ============================================================ */
 .filter-bar .ant-input-affix-wrapper,
 .page-table-wrap .ant-input-affix-wrapper,
 .db-dark .ant-input-affix-wrapper {
@@ -206,7 +254,7 @@ h1, h2, h3, h4, h5 {
 .db-dark .anticon { color: rgba(255,255,255,0.35) !important; }
 .db-dark .ant-btn-text:hover { background: rgba(255,255,255,0.06) !important; }
 
-/* Select in filter-bar */
+/* Select em filter-bar */
 .filter-bar .ant-select-selector {
   background: rgba(255,255,255,0.07) !important;
   border-color: rgba(255,255,255,0.12) !important;
@@ -223,9 +271,9 @@ h1, h2, h3, h4, h5 {
   color: rgba(255,255,255,0.82) !important;
 }
 
-/* ════════════════════════════════════════
-   Ant Design dark overrides — Layout / Nav
-   ════════════════════════════════════════ */
+/* ============================================================
+   Ant Design dark overrides - Layout / Nav
+   ============================================================ */
 .ant-layout-sider {
   box-shadow: 1px 0 0 rgba(255,255,255,0.07) !important;
 }
@@ -238,9 +286,9 @@ h1, h2, h3, h4, h5 {
 .app-sidebar .ant-menu-item-selected .anticon { color: #60a5fa !important; }
 .app-sidebar .ant-menu-item .anticon { color: inherit !important; }
 
-/* ════════════════════════════════════════
+/* ============================================================
    Misc global
-   ════════════════════════════════════════ */
+   ============================================================ */
 .ant-tag {
   border-radius: 6px !important;
   font-weight: 500 !important;

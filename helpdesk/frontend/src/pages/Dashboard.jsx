@@ -41,16 +41,18 @@ const DB_STYLE = `
   @media (max-width: 900px)  { .db-stat-grid { grid-template-columns: repeat(2,1fr); } .db-chart-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px)  { .db-wrap { margin: -16px; padding: 20px 16px 32px; } }
 
-  .db-dark .ant-table { background: transparent !important; color: rgba(255,255,255,.82) !important; }
-  .db-dark .ant-table-thead > tr > th {
+  .db-dark .ant-table-wrapper,.db-dark .ant-spin-nested-loading,.db-dark .ant-spin-container,.db-dark .ant-table,.db-dark .ant-table-container,.db-dark .ant-table-content,.db-dark .ant-table-body { background: transparent !important; }
+  .db-dark .ant-table-thead > tr > th,.db-dark .ant-table-thead > tr > td {
     background: rgba(255,255,255,.04) !important; color: rgba(255,255,255,.38) !important;
     border-bottom: 1px solid rgba(255,255,255,.07) !important;
     font-size: 10px !important; font-weight: 700 !important;
     text-transform: uppercase; letter-spacing: .08em !important; padding: 10px 12px !important;
   }
-  .db-dark .ant-table-tbody > tr > td { border-bottom: 1px solid rgba(255,255,255,.05) !important; background: transparent !important; color: rgba(255,255,255,.75) !important; }
-  .db-dark .ant-table-tbody > tr:hover > td { background: rgba(255,255,255,.04) !important; }
+  .db-dark .ant-table-tbody > tr,.db-dark .ant-table-tbody > tr.ant-table-row { background: transparent !important; }
+  .db-dark .ant-table-tbody > tr > td,.db-dark .ant-table-tbody > tr > td.ant-table-cell,.db-dark .ant-table-tbody > tr > td.ant-table-cell-row-hover { border-bottom: 1px solid rgba(255,255,255,.05) !important; background: transparent !important; color: rgba(255,255,255,.75) !important; }
+  .db-dark .ant-table-tbody > tr.ant-table-row:hover > td,.db-dark .ant-table-tbody > tr:hover > td { background: rgba(255,255,255,.04) !important; }
   .db-dark .ant-table-tbody > tr:last-child > td { border-bottom: none !important; }
+  .db-dark .ant-table-placeholder,.db-dark .ant-table-placeholder td { background: transparent !important; border-bottom: none !important; }
   .db-dark .ant-table-column-sorter { color: rgba(255,255,255,.2) !important; }
   .db-dark .ant-table-column-sorter-up.active, .db-dark .ant-table-column-sorter-down.active { color: #60a5fa !important; }
   .db-dark .ant-input-affix-wrapper { background: rgba(255,255,255,.07) !important; border-color: rgba(255,255,255,.12) !important; box-shadow: none !important; }
