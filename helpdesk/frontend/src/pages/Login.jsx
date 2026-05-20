@@ -46,12 +46,25 @@ export default function Login() {
           box-shadow: none !important;
         }
         .glass-form .ant-input-affix-wrapper:hover,
-        .glass-form .ant-input-affix-wrapper:focus-within {
-          border-color: rgba(255,255,255,0.4) !important;
+        .glass-form .ant-input-affix-wrapper:focus-within,
+        .glass-form .ant-input-affix-wrapper-focused {
+          background: rgba(255,255,255,0.08) !important;
+          border-color: rgba(255,255,255,0.38) !important;
+          box-shadow: none !important;
         }
-        .glass-form .ant-input:focus { border-color: rgba(255,255,255,0.4) !important; }
-        .glass-form .ant-input::placeholder { color: rgba(255,255,255,0.3) !important; }
+        .glass-form .ant-input:focus,
+        .glass-form .ant-input:hover {
+          background: rgba(255,255,255,0.08) !important;
+          border-color: rgba(255,255,255,0.38) !important;
+          box-shadow: none !important;
+        }
+        .glass-form .ant-input::placeholder { color: rgba(255,255,255,0.28) !important; }
         .glass-form .ant-input-affix-wrapper .ant-input { background: transparent !important; }
+        .glass-form .ant-input-affix-wrapper .ant-input:focus,
+        .glass-form .ant-input-affix-wrapper .ant-input:hover {
+          background: transparent !important;
+          box-shadow: none !important;
+        }
         .glass-form .anticon { color: rgba(255,255,255,0.4) !important; }
         .glass-form .ant-form-item-explain-error { color: #fca5a5 !important; }
         .glass-form .ant-form-item-required::before { color: #fca5a5 !important; }
@@ -142,15 +155,29 @@ export default function Login() {
                 { icon: '🔒', text: 'Controle de acesso por perfil e permissão' },
               ].map(item => (
                 <div key={item.text} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  background: 'rgba(0,0,0,0.3)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 10,
-                  padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  background: 'rgba(255,255,255,0.06)',
+                  backdropFilter: 'blur(28px)',
+                  WebkitBackdropFilter: 'blur(28px)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderTop: '1px solid rgba(255,255,255,0.18)',
+                  borderRadius: 14,
+                  padding: '13px 18px',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
                 }}>
-                  <span style={{ fontSize: 15 }}>{item.icon}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.82)', fontSize: 13, lineHeight: 1.4 }}>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 15,
+                  }}>
+                    {item.icon}
+                  </div>
+                  <span style={{
+                    color: 'rgba(255,255,255,0.82)', fontSize: 13,
+                    fontWeight: 400, lineHeight: 1.4, letterSpacing: '0.01em',
+                  }}>
                     {item.text}
                   </span>
                 </div>
