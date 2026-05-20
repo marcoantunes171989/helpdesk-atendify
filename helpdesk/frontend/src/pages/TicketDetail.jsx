@@ -74,6 +74,7 @@ export default function TicketDetail() {
   const [editingCommentSaving, setEditingCommentSaving] = useState(false);
   const [commentDate, setCommentDate] = useState(dayjs());
 
+  const [tramiteModal, setTramiteModal] = useState(false);
   const [statusChangeModal, setStatusChangeModal] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(null);
   const [statusChangeComment, setStatusChangeComment] = useState('');
@@ -264,6 +265,7 @@ export default function TicketDetail() {
       setComment('');
       setCommentFiles([]);
       setCommentDate(dayjs());
+      setTramiteModal(false);
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao gravar trâmite');
     } finally {
@@ -852,91 +854,15 @@ export default function TicketDetail() {
 
             {!isClosed && (
               <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #f3f4f6' }}>
-                <TextArea
-                  value={comment}
-                  onChange={e => setComment(e.target.value)}
-                  rows={3}
-                  placeholder="Escreva um trâmite..."
-                  style={{ borderRadius: 8, resize: 'none' }}
-                  onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
-                />
-                {commentFiles.length > 0 && (
-                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {commentFiles.map((f, i) => (
-                      <div key={i} style={{
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        background: '#f3f4f6', borderRadius: 6, padding: '3px 10px', fontSize: 12, maxWidth: 220,
-                      }}>
-                        <FileOutlined style={{ color: '#6b7280', fontSize: 11, flexShrink: 0 }} />
-                        <span style={{ color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {f.name}
-                        </span>
-                        <button
-                          onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, fontSize: 14, lineHeight: 1 }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
-                  <Select
-                    value={commentStatus}
-                    style={{ width: '100%', borderRadius: 8 }}
-                    onChange={setCommentStatus}
-                    placeholder="Selecione um status obrigatório"
-                    size="middle"
-                  >
-                    {Object.entries(TICKET_STATUS).map(([k, { label }]) => (
-                      <Option key={k} value={k}>{label}</Option>
-                    ))}
-                  </Select>
-                </div>
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>DATA / HORA DO TRÂMITE</div>
-                  <DatePicker
-                    showTime={{ format: 'HH:mm' }}
-                    format="DD/MM/YYYY HH:mm"
-                    value={commentDate}
-                    onChange={setCommentDate}
-                    allowClear={false}
-                    style={{ width: '100%', borderRadius: 8 }}
-                    placeholder="Selecione a data e hora"
-                  />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                  <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
-                    <Tooltip title="Anexar arquivo">
-                      <Button
-                        type="text"
-                        icon={
-                          <Badge count={commentFiles.length} size="small" offset={[6, -4]}>
-                            <PaperClipOutlined style={{ fontSize: 17 }} />
-                          </Badge>
-                        }
-                        style={{ color: commentFiles.length > 0 ? '#2563eb' : '#9ca3af' }}
-                      />
-                    </Tooltip>
-                  </Upload>
-                  <Button
-                    type="primary"
-                    icon={<SendOutlined />}
-                    loading={sending}
-                    onClick={handleComment}
-                    disabled={!comment.trim() || !commentStatus}
-                    style={{
-                      background: comment.trim() && commentStatus ? '#2563eb' : undefined,
-                      borderColor: comment.trim() && commentStatus ? '#2563eb' : undefined,
-                      borderRadius: 8,
-                      fontWeight: 600,
-                      color: '#fff',
-                    }}
-                  >
-                    Gravar
-                  </Button>
+                <div
+                  onClick={() => { setComment(''); setCommentFiles([]); setCommentDate(dayjs()); setTramiteModal(true); }}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 14,
+                    color: '#9ca3af', background: '#f9fafb', border: '1px dashed #d1d5db',
+                    cursor: 'pointer', userSelect: 'none',
+                  }}
+                >
+                  + Clique para adicionar um trâmite...
                 </div>
               </div>
             )}
@@ -1050,6 +976,110 @@ export default function TicketDetail() {
           </p>
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
             Todos os trâmites vinculados também serão removidos.
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal — Novo trâmite */}
+      <Modal
+        open={tramiteModal}
+        onCancel={() => setTramiteModal(false)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <MessageOutlined style={{ color: '#2563eb', fontSize: 18 }} />
+            <span style={{ fontWeight: 700 }}>Novo Trâmite</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setTramiteModal(false)}>Cancelar</Button>
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              loading={sending}
+              disabled={!comment.trim() || !commentStatus}
+              onClick={handleComment}
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}
+            >
+              Gravar
+            </Button>
+          </div>
+        }
+        width={600}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '8px 0' }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              TRÂMITE <span style={{ color: '#dc2626' }}>*</span>
+            </div>
+            <TextArea
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              rows={4}
+              placeholder="Descreva o trâmite..."
+              style={{ borderRadius: 8, resize: 'vertical' }}
+              autoFocus
+              onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
+            />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              STATUS <span style={{ color: '#dc2626' }}>*</span>
+            </div>
+            <Select
+              value={commentStatus}
+              style={{ width: '100%' }}
+              onChange={setCommentStatus}
+              placeholder="Selecione o status do chamado"
+              status={!commentStatus ? 'warning' : ''}
+            >
+              {Object.entries(TICKET_STATUS).map(([k, { label }]) => (
+                <Option key={k} value={k}>{label}</Option>
+              ))}
+            </Select>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              DATA / HORA DO LANÇAMENTO <span style={{ color: '#dc2626' }}>*</span>
+            </div>
+            <DatePicker
+              showTime={{ format: 'HH:mm' }}
+              format="DD/MM/YYYY HH:mm"
+              value={commentDate}
+              onChange={setCommentDate}
+              allowClear={false}
+              style={{ width: '100%', borderRadius: 8 }}
+            />
+          </div>
+
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>ANEXOS</div>
+            <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
+              <Button icon={<PaperClipOutlined />} style={{ borderRadius: 8 }}>
+                Adicionar arquivo
+              </Button>
+            </Upload>
+            {commentFiles.length > 0 && (
+              <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {commentFiles.map((f, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: '#f3f4f6', borderRadius: 6, padding: '3px 10px', fontSize: 12,
+                  }}>
+                    <FileOutlined style={{ color: '#6b7280', fontSize: 11 }} />
+                    <span style={{ color: '#374151', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {f.name}
+                    </span>
+                    <button
+                      onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, fontSize: 14, lineHeight: 1 }}
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Modal>
