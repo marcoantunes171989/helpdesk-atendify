@@ -163,23 +163,23 @@
 .lp-hero-stats {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  align-items: flex-end;
+  gap: 14px;
+  align-items: stretch;
 }
 
 .lp-hero-stat-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   background: rgba(8,8,20,0.72);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.12);
   border-top: 1px solid rgba(255,255,255,0.18);
-  border-radius: 16px;
-  padding: 16px 20px;
+  border-radius: 18px;
+  padding: 22px 28px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.08) inset;
-  min-width: 220px;
+  width: 100%;
   transition: transform 0.2s;
 }
 
@@ -188,21 +188,29 @@
 }
 
 .lp-hero-stat-icon {
-  font-size: 24px;
+  font-size: 30px;
   flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .lp-hero-stat-val {
   font-family: 'Poppins', sans-serif;
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 800;
   color: #fff;
   line-height: 1;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .lp-hero-stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255,255,255,0.5);
   font-weight: 500;
 }
@@ -1111,8 +1119,8 @@
 
   .lp-hero { padding: 100px 24px 60px; }
   .lp-hero-inner { grid-template-columns: 1fr; gap: 40px; }
-  .lp-hero-stats { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
-  .lp-hero-stat-card { min-width: 180px; flex: 1; }
+  .lp-hero-stats { flex-direction: row; flex-wrap: wrap; }
+  .lp-hero-stat-card { flex: 1; min-width: 200px; }
   .lp-hero-title { font-size: 46px; }
   .lp-hero-subtitle { max-width: 100%; }
 
