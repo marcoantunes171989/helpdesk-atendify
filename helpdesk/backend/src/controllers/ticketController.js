@@ -74,7 +74,7 @@ exports.list = async (req, res) => {
       company: { select: { id: true, name: true, fantasia: true } },
       _count: { select: { comments: true, attachments: true } },
     },
-    orderBy: { code: { sort: 'asc', nulls: 'last' } },
+    orderBy: { code: { sort: 'desc', nulls: 'last' } },
   });
 
   res.json(tickets);

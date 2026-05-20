@@ -182,6 +182,7 @@ export default function Tickets() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
+      defaultSortOrder: 'descend',
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
