@@ -24,25 +24,25 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { name, description, observation, color } = req.body;
+  const { name, description, observation, color, builtinStatus } = req.body;
   if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
   const last = await prisma.ticketStatusRef.findFirst({ orderBy: { code: 'desc' } });
   const code = (last?.code ?? 0) + 1;
 
   const status = await prisma.ticketStatusRef.create({
-    data: { code, name, description, observation, color: color || '#6b7280' },
+    data: { code, name, description, observation, color: color || '#6b7280', builtinStatus: builtinStatus || null },
   });
   res.status(201).json(status);
 };
 
 exports.update = async (req, res) => {
-  const { name, description, observation, color, active } = req.body;
+  const { name, description, observation, color, active, builtinStatus } = req.body;
   if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
   const status = await prisma.ticketStatusRef.update({
     where: { id: req.params.id },
-    data: { name, description, observation, color, active },
+    data: { name, description, observation, color, active, builtinStatus: builtinStatus || null },
   });
   res.json(status);
 };

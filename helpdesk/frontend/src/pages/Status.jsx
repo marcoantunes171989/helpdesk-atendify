@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Drawer, Modal, Form, Input, Space, Tag,
+  Table, Button, Drawer, Modal, Form, Input, Space, Tag, Select,
   message, Tooltip, Switch, Row, Col,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined,
   ExclamationCircleOutlined, TagsOutlined,
 } from '@ant-design/icons';
+
+const { Option } = Select;
+
+const BUILTIN_STATUS_OPTIONS = [
+  { value: 'OPEN', label: 'Aberto (OPEN)' },
+  { value: 'IN_PROGRESS', label: 'Em Andamento (IN_PROGRESS)' },
+  { value: 'RESOLVED', label: 'Resolvido (RESOLVED)' },
+  { value: 'CLOSED', label: 'Fechado (CLOSED)' },
+  { value: 'CANCELLED', label: 'Cancelado (CANCELLED)' },
+];
 import dayjs from 'dayjs';
 import { statusService } from '../services/api';
 
@@ -75,6 +85,7 @@ export default function Status() {
       observation: record.observation,
       color: record.color || '#6b7280',
       active: record.active,
+      builtinStatus: record.builtinStatus || null,
     });
     setDrawerOpen(true);
   };
@@ -144,6 +155,12 @@ export default function Status() {
       render: (_, r) => (
         <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
+    },
+    {
+      title: 'Comportamento', dataIndex: 'builtinStatus', key: 'builtinStatus',
+      render: v => v ? (
+        <Tag style={{ borderRadius: 6, fontSize: 11, fontFamily: 'monospace' }}>{v}</Tag>
+      ) : <span style={{ color: '#d1d5db' }}>—</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
@@ -284,6 +301,18 @@ export default function Status() {
 
             <Form.Item name="color" label="Cor de identificação">
               <ColorPicker />
+            </Form.Item>
+
+            <Form.Item
+              name="builtinStatus"
+              label="Comportamento do sistema"
+              tooltip="Define qual estado interno do sistema este status representa. Determina filtros, SLA e ações automáticas."
+            >
+              <Select allowClear placeholder="Nenhum (status neutro — mantém estado atual)">
+                {BUILTIN_STATUS_OPTIONS.map(o => (
+                  <Option key={o.value} value={o.value}>{o.label}</Option>
+                ))}
+              </Select>
             </Form.Item>
 
             <Form.Item name="description" label="Descrição">

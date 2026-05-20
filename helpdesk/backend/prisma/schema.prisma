@@ -107,16 +107,17 @@ model Ticket {
 }
 
 model TicketStatusRef {
-  id          String   @id @default(cuid())
-  code        Int      @unique
-  name        String
-  description String?
-  observation String?
-  color       String   @default("#6b7280")
-  active      Boolean  @default(true)
-  tickets     Ticket[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String        @id @default(cuid())
+  code          Int           @unique
+  name          String
+  description   String?
+  observation   String?
+  color         String        @default("#6b7280")
+  active        Boolean       @default(true)
+  builtinStatus TicketStatus? @map("builtin_status")
+  tickets       Ticket[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@map("ticket_statuses")
 }

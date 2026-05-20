@@ -57,7 +57,6 @@ export default function TicketDetail() {
   const [editCategoryId, setEditCategoryId] = useState(null);
   const [editEmployeeId, setEditEmployeeId] = useState(null);
   const [editPriority, setEditPriority] = useState(null);
-  const [editStatus, setEditStatus] = useState(null);
   const [editStatusId, setEditStatusId] = useState(null);
   const [editAssignedTo, setEditAssignedTo] = useState(null);
   const [editTechnicianId, setEditTechnicianId] = useState(null);
@@ -76,12 +75,12 @@ export default function TicketDetail() {
 
   const [tramiteModal, setTramiteModal] = useState(false);
   const [statusChangeModal, setStatusChangeModal] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState(null);
+  const [pendingStatusId, setPendingStatusId] = useState(null);
   const [statusChangeComment, setStatusChangeComment] = useState('');
   const [statusChangeDate, setStatusChangeDate] = useState(dayjs());
   const [statusChangeFiles, setStatusChangeFiles] = useState([]);
   const [statusChangeSaving, setStatusChangeSaving] = useState(false);
-  const [commentStatus, setCommentStatus] = useState(null);
+  const [commentStatusId, setCommentStatusId] = useState(null);
 
   const load = () => {
     ticketService.get(id)
@@ -91,8 +90,14 @@ export default function TicketDetail() {
   };
 
   useEffect(() => {
-    if (ticket?.status) setCommentStatus(ticket.status);
-  }, [ticket?.status]);
+    if (!ticket || !statuses.length) return;
+    if (ticket.statusId) {
+      setCommentStatusId(ticket.statusId);
+    } else {
+      const match = statuses.find(s => s.builtinStatus === ticket.status);
+      setCommentStatusId(match?.id || statuses[0]?.id || null);
+    }
+  }, [ticket?.statusId, ticket?.status, statuses.length]);
 
   useEffect(() => {
     load();
@@ -119,7 +124,6 @@ export default function TicketDetail() {
     setEditCategoryId(ticket.categoryId);
     setEditEmployeeId(ticket.employeeId);
     setEditPriority(ticket.priority);
-    setEditStatus(ticket.status);
     setEditStatusId(ticket.statusId);
     setEditAssignedTo(ticket.assignedTo);
     setEditTechnicianId(ticket.technicianId);
@@ -161,7 +165,6 @@ export default function TicketDetail() {
         categoryId: editCategoryId || null,
         employeeId: editEmployeeId || null,
         priority: editPriority,
-        status: editStatus,
         statusId: editStatusId || null,
         technicianId: editTechnicianId || null,
         assignedTo: editAssignedTo || null,
@@ -176,8 +179,8 @@ export default function TicketDetail() {
     }
   };
 
-  const openStatusChangeModal = (status) => {
-    setPendingStatus(status);
+  const openStatusChangeModal = (statusId) => {
+    setPendingStatusId(statusId);
     setStatusChangeComment('');
     setStatusChangeDate(dayjs());
     setStatusChangeFiles([]);
@@ -190,18 +193,17 @@ export default function TicketDetail() {
     if (!statusChangeComment.trim()) { message.warning('Informe um trâmite para a mudança de status'); return; }
     setStatusChangeSaving(true);
     try {
+      const selectedStatus = statuses.find(s => s.id === pendingStatusId);
+      const builtinStatus = selectedStatus?.builtinStatus;
       let msg = statusChangeComment.trim();
-      if (pendingStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
-      else if (pendingStatus === 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
+      if (builtinStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
+      else if (builtinStatus === 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
       await ticketService.addComment(id, {
         message: msg,
         attachments: statusChangeFiles,
         createdAt: statusChangeDate?.toISOString(),
       });
-      const updated = await ticketService.update(id, {
-        status: pendingStatus,
-        statusId: pendingStatus === 'RESOLVED' ? null : undefined,
-      });
+      const updated = await ticketService.update(id, { statusId: pendingStatusId });
       setTicket(updated);
       setStatusChangeModal(false);
       message.success('Status atualizado');
@@ -246,22 +248,21 @@ export default function TicketDetail() {
 
   const handleComment = async () => {
     if (!comment.trim()) { message.warning('Escreva um trâmite'); return; }
-    if (!commentStatus) { message.warning('Selecione um status'); return; }
+    if (!commentStatusId) { message.warning('Selecione um status'); return; }
     setSending(true);
     try {
+      const selectedStatus = statuses.find(s => s.id === commentStatusId);
+      const builtinStatus = selectedStatus?.builtinStatus;
       let msg = comment.trim();
-      if (commentStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
-      else if (commentStatus === 'OPEN' && ticket.status !== 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
+      if (builtinStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
+      else if (builtinStatus === 'OPEN' && ticket.status !== 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
       await ticketService.addComment(id, {
         message: msg,
         attachments: commentFiles,
         createdAt: commentDate?.toISOString(),
       });
-      if (commentStatus !== ticket.status) {
-        await ticketService.update(id, {
-          status: commentStatus,
-          statusId: commentStatus === 'RESOLVED' ? null : undefined,
-        });
+      if (commentStatusId !== ticket.statusId) {
+        await ticketService.update(id, { statusId: commentStatusId });
       }
       load();
       setComment('');
@@ -442,9 +443,21 @@ export default function TicketDetail() {
           <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: 24, marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <Space wrap>
-                <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6 }}>
-                  {TICKET_STATUS[ticket.status]?.label}
-                </Tag>
+                {ticket.ticketStatus ? (
+                  <Tag style={{
+                    borderRadius: 6, fontWeight: 600,
+                    background: ticket.ticketStatus.color + '22',
+                    color: ticket.ticketStatus.color,
+                    borderColor: ticket.ticketStatus.color + '55',
+                  }}>
+                    <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: ticket.ticketStatus.color, marginRight: 5, verticalAlign: 'middle' }} />
+                    {ticket.ticketStatus.name}
+                  </Tag>
+                ) : (
+                  <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6 }}>
+                    {TICKET_STATUS[ticket.status]?.label}
+                  </Tag>
+                )}
                 <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6 }}>
                   {PRIORITY[ticket.priority]?.label}
                 </Tag>
@@ -473,7 +486,10 @@ export default function TicketDetail() {
                     icon={<LockOutlined />}
                     size="small"
                     style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: '#1d4ed8', borderColor: '#1d4ed8' }}
-                    onClick={() => openStatusChangeModal('OPEN')}
+                    onClick={() => {
+                      const openStatus = statuses.find(s => s.builtinStatus === 'OPEN');
+                      if (openStatus) openStatusChangeModal(openStatus.id);
+                    }}
                   >
                     Reabrir
                   </Button>
@@ -533,7 +549,7 @@ export default function TicketDetail() {
                   </Col>
                 </Row>
                 <Row gutter={12} style={{ marginBottom: 12 }}>
-                  <Col xs={24} sm={12}>
+                  <Col xs={24}>
                     <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>CATEGORIA</div>
                     <Select
                       value={editCategoryId}
@@ -547,28 +563,16 @@ export default function TicketDetail() {
                       {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
                     </Select>
                   </Col>
-                  <Col xs={24} sm={12}>
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>PRIORIDADE</div>
-                    <Select value={editPriority} style={{ width: '100%' }} onChange={setEditPriority}>
-                      {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
-                    </Select>
-                  </Col>
                 </Row>
                 <Row gutter={12} style={{ marginBottom: 12 }}>
                   <Col xs={24} sm={12}>
                     <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
-                    <Select value={editStatus} style={{ width: '100%' }} onChange={setEditStatus}>
-                      {Object.entries(TICKET_STATUS).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
-                    </Select>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS PERSONALIZADO</div>
                     <Select
                       value={editStatusId}
                       style={{ width: '100%' }}
                       onChange={setEditStatusId}
                       allowClear
-                      placeholder="Nenhum"
+                      placeholder="Selecione o status"
                     >
                       {statuses.map(s => (
                         <Option key={s.id} value={s.id}>
@@ -578,6 +582,12 @@ export default function TicketDetail() {
                           </span>
                         </Option>
                       ))}
+                    </Select>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>PRIORIDADE</div>
+                    <Select value={editPriority} style={{ width: '100%' }} onChange={setEditPriority}>
+                      {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
                     </Select>
                   </Col>
                 </Row>
@@ -883,7 +893,7 @@ export default function TicketDetail() {
                 ticket.technician && { label: 'Técnico', value: ticket.technician.name },
                 { label: 'Aberto em', value: dayjs(ticket.createdAt).format('DD/MM/YYYY HH:mm') },
                 ticket.resolvedAt && { label: 'Resolvido em', value: dayjs(ticket.resolvedAt).format('DD/MM/YYYY HH:mm') },
-                { label: 'Status', value: TICKET_STATUS[ticket.status]?.label },
+                { label: 'Status', value: ticket.ticketStatus?.name || TICKET_STATUS[ticket.status]?.label },
                 { label: 'Prioridade', value: PRIORITY[ticket.priority]?.label },
                 ticket.category && { label: 'Categoria', value: ticket.category.name },
               ].filter(Boolean).map(item => (
@@ -976,7 +986,7 @@ export default function TicketDetail() {
               type="primary"
               icon={<SendOutlined />}
               loading={sending}
-              disabled={!comment.trim() || !commentStatus}
+              disabled={!comment.trim() || !commentStatusId}
               onClick={handleComment}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}
             >
@@ -1007,14 +1017,19 @@ export default function TicketDetail() {
               STATUS <span style={{ color: '#dc2626' }}>*</span>
             </div>
             <Select
-              value={commentStatus}
+              value={commentStatusId}
               style={{ width: '100%' }}
-              onChange={setCommentStatus}
+              onChange={setCommentStatusId}
               placeholder="Selecione o status do chamado"
-              status={!commentStatus ? 'warning' : ''}
+              status={!commentStatusId ? 'warning' : ''}
             >
-              {Object.entries(TICKET_STATUS).map(([k, { label }]) => (
-                <Option key={k} value={k}>{label}</Option>
+              {statuses.map(s => (
+                <Option key={s.id} value={s.id}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
+                    {s.name}
+                  </span>
+                </Option>
               ))}
             </Select>
           </div>
@@ -1069,11 +1084,15 @@ export default function TicketDetail() {
         onCancel={() => setStatusChangeModal(false)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {pendingStatus === 'RESOLVED' && <CheckCircleOutlined style={{ color: '#2563eb', fontSize: 20 }} />}
-            {pendingStatus === 'OPEN' && <UnlockOutlined style={{ color: '#c2410c', fontSize: 20 }} />}
-            {pendingStatus && !['RESOLVED', 'OPEN'].includes(pendingStatus) && <ExclamationCircleOutlined style={{ color: '#d97706', fontSize: 20 }} />}
+            {(() => {
+              const ps = statuses.find(s => s.id === pendingStatusId);
+              const builtin = ps?.builtinStatus;
+              if (builtin === 'RESOLVED') return <CheckCircleOutlined style={{ color: '#2563eb', fontSize: 20 }} />;
+              if (builtin === 'OPEN') return <UnlockOutlined style={{ color: '#c2410c', fontSize: 20 }} />;
+              return <ExclamationCircleOutlined style={{ color: '#d97706', fontSize: 20 }} />;
+            })()}
             <span style={{ fontWeight: 700 }}>
-              Alterar status para: {TICKET_STATUS[pendingStatus]?.label}
+              Alterar status para: {statuses.find(s => s.id === pendingStatusId)?.name}
             </span>
           </div>
         }

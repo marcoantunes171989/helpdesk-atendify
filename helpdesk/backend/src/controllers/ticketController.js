@@ -163,9 +163,22 @@ exports.update = async (req, res) => {
   if (companyId !== undefined) data.companyId = companyId;
   if (employeeId !== undefined) data.employeeId = employeeId || null;
   if (req.body.technicianId !== undefined) data.technicianId = req.body.technicianId || null;
-  if ('statusId' in req.body) data.statusId = req.body.statusId || null;
 
-  if (status && status !== ticket.status) {
+  if ('statusId' in req.body) {
+    data.statusId = req.body.statusId || null;
+    if (req.body.statusId) {
+      const statusRef = await prisma.ticketStatusRef.findUnique({ where: { id: req.body.statusId } });
+      const derivedStatus = statusRef?.builtinStatus || 'IN_PROGRESS';
+      if (derivedStatus !== ticket.status) {
+        data.status = derivedStatus;
+        if (['RESOLVED', 'CLOSED'].includes(derivedStatus) && !ticket.resolvedAt) {
+          data.resolvedAt = new Date();
+        }
+      }
+    }
+  }
+
+  if (status && !('statusId' in req.body) && status !== ticket.status) {
     data.status = status;
     if (['RESOLVED', 'CLOSED'].includes(status) && !ticket.resolvedAt) {
       data.resolvedAt = new Date();
@@ -236,7 +249,14 @@ exports.addComment = async (req, res) => {
   });
 
   if (ticket.status === 'OPEN' && req.user.role !== 'CLIENT') {
-    await prisma.ticket.update({ where: { id: ticket.id }, data: { status: 'IN_PROGRESS' } });
+    const inProgressRef = await prisma.ticketStatusRef.findFirst({
+      where: { builtinStatus: 'IN_PROGRESS', active: true },
+      orderBy: { code: 'asc' },
+    });
+    await prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { status: 'IN_PROGRESS', ...(inProgressRef && { statusId: inProgressRef.id }) },
+    });
   }
 
   res.status(201).json(comment);

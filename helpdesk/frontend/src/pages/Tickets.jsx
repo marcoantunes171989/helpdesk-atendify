@@ -52,7 +52,7 @@ export default function Tickets() {
 
   const buildApiParams = (f) => {
     const params = { ...f };
-    if (!params.statusIds?.length && !params.includeResolved) params.excludeResolved = 'true';
+    if (!params.statusIds?.length) params.excludeResolved = 'true';
     return params;
   };
 
@@ -147,13 +147,9 @@ export default function Tickets() {
   };
 
   const handleStatusFilterChange = (values) => {
-    const customIds = values.filter(v => v !== '__RESOLVED__');
-    const includeResolved = values.includes('__RESOLVED__');
     const newFilters = { ...filters };
     delete newFilters.statusIds;
-    delete newFilters.includeResolved;
-    if (customIds.length > 0) newFilters.statusIds = customIds;
-    if (includeResolved) newFilters.includeResolved = true;
+    if (values.length > 0) newFilters.statusIds = values;
     setFilters(newFilters);
     load(buildApiParams(newFilters));
   };
@@ -175,8 +171,8 @@ export default function Tickets() {
       })()
     : tickets;
 
-  const statusCounts = Object.keys(TICKET_STATUS).reduce((acc, k) => {
-    acc[k] = tickets.filter(t => t.status === k).length;
+  const statusCounts = statuses.reduce((acc, s) => {
+    acc[s.id] = tickets.filter(t => t.statusId === s.id).length;
     return acc;
   }, {});
 
@@ -241,8 +237,7 @@ export default function Tickets() {
     {
       title: 'Status', key: 'status',
       render: (_, r) => {
-        const isTerminal = ['RESOLVED', 'CLOSED', 'CANCELLED'].includes(r.status);
-        if (r.ticketStatus && !isTerminal) {
+        if (r.ticketStatus) {
           return (
             <Tag style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: r.ticketStatus.color + '22', color: r.ticketStatus.color, borderColor: r.ticketStatus.color + '55' }}>
               <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: r.ticketStatus.color, marginRight: 5, verticalAlign: 'middle' }} />
@@ -293,13 +288,14 @@ export default function Tickets() {
           <h1 className="page-title">Chamados</h1>
           <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
             {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''}{search ? ` (de ${tickets.length})` : ''} · {' '}
-            {Object.entries(TICKET_STATUS).map(([k, { label, color }]) =>
-              statusCounts[k] > 0 ? (
-                <Tag key={k} color={color} style={{ fontSize: 11, marginRight: 4 }}>
-                  {label}: {statusCounts[k]}
-                </Tag>
-              ) : null
-            )}
+            {statuses.filter(s => statusCounts[s.id] > 0).map(s => (
+              <Tag
+                key={s.id}
+                style={{ fontSize: 11, marginRight: 4, background: s.color + '22', color: s.color, borderColor: s.color + '55' }}
+              >
+                {s.name}: {statusCounts[s.id]}
+              </Tag>
+            ))}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openDrawer}
@@ -321,7 +317,7 @@ export default function Tickets() {
           maxTagCount="responsive"
           onChange={handleStatusFilterChange}
         >
-          {statuses.filter(s => s.name.trim().toLowerCase() !== 'resolvido').map(s => (
+          {statuses.map(s => (
             <Option key={s.id} value={s.id}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block' }} />
@@ -329,12 +325,6 @@ export default function Tickets() {
               </span>
             </Option>
           ))}
-          <Option key="__RESOLVED__" value="__RESOLVED__">
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#52c41a', display: 'inline-block' }} />
-              Resolvido
-            </span>
-          </Option>
         </Select>
         <Select allowClear placeholder="Todas as prioridades" style={{ minWidth: 160, flex: 1 }} onChange={v => applyFilters({ priority: v })}>
           {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
