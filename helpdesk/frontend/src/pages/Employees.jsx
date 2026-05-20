@@ -120,7 +120,14 @@ export default function Employees() {
     },
     {
       title: 'Empresa', key: 'company',
-      render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.company?.name || '—'}</span>,
+      render: (_, r) => (
+        <div>
+          <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          {r.company?.fantasia && (
+            <div style={{ fontSize: 11, color: '#6b7280' }}>{r.company.fantasia}</div>
+          )}
+        </div>
+      ),
     },
     {
       title: '', key: 'actions', width: 80,
@@ -138,7 +145,7 @@ export default function Employees() {
   ];
 
   const filteredEmployees = search
-    ? (() => { const q = search.toLowerCase(); return employees.filter(e => [e.name, e.position, e.phone, e.company?.name].some(f => (f || '').toLowerCase().includes(q))); })()
+    ? (() => { const q = search.toLowerCase(); return employees.filter(e => [e.name, e.position, e.phone, e.company?.name, e.company?.fantasia].some(f => (f || '').toLowerCase().includes(q))); })()
     : employees;
 
   return (
@@ -159,7 +166,7 @@ export default function Employees() {
       {/* Busca */}
       <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
         <Input.Search
-          placeholder="Buscar por nome, cargo, telefone ou empresa..."
+          placeholder="Buscar por nome, cargo, telefone, empresa ou fantasia..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}

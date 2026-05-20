@@ -10,6 +10,8 @@ exports.list = async (req, res) => {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
       { position: { contains: search, mode: 'insensitive' } },
+      { company: { name: { contains: search, mode: 'insensitive' } } },
+      { company: { fantasia: { contains: search, mode: 'insensitive' } } },
     ];
   }
 
@@ -18,7 +20,7 @@ exports.list = async (req, res) => {
 
   const employees = await prisma.employee.findMany({
     where,
-    include: { company: { select: { id: true, name: true } } },
+    include: { company: { select: { id: true, name: true, fantasia: true } } },
     orderBy: { name: 'asc' },
   });
 
@@ -28,7 +30,7 @@ exports.list = async (req, res) => {
 exports.get = async (req, res) => {
   const employee = await prisma.employee.findUnique({
     where: { id: req.params.id },
-    include: { company: { select: { id: true, name: true } } },
+    include: { company: { select: { id: true, name: true, fantasia: true } } },
   });
 
   if (!employee) return res.status(404).json({ error: 'Funcionário não encontrado' });
@@ -52,7 +54,7 @@ exports.create = async (req, res) => {
       position,
       companyId: targetCompanyId,
     },
-    include: { company: { select: { id: true, name: true } } },
+    include: { company: { select: { id: true, name: true, fantasia: true } } },
   });
 
   res.status(201).json(employee);
@@ -68,7 +70,7 @@ exports.update = async (req, res) => {
   const employee = await prisma.employee.update({
     where: { id },
     data: { name, phone: phone || null, position },
-    include: { company: { select: { id: true, name: true } } },
+    include: { company: { select: { id: true, name: true, fantasia: true } } },
   });
 
   res.json(employee);
