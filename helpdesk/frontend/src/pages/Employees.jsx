@@ -90,6 +90,7 @@ export default function Employees() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
+      sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
@@ -98,6 +99,7 @@ export default function Employees() {
     },
     {
       title: 'Funcionário', key: 'name', minWidth: 180,
+      sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => {
         const c = getAvatarColor(r.name);
         return (
@@ -112,14 +114,17 @@ export default function Employees() {
     },
     {
       title: 'Cargo', dataIndex: 'position', key: 'position',
+      sorter: (a, b) => (a.position || '').localeCompare(b.position || '', 'pt-BR'),
       render: v => <span style={{ color: '#374151', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Telefone', dataIndex: 'phone', key: 'phone',
+      sorter: (a, b) => (a.phone || '').localeCompare(b.phone || ''),
       render: v => <span style={{ color: '#6b7280', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Empresa', key: 'company',
+      sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
           <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>

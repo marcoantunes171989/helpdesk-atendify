@@ -71,6 +71,7 @@ export default function Categories() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
+      sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
@@ -79,6 +80,7 @@ export default function Categories() {
     },
     {
       title: 'Categoria', key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div>
           <div style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</div>
@@ -88,10 +90,12 @@ export default function Categories() {
     },
     {
       title: 'Chamados', key: 'tickets',
+      sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
+      sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
         <Tag color={v !== false ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
           {v !== false ? 'Ativa' : 'Inativa'}
@@ -100,6 +104,7 @@ export default function Categories() {
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {

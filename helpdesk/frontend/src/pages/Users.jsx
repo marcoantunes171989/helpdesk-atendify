@@ -106,10 +106,12 @@ export default function Users() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
+      sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
       title: 'Usuário', key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Avatar
@@ -127,6 +129,7 @@ export default function Users() {
     },
     {
       title: 'Perfil', dataIndex: 'role', key: 'role',
+      sorter: (a, b) => a.role.localeCompare(b.role),
       render: v => (
         <span style={{
           display: 'inline-block', padding: '2px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600,
@@ -138,10 +141,12 @@ export default function Users() {
     },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
+      sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {

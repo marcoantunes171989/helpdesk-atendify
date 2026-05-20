@@ -126,6 +126,7 @@ export default function Status() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
+      sorter: (a, b) => a.code - b.code,
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
           {String(v).padStart(4, '0')}
@@ -134,6 +135,7 @@ export default function Status() {
     },
     {
       title: 'Status', key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 12, height: 12, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
@@ -148,22 +150,26 @@ export default function Status() {
     },
     {
       title: 'Observação', dataIndex: 'observation', key: 'observation',
+      sorter: (a, b) => (a.observation || '').localeCompare(b.observation || '', 'pt-BR'),
       render: v => <span style={{ color: '#6b7280', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
+      sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => (
         <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
     },
     {
       title: 'Comportamento', dataIndex: 'builtinStatus', key: 'builtinStatus',
+      sorter: (a, b) => (a.builtinStatus || '').localeCompare(b.builtinStatus || ''),
       render: v => v ? (
         <Tag style={{ borderRadius: 6, fontSize: 11, fontFamily: 'monospace' }}>{v}</Tag>
       ) : <span style={{ color: '#d1d5db' }}>—</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
+      sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
         <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
           {v ? 'Ativo' : 'Inativo'}
@@ -172,6 +178,7 @@ export default function Status() {
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {

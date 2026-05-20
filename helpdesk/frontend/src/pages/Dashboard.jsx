@@ -78,14 +78,17 @@ export default function Dashboard() {
   const columns = [
     {
       title: 'ID', dataIndex: 'id', key: 'id', width: 80,
+      sorter: (a, b) => a.id.localeCompare(b.id),
       render: v => <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>{v.slice(-6).toUpperCase()}</code>,
     },
     {
       title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,
+      sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
       render: v => <span style={{ fontWeight: 500, color: '#111827' }}>{v}</span>,
     },
     {
       title: 'Empresa', key: 'company',
+      sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
           <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
@@ -97,21 +100,25 @@ export default function Dashboard() {
     },
     {
       title: 'Funcionário', key: 'employee',
+      sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee?.name
         ? <span style={{ color: '#6b7280', fontSize: 13 }}>{r.employee.name}</span>
         : <span style={{ color: '#d1d5db' }}>—</span>,
     },
-    { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', render: v => v ? <span style={{ color: '#6b7280' }}>{v}</span> : <span style={{ color: '#d1d5db' }}>—</span> },
+    { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'), render: v => v ? <span style={{ color: '#6b7280' }}>{v}</span> : <span style={{ color: '#d1d5db' }}>—</span> },
     {
       title: 'Status', dataIndex: 'status', key: 'status',
+      sorter: (a, b) => a.status.localeCompare(b.status),
       render: v => <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6 }}>{TICKET_STATUS[v]?.label}</Tag>,
     },
     {
       title: 'Prioridade', dataIndex: 'priority', key: 'priority',
+      sorter: (a, b) => a.priority.localeCompare(b.priority),
       render: v => <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6 }}>{PRIORITY[v]?.label}</Tag>,
     },
     {
-      title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
+      title: 'Data Abertura', dataIndex: 'createdAt', key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: v => <span style={{ color: '#9ca3af', fontSize: 13 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
     },
     {

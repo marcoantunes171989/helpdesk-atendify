@@ -130,6 +130,7 @@ export default function Companies() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 60,
+      sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 12 }}>
           {v ? String(v).padStart(4, '0') : '—'}
@@ -138,6 +139,7 @@ export default function Companies() {
     },
     {
       title: 'Empresa', key: 'name', minWidth: 200,
+      sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => {
         const [bg, color] = getColor(r.name);
         return (
@@ -156,6 +158,7 @@ export default function Companies() {
     },
     {
       title: 'Contato', key: 'contact',
+      sorter: (a, b) => a.email.localeCompare(b.email, 'pt-BR'),
       render: (_, r) => (
         <div>
           <div style={{ fontSize: 13, color: '#374151' }}>{r.email}</div>
@@ -165,20 +168,24 @@ export default function Companies() {
     },
     {
       title: 'Localização', key: 'location',
+      sorter: (a, b) => (a.city || '').localeCompare(b.city || '', 'pt-BR'),
       render: (_, r) => r.city
         ? <span style={{ color: '#6b7280', fontSize: 13 }}>{r.city}{r.state ? ` / ${r.state}` : ''}</span>
         : <span style={{ color: '#d1d5db' }}>—</span>,
     },
     {
       title: 'Funcionários', key: 'employees',
+      sorter: (a, b) => (a._count?.employees ?? 0) - (b._count?.employees ?? 0),
       render: (_, r) => <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
+      sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => <span style={{ fontWeight: 600, color: '#374151', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
     },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
+      sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
         <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 20, fontWeight: 600, fontSize: 11 }}>
           {v ? 'Ativa' : 'Inativa'}
@@ -187,6 +194,7 @@ export default function Companies() {
     },
     {
       title: 'Desde', dataIndex: 'createdAt', key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
