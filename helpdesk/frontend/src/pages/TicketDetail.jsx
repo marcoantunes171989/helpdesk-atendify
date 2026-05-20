@@ -183,7 +183,7 @@ export default function TicketDetail() {
     setResolveSaving(true);
     try {
       await ticketService.addComment(id, { message: `::SYS_RESOLVED:: ${resolveMessage.trim()}` });
-      const updated = await ticketService.update(id, { status: 'RESOLVED' });
+      const updated = await ticketService.update(id, { status: 'RESOLVED', statusId: null });
       setTicket(updated);
       setResolveModal(false);
       setResolveMessage('');

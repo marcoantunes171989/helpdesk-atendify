@@ -216,7 +216,8 @@ export default function Tickets() {
     {
       title: 'Status', key: 'status',
       render: (_, r) => {
-        if (r.ticketStatus) {
+        const isTerminal = ['RESOLVED', 'CLOSED', 'CANCELLED'].includes(r.status);
+        if (r.ticketStatus && !isTerminal) {
           return (
             <Tag style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: r.ticketStatus.color + '22', color: r.ticketStatus.color, borderColor: r.ticketStatus.color + '55' }}>
               <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: r.ticketStatus.color, marginRight: 5, verticalAlign: 'middle' }} />
