@@ -314,7 +314,7 @@ export default function Tickets() {
           maxTagCount="responsive"
           onChange={handleStatusFilterChange}
         >
-          {statuses.map(s => (
+          {statuses.filter(s => s.name.trim().toLowerCase() !== 'resolvido').map(s => (
             <Option key={s.id} value={s.id}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block' }} />
