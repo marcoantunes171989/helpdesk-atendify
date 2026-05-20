@@ -159,59 +159,59 @@
   flex-direction: column;
 }
 
-/* Cards de estatísticas à direita sobre a foto */
+/* Cards de estatísticas — linha horizontal abaixo dos CTAs */
 .lp-hero-stats {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: stretch;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 28px;
 }
 
 .lp-hero-stat-card {
   display: flex;
   align-items: center;
-  gap: 18px;
-  background: rgba(8,8,20,0.72);
+  gap: 10px;
+  background: rgba(8,8,20,0.68);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-top: 1px solid rgba(255,255,255,0.18);
-  border-radius: 18px;
-  padding: 22px 28px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.08) inset;
-  width: 100%;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-top: 1px solid rgba(255,255,255,0.16);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
+  flex: 1;
   transition: transform 0.2s;
 }
 
 .lp-hero-stat-card:hover {
-  transform: translateX(-4px);
+  transform: translateY(-2px);
 }
 
 .lp-hero-stat-icon {
-  font-size: 30px;
+  font-size: 18px;
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255,255,255,0.06);
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.07);
 }
 
 .lp-hero-stat-val {
   font-family: 'Poppins', sans-serif;
-  font-size: 28px;
+  font-size: 17px;
   font-weight: 800;
   color: #fff;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .lp-hero-stat-label {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
   font-weight: 500;
 }
 
@@ -1119,8 +1119,8 @@
 
   .lp-hero { padding: 100px 24px 60px; }
   .lp-hero-inner { grid-template-columns: 1fr; gap: 40px; }
-  .lp-hero-stats { flex-direction: row; flex-wrap: wrap; }
-  .lp-hero-stat-card { flex: 1; min-width: 200px; }
+  .lp-hero-stats { flex-wrap: wrap; }
+  .lp-hero-stat-card { min-width: 120px; }
   .lp-hero-title { font-size: 46px; }
   .lp-hero-subtitle { max-width: 100%; }
 
@@ -1153,8 +1153,8 @@
   .lp-hero-subtitle { font-size: 16px; }
   .lp-hero-actions { flex-direction: column; }
   .lp-btn-primary, .lp-btn-secondary, .lp-btn-glass { justify-content: center; }
-  .lp-hero-stats { flex-direction: column; align-items: stretch; }
-  .lp-hero-stat-card { min-width: unset; }
+  .lp-hero-stats { flex-wrap: wrap; }
+  .lp-hero-stat-card { min-width: 100px; }
   .lp-hero-overlay {
     background: linear-gradient(
       180deg,

@@ -159,32 +159,35 @@ export default function LandingPage() {
               <div className="lp-hero-trust-stars">★★★★★</div>
               <span className="lp-hero-trust-text">Avaliado com 5 estrelas por equipes de suporte</span>
             </div>
+
+            {/* Cards de stats — abaixo dos botões, na área escura */}
+            <div className="lp-hero-stats">
+              <div className="lp-hero-stat-card">
+                <div className="lp-hero-stat-icon">✅</div>
+                <div>
+                  <div className="lp-hero-stat-val">98%</div>
+                  <div className="lp-hero-stat-label">SLA cumprido</div>
+                </div>
+              </div>
+              <div className="lp-hero-stat-card">
+                <div className="lp-hero-stat-icon">⚡</div>
+                <div>
+                  <div className="lp-hero-stat-val">2.4h</div>
+                  <div className="lp-hero-stat-label">Resolução média</div>
+                </div>
+              </div>
+              <div className="lp-hero-stat-card">
+                <div className="lp-hero-stat-icon">🏢</div>
+                <div>
+                  <div className="lp-hero-stat-val">Multi</div>
+                  <div className="lp-hero-stat-label">Empresas</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Coluna direita — estatísticas flutuantes sobre a foto */}
-          <div className="lp-hero-stats">
-            <div className="lp-hero-stat-card">
-              <div className="lp-hero-stat-icon">✅</div>
-              <div>
-                <div className="lp-hero-stat-val">98%</div>
-                <div className="lp-hero-stat-label">SLA cumprido no prazo</div>
-              </div>
-            </div>
-            <div className="lp-hero-stat-card">
-              <div className="lp-hero-stat-icon">⚡</div>
-              <div>
-                <div className="lp-hero-stat-val">2.4h</div>
-                <div className="lp-hero-stat-label">Tempo médio de resolução</div>
-              </div>
-            </div>
-            <div className="lp-hero-stat-card">
-              <div className="lp-hero-stat-icon">🏢</div>
-              <div>
-                <div className="lp-hero-stat-val">Multi</div>
-                <div className="lp-hero-stat-label">Empresas num só sistema</div>
-              </div>
-            </div>
-          </div>
+          {/* Coluna direita — transparente, exibe a modelo */}
+          <div />
         </div>
 
         {/* Scroll indicator */}
