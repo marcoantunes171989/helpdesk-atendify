@@ -13,6 +13,10 @@ const { Header, Sider, Content } = Layout;
 
 const BREAKPOINT = 768;
 
+const SIDEBAR_BG = '#0c0c18';
+const SIDEBAR_BORDER = 'rgba(255,255,255,0.08)';
+const HEADER_BG = 'rgba(10,10,20,0.96)';
+
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < BREAKPOINT);
@@ -48,8 +52,8 @@ export default function AppLayout() {
         key: 'profile', disabled: true,
         label: (
           <div style={{ padding: '4px 0' }}>
-            <div style={{ fontWeight: 600, fontSize: 13 }}>{user?.name}</div>
-            <div style={{ color: '#9ca3af', fontSize: 11 }}>{user?.email}</div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>{user?.name}</div>
+            <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11 }}>{user?.email}</div>
           </div>
         ),
       },
@@ -71,62 +75,77 @@ export default function AppLayout() {
   const roleInfo = ROLES[user?.role];
 
   const SidebarContent = (
-    <>
+    <div className="app-sidebar" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Logo */}
       <div style={{
         height: 64, display: 'flex', alignItems: 'center',
         padding: collapsed && !isMobile ? '0 24px' : '0 20px',
-        borderBottom: '1px solid #e5e7eb', gap: 10,
+        borderBottom: `1px solid ${SIDEBAR_BORDER}`, gap: 10, flexShrink: 0,
       }}>
         <div style={{
           width: 32, height: 32, borderRadius: 8,
-          background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+          background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          boxShadow: '0 0 12px rgba(37,99,235,0.4)',
         }}>
           <CustomerServiceOutlined style={{ color: '#fff', fontSize: 16 }} />
         </div>
         {(!collapsed || isMobile) && (
-          <span style={{ fontWeight: 700, fontSize: 16, color: '#111827', fontFamily: "'Poppins', sans-serif" }}>Atendexa</span>
+          <span style={{ fontWeight: 700, fontSize: 16, color: '#fff', fontFamily: "'Poppins', sans-serif" }}>
+            Atendexa
+          </span>
         )}
       </div>
 
-      <Menu
-        mode="inline"
-        selectedKeys={[selectedKey]}
-        items={menuItems}
-        onClick={handleMenuClick}
-        style={{ border: 'none', marginTop: 8, background: 'transparent' }}
-      />
+      {/* Menu */}
+      <div style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          items={menuItems}
+          onClick={handleMenuClick}
+          style={{ border: 'none', background: 'transparent' }}
+        />
+      </div>
 
+      {/* User card */}
       {(!collapsed || isMobile) && (
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          padding: '12px 16px', borderTop: '1px solid #e5e7eb', background: '#fff',
+          padding: '12px 16px',
+          borderTop: `1px solid ${SIDEBAR_BORDER}`,
+          background: 'rgba(255,255,255,0.03)',
+          flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Avatar size={30} style={{ background: '#dbeafe', color: '#2563eb', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+            <Avatar size={30} style={{
+              background: 'rgba(37,99,235,0.35)', color: '#60a5fa',
+              fontSize: 12, fontWeight: 700, flexShrink: 0,
+              border: '1px solid rgba(37,99,235,0.4)',
+            }}>
               {user?.name?.charAt(0).toUpperCase()}
             </Avatar>
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {user?.name}
               </div>
-              <div style={{ fontSize: 11, color: '#9ca3af' }}>{roleInfo?.label}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{roleInfo?.label}</div>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f0f7ff' }}>
+    <Layout style={{ minHeight: '100vh', background: '#090912' }}>
       {/* Desktop Sidebar */}
       {!isMobile && (
         <Sider
           collapsible collapsed={collapsed} onCollapse={setCollapsed}
           trigger={null} width={220}
           style={{
-            background: '#fff', borderRight: '1px solid #e5e7eb',
+            background: SIDEBAR_BG,
+            borderRight: `1px solid ${SIDEBAR_BORDER}`,
             position: 'fixed', height: '100vh', left: 0, top: 0, zIndex: 100,
           }}
         >
@@ -141,16 +160,22 @@ export default function AppLayout() {
           onClose={() => setDrawerOpen(false)}
           placement="left"
           width={240}
-          styles={{ body: { padding: 0, position: 'relative' }, header: { display: 'none' } }}
+          styles={{
+            body: { padding: 0, background: SIDEBAR_BG },
+            header: { display: 'none' },
+          }}
         >
           {SidebarContent}
         </Drawer>
       )}
 
-      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 220), transition: 'margin-left 0.2s' }}>
+      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 220), transition: 'margin-left 0.2s', background: 'transparent' }}>
         {/* Header */}
         <Header style={{
-          background: '#fff', borderBottom: '1px solid #e5e7eb',
+          background: HEADER_BG,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${SIDEBAR_BORDER}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 16px', height: 64, position: 'sticky', top: 0, zIndex: 99,
         }}>
@@ -161,23 +186,27 @@ export default function AppLayout() {
               : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
             }
             onClick={() => isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed)}
-            style={{ color: '#6b7280' }}
+            style={{ color: 'rgba(255,255,255,0.5)' }}
           />
 
           <Space size={8}>
-            <Button type="text" icon={<BellOutlined />} style={{ color: '#6b7280' }} />
+            <Button type="text" icon={<BellOutlined />} style={{ color: 'rgba(255,255,255,0.5)' }} />
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 cursor: 'pointer', padding: '4px 8px', borderRadius: 8,
               }}>
-                <Avatar size={32} style={{ background: '#dbeafe', color: '#2563eb', fontWeight: 700, fontSize: 13 }}>
+                <Avatar size={32} style={{
+                  background: 'rgba(37,99,235,0.35)', color: '#60a5fa',
+                  fontWeight: 700, fontSize: 13,
+                  border: '1px solid rgba(37,99,235,0.4)',
+                }}>
                   {user?.name?.charAt(0).toUpperCase()}
                 </Avatar>
                 {!isMobile && (
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.2 }}>{user?.name}</div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.2 }}>{roleInfo?.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', lineHeight: 1.2 }}>{user?.name}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', lineHeight: 1.2 }}>{roleInfo?.label}</div>
                   </div>
                 )}
               </div>

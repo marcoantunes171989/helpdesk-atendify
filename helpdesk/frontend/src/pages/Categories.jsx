@@ -73,7 +73,7 @@ export default function Categories() {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -83,15 +83,15 @@ export default function Categories() {
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</div>
-          {r.description && <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{r.description}</div>}
+          <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</div>
+          {r.description && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginTop: 2 }}>{r.description}</div>}
         </div>
       ),
     },
     {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
@@ -105,7 +105,7 @@ export default function Categories() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 80,
@@ -113,7 +113,7 @@ export default function Categories() {
         <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Remover">
             <Button type="text" icon={<DeleteOutlined />} size="small" danger
@@ -129,11 +129,11 @@ export default function Categories() {
     : categories;
 
   return (
-    <div>
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Categorias</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredCategories.length} categoria{filteredCategories.length !== 1 ? 's' : ''} cadastrada{filteredCategories.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -142,7 +142,7 @@ export default function Categories() {
         </Button>
       </div>
 
-      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+      <div className="filter-bar">
         <Input.Search
           placeholder="Buscar por nome ou descrição..."
           allowClear
@@ -153,7 +153,7 @@ export default function Categories() {
         />
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+      <div className="page-table-wrap">
         <Table dataSource={filteredCategories} columns={columns} rowKey="id" loading={loading}
           size="middle" scroll={{ x: 500 }}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} categoria${t !== 1 ? 's' : ''}` }}
@@ -166,7 +166,7 @@ export default function Categories() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover categoria</span>
           </div>
         }
@@ -181,15 +181,15 @@ export default function Categories() {
       >
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a remover <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
                 Atenção: {deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''} perderá a categoria ao confirmar.
               </div>
             ) : (
-              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
                 Esta categoria não possui chamados vinculados.
               </div>
             )}
@@ -201,8 +201,8 @@ export default function Categories() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AppstoreOutlined style={{ color: '#d97706', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AppstoreOutlined style={{ color: '#fbbf24', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Categoria' : 'Nova Categoria'}</span>
           </div>

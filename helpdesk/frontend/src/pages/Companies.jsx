@@ -21,8 +21,12 @@ const BR_STATES = [
 ];
 
 const avatarColors = [
-  ['#dbeafe','#2563eb'], ['#dbeafe','#1d4ed8'], ['#fce7f3','#be185d'],
-  ['#fef3c7','#d97706'], ['#ede9fe','#7c3aed'], ['#fee2e2','#dc2626'],
+  ['rgba(37,99,235,0.25)', '#60a5fa'],
+  ['rgba(29,78,216,0.25)', '#93c5fd'],
+  ['rgba(190,24,93,0.25)', '#f472b6'],
+  ['rgba(217,119,6,0.25)', '#fbbf24'],
+  ['rgba(124,58,237,0.25)', '#a78bfa'],
+  ['rgba(220,38,38,0.25)', '#f87171'],
 ];
 const getColor = (name = '') => avatarColors[(name.charCodeAt(0) || 0) % avatarColors.length];
 
@@ -132,7 +136,7 @@ export default function Companies() {
       title: '#', dataIndex: 'code', key: 'code', width: 60,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 12 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 12 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -144,13 +148,13 @@ export default function Companies() {
         const [bg, color] = getColor(r.name);
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Avatar size={36} style={{ background: bg, color, fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
+            <Avatar size={36} style={{ background: bg, color, fontWeight: 700, fontSize: 15, flexShrink: 0, border: `1px solid ${color}44` }}>
               {r.name?.charAt(0).toUpperCase()}
             </Avatar>
             <div>
-              <div style={{ fontWeight: 600, color: '#111827', fontSize: 13, lineHeight: 1.3 }}>{r.name}</div>
-              {r.fantasia && <div style={{ fontSize: 11, color: '#6b7280' }}>{r.fantasia}</div>}
-              <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{maskCNPJ(r.cnpj || '')}</div>
+              <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13, lineHeight: 1.3 }}>{r.name}</div>
+              {r.fantasia && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.42)' }}>{r.fantasia}</div>}
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', fontFamily: 'monospace' }}>{maskCNPJ(r.cnpj || '')}</div>
             </div>
           </div>
         );
@@ -161,8 +165,8 @@ export default function Companies() {
       sorter: (a, b) => a.email.localeCompare(b.email, 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ fontSize: 13, color: '#374151' }}>{r.email}</div>
-          {r.phone && <div style={{ fontSize: 12, color: '#9ca3af' }}>{maskPhone(r.phone)}</div>}
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.68)' }}>{r.email}</div>
+          {r.phone && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{maskPhone(r.phone)}</div>}
         </div>
       ),
     },
@@ -170,18 +174,18 @@ export default function Companies() {
       title: 'Localização', key: 'location',
       sorter: (a, b) => (a.city || '').localeCompare(b.city || '', 'pt-BR'),
       render: (_, r) => r.city
-        ? <span style={{ color: '#6b7280', fontSize: 13 }}>{r.city}{r.state ? ` / ${r.state}` : ''}</span>
-        : <span style={{ color: '#d1d5db' }}>—</span>,
+        ? <span style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13 }}>{r.city}{r.state ? ` / ${r.state}` : ''}</span>
+        : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>,
     },
     {
       title: 'Funcionários', key: 'employees',
       sorter: (a, b) => (a._count?.employees ?? 0) - (b._count?.employees ?? 0),
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#374151', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
     },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
@@ -195,7 +199,7 @@ export default function Companies() {
     {
       title: 'Desde', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 100,
@@ -203,11 +207,11 @@ export default function Companies() {
         <Space size={4}>
           <Tooltip title="Ver detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small"
-              style={{ color: '#2563eb' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
+              style={{ color: '#60a5fa' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
           </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Excluir">
             <Button type="text" icon={<DeleteOutlined />} size="small"
@@ -225,11 +229,11 @@ export default function Companies() {
     : companies;
 
   return (
-    <div>
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Empresas</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredCompanies.filter(c => c.active).length} ativa{filteredCompanies.filter(c => c.active).length !== 1 ? 's' : ''} · {filteredCompanies.length} total
           </p>
         </div>
@@ -239,7 +243,7 @@ export default function Companies() {
         </Button>
       </div>
 
-      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+      <div className="filter-bar">
         <Input.Search
           placeholder="Buscar por nome, CNPJ, e-mail, telefone ou localização..."
           allowClear
@@ -250,7 +254,7 @@ export default function Companies() {
         />
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+      <div className="page-table-wrap">
         <Table
           dataSource={filteredCompanies} columns={columns} rowKey="id"
           loading={loading} scroll={{ x: 900 }} size="middle"
@@ -262,8 +266,8 @@ export default function Companies() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BankOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BankOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Empresa' : 'Nova Empresa'}
@@ -286,8 +290,6 @@ export default function Companies() {
       >
         <div className="drawer-form-body">
           <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle">
-
-            {/* Identificação */}
             <div className="form-section-label">Identificação</div>
             <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
               <Input placeholder="Nome oficial da empresa" />
@@ -316,9 +318,8 @@ export default function Companies() {
               </Col>
             </Row>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
 
-            {/* Contato */}
             <div className="form-section-label">Contato</div>
             <Row gutter={12}>
               <Col xs={24} sm={14}>
@@ -338,9 +339,8 @@ export default function Companies() {
               <Input placeholder="https://www.empresa.com.br" />
             </Form.Item>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
 
-            {/* Endereço */}
             <div className="form-section-label">Endereço</div>
             <Row gutter={12}>
               <Col xs={24} sm={8}>
@@ -386,9 +386,8 @@ export default function Companies() {
               </Col>
             </Row>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
 
-            {/* Observações */}
             <div className="form-section-label">Observações</div>
             <Form.Item name="notes" style={{ marginBottom: 12 }}>
               <TextArea rows={3} placeholder="Informações adicionais sobre a empresa..." />
@@ -396,7 +395,7 @@ export default function Companies() {
 
             {editing && (
               <>
-                <Divider style={{ margin: '4px 0 20px', borderColor: '#f3f4f6' }} />
+                <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
                 <Form.Item name="active" label="Status da empresa" valuePropName="checked" style={{ marginBottom: 0 }}>
                   <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
                 </Form.Item>
@@ -412,7 +411,7 @@ export default function Companies() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir empresa</span>
           </div>
         }
@@ -427,37 +426,37 @@ export default function Companies() {
       >
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
             {hasLinks ? (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#dc2626', fontSize: 13, marginBottom: 10 }}>
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
                   Os seguintes registros vinculados também serão excluídos:
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {deleteModal.employees > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>👤 Funcionários</span>
-                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.employees}</span>
+                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.employees}</span>
                     </div>
                   )}
                   {deleteModal.tickets > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>🎫 Chamados (e comentários)</span>
-                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.tickets}</span>
+                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.tickets}</span>
                     </div>
                   )}
                   {deleteModal.categories > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#374151' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>🏷️ Categorias</span>
-                      <span style={{ fontWeight: 700, color: '#dc2626' }}>{deleteModal.categories}</span>
+                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.categories}</span>
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
                 Esta empresa não possui registros vinculados.
               </div>
             )}

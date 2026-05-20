@@ -184,7 +184,7 @@ export default function Tickets() {
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       defaultSortOrder: 'descend',
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -196,13 +196,13 @@ export default function Tickets() {
         <Space size={6}>
           {isSlaExpired(r) && (
             <Tooltip title="SLA Vencido">
-              <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 13 }} />
+              <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 13 }} />
             </Tooltip>
           )}
           <div>
-            <div style={{ fontWeight: 500, color: '#111827', fontSize: 13 }}>{v}</div>
+            <div style={{ fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{v}</div>
             {r._count?.comments > 0 && (
-              <span style={{ fontSize: 11, color: '#9ca3af' }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>
                 {r._count.comments} msg{r._count.comments !== 1 ? 's' : ''}
                 {r._count?.attachments > 0 ? ` · ${r._count.attachments} anexo${r._count.attachments !== 1 ? 's' : ''}` : ''}
               </span>
@@ -216,9 +216,9 @@ export default function Tickets() {
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
-            <div style={{ fontSize: 11, color: '#6b7280' }}>{r.company.fantasia}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{r.company.fantasia}</div>
           )}
         </div>
       ),
@@ -228,20 +228,20 @@ export default function Tickets() {
       sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee ? (
         <div>
-          <div style={{ fontSize: 13, color: '#374151' }}>{r.employee.name}</div>
-          {r.employee.position && <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.employee.position}</div>}
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{r.employee.name}</div>
+          {r.employee.position && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>{r.employee.position}</div>}
         </div>
-      ) : <span style={{ color: '#d1d5db' }}>—</span>,
+      ) : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>,
     },
     {
       title: 'Técnico', key: 'technician',
       sorter: (a, b) => (a.technician?.name || '').localeCompare(b.technician?.name || '', 'pt-BR'),
-      render: (_, r) => <span style={{ color: '#374151', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
+      render: (_, r) => <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
     },
     {
       title: 'Categoria', key: 'category',
       sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'),
-      render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.category?.name || '—'}</span>,
+      render: (_, r) => <span style={{ color: 'rgba(255,255,255,0.48)', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
     {
       title: 'Status', key: 'status',
@@ -274,14 +274,14 @@ export default function Tickets() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', width: 130,
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
     },
     {
       title: '', key: 'actions', width: 60,
       render: (_, r) => (
         <Space size={4}>
           <Tooltip title="Ver detalhes">
-            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#2563eb' }}
+            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#60a5fa' }}
               onClick={() => navigate(`/app/tickets/${r.id}`)} />
           </Tooltip>
           {!['CLOSED', 'CANCELLED'].includes(r.status) && (
@@ -294,11 +294,11 @@ export default function Tickets() {
   ];
 
   return (
-    <div>
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Chamados</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''}{search ? ` (de ${tickets.length})` : ''} · {' '}
             {statuses.filter(s => statusCounts[s.id] > 0).map(s => (
               <Tag
@@ -317,10 +317,7 @@ export default function Tickets() {
       </div>
 
       {/* Filtros */}
-      <div style={{
-        display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
-        padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
-      }}>
+      <div className="filter-bar">
         <Select
           mode="multiple"
           allowClear
@@ -354,7 +351,7 @@ export default function Tickets() {
         />
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+      <div className="page-table-wrap">
         <Table
           dataSource={filteredTickets} columns={columns} rowKey="id" loading={loading}
           scroll={{ x: 1300 }} size="middle"
@@ -368,7 +365,7 @@ export default function Tickets() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir chamado</span>
           </div>
         }
@@ -383,10 +380,10 @@ export default function Tickets() {
       >
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir o chamado <strong>"{deleteModal.title}"</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
               Todos os comentários vinculados também serão removidos.
             </div>
           </div>
@@ -397,8 +394,8 @@ export default function Tickets() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CustomerServiceOutlined style={{ color: '#d97706', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CustomerServiceOutlined style={{ color: '#fbbf24', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>Abrir Chamado</span>
           </div>
@@ -436,9 +433,7 @@ export default function Tickets() {
             <Form.Item name="employeeId" label="Funcionário" rules={[{ required: true, message: 'Selecione o funcionário responsável pelo chamado' }]}>
               <Select
                 placeholder={companyEmployees.length === 0 && !loadingEmployees ? 'Selecione uma empresa primeiro' : 'Selecione o funcionário'}
-                showSearch
-                optionFilterProp="children"
-                size="large"
+                showSearch optionFilterProp="children" size="large"
                 loading={loadingEmployees}
                 disabled={companyEmployees.length === 0 && !loadingEmployees}
                 notFoundContent={loadingEmployees ? 'Carregando...' : 'Nenhum funcionário ativo para esta empresa'}
@@ -449,13 +444,8 @@ export default function Tickets() {
               </Select>
             </Form.Item>
             <Form.Item name="technicianId" label="Técnico" rules={[{ required: true, message: 'Selecione o técnico responsável' }]}>
-              <Select
-                placeholder="Selecione o técnico"
-                showSearch
-                optionFilterProp="children"
-                size="large"
-                notFoundContent="Nenhum técnico ativo cadastrado"
-              >
+              <Select placeholder="Selecione o técnico" showSearch optionFilterProp="children" size="large"
+                notFoundContent="Nenhum técnico ativo cadastrado">
                 {technicians.map(t => (
                   <Option key={t.id} value={t.id}>{t.name}</Option>
                 ))}
@@ -486,15 +476,14 @@ export default function Tickets() {
               </Select>
             </Form.Item>
 
-            {/* Anexos */}
             <Form.Item
               label={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Badge count={fileList.length} size="small" color="#2563eb" offset={[4, -2]}>
-                    <PaperClipOutlined style={{ fontSize: 15, color: '#374151' }} />
+                    <PaperClipOutlined style={{ fontSize: 15 }} />
                   </Badge>
                   <span>Anexos</span>
-                  <span style={{ color: '#9ca3af', fontSize: 12, fontWeight: 400 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: 400 }}>
                     opcional · máx. {MAX_FILE_SIZE_MB}MB por arquivo
                   </span>
                 </div>

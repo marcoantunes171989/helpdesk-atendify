@@ -15,10 +15,10 @@ import { ROLES } from '../utils/constants';
 const { Option } = Select;
 
 const roleColors = {
-  SUPER_ADMIN: { bg: '#f3e8ff', color: '#7c3aed' },
-  ADMIN: { bg: '#dbeafe', color: '#1d4ed8' },
-  AGENT: { bg: '#dbeafe', color: '#1d4ed8' },
-  CLIENT: { bg: '#f3f4f6', color: '#374151' },
+  SUPER_ADMIN: { bg: 'rgba(124,58,237,0.2)', color: '#a78bfa' },
+  ADMIN:       { bg: 'rgba(37,99,235,0.2)',  color: '#60a5fa' },
+  AGENT:       { bg: 'rgba(29,78,216,0.2)',  color: '#93c5fd' },
+  CLIENT:      { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)' },
 };
 
 export default function Users() {
@@ -42,7 +42,6 @@ export default function Users() {
   };
 
   useEffect(() => { load(); }, [user]);
-
 
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => { setEditing(record); form.setFieldsValue({ ...record }); setDrawerOpen(true); };
@@ -107,7 +106,7 @@ export default function Users() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
       title: 'Usuário', key: 'name',
@@ -116,13 +115,18 @@ export default function Users() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Avatar
             size={32}
-            style={{ background: roleColors[r.role]?.bg, color: roleColors[r.role]?.color, fontWeight: 700, fontSize: 13, flexShrink: 0 }}
+            style={{
+              background: roleColors[r.role]?.bg,
+              color: roleColors[r.role]?.color,
+              fontWeight: 700, fontSize: 13, flexShrink: 0,
+              border: `1px solid ${roleColors[r.role]?.color}44`,
+            }}
           >
             {r.name?.charAt(0).toUpperCase()}
           </Avatar>
           <div>
-            <div style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</div>
-            <div style={{ fontSize: 12, color: '#9ca3af' }}>{r.email}</div>
+            <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{r.email}</div>
           </div>
         </div>
       ),
@@ -147,17 +151,17 @@ export default function Users() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 110,
       render: (_, record) => (
         <Space>
           <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Redefinir senha">
-            <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => setPwdModal(record.id)} />
+            <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => setPwdModal(record.id)} />
           </Tooltip>
           {record.id !== user?.id && (
             <Tooltip title="Excluir">
@@ -171,22 +175,20 @@ export default function Users() {
   ];
 
   return (
-    <div>
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Usuários</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>{filteredUsers.length} usuário{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}</p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+            {filteredUsers.length} usuário{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}
+          </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
           Novo Usuário
         </Button>
       </div>
 
-      {/* Filtros */}
-      <div style={{
-        display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
-        padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
-      }}>
+      <div className="filter-bar">
         <Input.Search
           placeholder="Buscar por nome, e-mail ou perfil..."
           style={{ flex: 1 }}
@@ -206,7 +208,7 @@ export default function Users() {
         </Select>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+      <div className="page-table-wrap">
         <Table dataSource={filteredUsers} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} usuário${t !== 1 ? 's' : ''}` }}
         />
@@ -218,7 +220,7 @@ export default function Users() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir usuário</span>
           </div>
         }
@@ -233,10 +235,10 @@ export default function Users() {
       >
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
               O usuário será removido do sistema e não poderá ser recuperado.
             </div>
           </div>
@@ -247,8 +249,8 @@ export default function Users() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TeamOutlined style={{ color: '#1d4ed8', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TeamOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Usuário' : 'Novo Usuário'}</span>
           </div>

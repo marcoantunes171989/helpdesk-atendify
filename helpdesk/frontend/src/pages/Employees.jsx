@@ -13,12 +13,12 @@ import { useAuth } from '../contexts/AuthContext';
 const { Option } = Select;
 
 const avatarColors = [
-  { bg: '#dbeafe', color: '#2563eb' },
-  { bg: '#dbeafe', color: '#1d4ed8' },
-  { bg: '#fce7f3', color: '#be185d' },
-  { bg: '#fef3c7', color: '#d97706' },
-  { bg: '#ede9fe', color: '#7c3aed' },
-  { bg: '#fee2e2', color: '#dc2626' },
+  { bg: 'rgba(37,99,235,0.25)', color: '#60a5fa' },
+  { bg: 'rgba(29,78,216,0.25)', color: '#93c5fd' },
+  { bg: 'rgba(190,24,93,0.25)', color: '#f472b6' },
+  { bg: 'rgba(217,119,6,0.25)', color: '#fbbf24' },
+  { bg: 'rgba(124,58,237,0.25)', color: '#a78bfa' },
+  { bg: 'rgba(220,38,38,0.25)', color: '#f87171' },
 ];
 
 const getAvatarColor = (name = '') => avatarColors[name.charCodeAt(0) % avatarColors.length];
@@ -92,7 +92,7 @@ export default function Employees() {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -104,10 +104,10 @@ export default function Employees() {
         const c = getAvatarColor(r.name);
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Avatar size={36} style={{ background: c.bg, color: c.color, fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+            <Avatar size={36} style={{ background: c.bg, color: c.color, fontWeight: 700, fontSize: 14, flexShrink: 0, border: `1px solid ${c.color}44` }}>
               {r.name?.charAt(0).toUpperCase()}
             </Avatar>
-            <span style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</span>
+            <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</span>
           </div>
         );
       },
@@ -115,21 +115,21 @@ export default function Employees() {
     {
       title: 'Cargo', dataIndex: 'position', key: 'position',
       sorter: (a, b) => (a.position || '').localeCompare(b.position || '', 'pt-BR'),
-      render: v => <span style={{ color: '#374151', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Telefone', dataIndex: 'phone', key: 'phone',
       sorter: (a, b) => (a.phone || '').localeCompare(b.phone || ''),
-      render: v => <span style={{ color: '#6b7280', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Empresa', key: 'company',
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          <div style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
-            <div style={{ fontSize: 11, color: '#6b7280' }}>{r.company.fantasia}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{r.company.fantasia}</div>
           )}
         </div>
       ),
@@ -140,7 +140,7 @@ export default function Employees() {
         <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Button type="text" icon={<DeleteOutlined />} size="small" danger
             onClick={() => setDeleteModal({ id: record.id, name: record.name })} />
@@ -154,12 +154,11 @@ export default function Employees() {
     : employees;
 
   return (
-    <div>
-      {/* Header */}
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Funcionários</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredEmployees.length} funcionário{filteredEmployees.length !== 1 ? 's' : ''} cadastrado{filteredEmployees.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -168,8 +167,7 @@ export default function Employees() {
         </Button>
       </div>
 
-      {/* Busca */}
-      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+      <div className="filter-bar">
         <Input.Search
           placeholder="Buscar por nome, cargo, telefone, empresa ou fantasia..."
           allowClear
@@ -180,8 +178,7 @@ export default function Employees() {
         />
       </div>
 
-      {/* Tabela */}
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+      <div className="page-table-wrap">
         <Table
           dataSource={filteredEmployees} columns={columns} rowKey="id" loading={loading}
           scroll={{ x: 700 }} size="middle"
@@ -195,7 +192,7 @@ export default function Employees() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir funcionário</span>
           </div>
         }
@@ -210,10 +207,10 @@ export default function Employees() {
       >
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
               O funcionário será removido do sistema e não poderá ser recuperado.
             </div>
           </div>
@@ -224,8 +221,8 @@ export default function Employees() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IdcardOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IdcardOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Funcionário' : 'Novo Funcionário'}
@@ -269,7 +266,7 @@ export default function Employees() {
               <Col xs={24} sm={12}>
                 <Form.Item name="phone" label="Telefone">
                   <Input
-                    prefix={<PhoneOutlined style={{ color: '#9ca3af' }} />}
+                    prefix={<PhoneOutlined style={{ color: 'rgba(255,255,255,0.3)' }} />}
                     placeholder="(11) 99999-9999"
                     size="large"
                   />

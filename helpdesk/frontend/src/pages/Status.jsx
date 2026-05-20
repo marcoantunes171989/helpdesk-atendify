@@ -26,7 +26,7 @@ const PRESET_COLORS = [
   { label: 'Cinza',    value: '#6b7280' },
   { label: 'Azul',    value: '#1d4ed8' },
   { label: 'Amarelo', value: '#d97706' },
-  { label: 'Verde',   value: '#2563eb' },
+  { label: 'Verde',   value: '#16a34a' },
   { label: 'Roxo',    value: '#7c3aed' },
   { label: 'Vermelho',value: '#dc2626' },
   { label: 'Rosa',    value: '#be185d' },
@@ -43,8 +43,9 @@ function ColorPicker({ value, onChange }) {
           title={c.label}
           style={{
             width: 28, height: 28, borderRadius: 6, background: c.value, cursor: 'pointer',
-            border: value === c.value ? '3px solid #111827' : '2px solid transparent',
+            border: value === c.value ? '3px solid #fff' : '2px solid rgba(255,255,255,0.15)',
             boxSizing: 'border-box', transition: 'border 0.15s',
+            boxShadow: value === c.value ? `0 0 8px ${c.value}80` : 'none',
           }}
         />
       ))}
@@ -128,7 +129,7 @@ export default function Status() {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => a.code - b.code,
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
           {String(v).padStart(4, '0')}
         </span>
       ),
@@ -138,11 +139,11 @@ export default function Status() {
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: r.color, flexShrink: 0, boxShadow: `0 0 6px ${r.color}80` }} />
           <div>
-            <div style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</div>
+            <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</div>
             {r.description && (
-              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{r.description}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginTop: 2 }}>{r.description}</div>
             )}
           </div>
         </div>
@@ -151,13 +152,13 @@ export default function Status() {
     {
       title: 'Observação', dataIndex: 'observation', key: 'observation',
       sorter: (a, b) => (a.observation || '').localeCompare(b.observation || '', 'pt-BR'),
-      render: v => <span style={{ color: '#6b7280', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => (
-        <span style={{ fontWeight: 600, color: '#2563eb', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
+        <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
     },
     {
@@ -165,7 +166,7 @@ export default function Status() {
       sorter: (a, b) => (a.builtinStatus || '').localeCompare(b.builtinStatus || ''),
       render: v => v ? (
         <Tag style={{ borderRadius: 6, fontSize: 11, fontFamily: 'monospace' }}>{v}</Tag>
-      ) : <span style={{ color: '#d1d5db' }}>—</span>,
+      ) : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
@@ -179,7 +180,7 @@ export default function Status() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 80,
@@ -187,7 +188,7 @@ export default function Status() {
         <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: '#6b7280' }} onClick={() => openEdit(record)} />
+              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Remover">
             <Button type="text" icon={<DeleteOutlined />} size="small" danger
@@ -203,11 +204,11 @@ export default function Status() {
     : statuses;
 
   return (
-    <div>
+    <div className="page-wrap">
       <div className="page-header">
         <div>
           <h1 className="page-title">Status de Chamados</h1>
-          <p style={{ color: '#6b7280', fontSize: 14, margin: '4px 0 0' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredStatuses.length} status cadastrado{filteredStatuses.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -217,7 +218,7 @@ export default function Status() {
         </Button>
       </div>
 
-      <div style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 16 }}>
+      <div className="filter-bar">
         <Input.Search
           placeholder="Buscar por nome, descrição ou observação..."
           allowClear
@@ -228,7 +229,7 @@ export default function Status() {
         />
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+      <div className="page-table-wrap">
         <Table
           dataSource={filteredStatuses} columns={columns} rowKey="id"
           loading={loading} size="middle" scroll={{ x: 700 }}
@@ -242,7 +243,7 @@ export default function Status() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover status</span>
           </div>
         }
@@ -258,15 +259,15 @@ export default function Status() {
       >
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a remover o status <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
-              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
                 Este status está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
               </div>
             ) : (
-              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1e40af' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
                 Este status não possui chamados vinculados e pode ser removido com segurança.
               </div>
             )}
@@ -278,8 +279,8 @@ export default function Status() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TagsOutlined style={{ color: '#7c3aed', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TagsOutlined style={{ color: '#a78bfa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Status' : 'Novo Status'}
