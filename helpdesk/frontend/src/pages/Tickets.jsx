@@ -176,9 +176,12 @@ export default function Tickets() {
     return acc;
   }, {});
 
+  const PRIORITY_ORDER = { LOW: 1, MEDIUM: 2, HIGH: 3, URGENT: 4 };
+
   const columns = [
     {
       title: 'ID', dataIndex: 'id', key: 'id', width: 80,
+      sorter: (a, b) => a.id.localeCompare(b.id),
       render: v => (
         <code style={{ fontSize: 11, color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>
           {v.slice(-6).toUpperCase()}
@@ -187,6 +190,7 @@ export default function Tickets() {
     },
     {
       title: 'Título', dataIndex: 'title', key: 'title', minWidth: 180,
+      sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
       render: (v, r) => (
         <Space size={6}>
           {isSlaExpired(r) && (
@@ -208,6 +212,7 @@ export default function Tickets() {
     },
     {
       title: 'Empresa', key: 'company',
+      sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
           <div style={{ color: '#374151', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
@@ -219,6 +224,7 @@ export default function Tickets() {
     },
     {
       title: 'Funcionário', key: 'employee',
+      sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee ? (
         <div>
           <div style={{ fontSize: 13, color: '#374151' }}>{r.employee.name}</div>
@@ -228,14 +234,17 @@ export default function Tickets() {
     },
     {
       title: 'Técnico', key: 'technician',
+      sorter: (a, b) => (a.technician?.name || '').localeCompare(b.technician?.name || '', 'pt-BR'),
       render: (_, r) => <span style={{ color: '#374151', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
     },
     {
       title: 'Categoria', key: 'category',
+      sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'),
       render: (_, r) => <span style={{ color: '#6b7280', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
     {
       title: 'Status', key: 'status',
+      sorter: (a, b) => (a.ticketStatus?.name || TICKET_STATUS[a.status]?.label || '').localeCompare(b.ticketStatus?.name || TICKET_STATUS[b.status]?.label || '', 'pt-BR'),
       render: (_, r) => {
         if (r.ticketStatus) {
           return (
@@ -254,6 +263,7 @@ export default function Tickets() {
     },
     {
       title: 'Prioridade', dataIndex: 'priority', key: 'priority',
+      sorter: (a, b) => (PRIORITY_ORDER[a.priority] || 0) - (PRIORITY_ORDER[b.priority] || 0),
       render: v => (
         <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6, fontSize: 11 }}>
           {PRIORITY[v]?.label}
@@ -262,6 +272,7 @@ export default function Tickets() {
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', width: 130,
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
     },
     {
