@@ -85,17 +85,19 @@ export default function Login() {
         }
       `}</style>
 
-      {/* Imagem de fundo — sem cortes em nenhum lado */}
+      {/* Imagem de fundo — preenche toda a tela sem barras */}
       <img
         src={PHOTO_URL}
         alt=""
+        fetchPriority="high"
+        decoding="sync"
         style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'contain',
-          objectPosition: 'center center',
+          objectFit: 'cover',
+          objectPosition: 'center 20%',
           zIndex: 0,
         }}
       />
