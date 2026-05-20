@@ -147,6 +147,7 @@ export default function Companies() {
             </Avatar>
             <div>
               <div style={{ fontWeight: 600, color: '#111827', fontSize: 13, lineHeight: 1.3 }}>{r.name}</div>
+              {r.fantasia && <div style={{ fontSize: 11, color: '#6b7280' }}>{r.fantasia}</div>}
               <div style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{maskCNPJ(r.cnpj || '')}</div>
             </div>
           </div>
