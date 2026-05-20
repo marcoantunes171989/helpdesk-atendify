@@ -27,11 +27,15 @@ const ticketInclude = {
 };
 
 exports.list = async (req, res) => {
-  const { status, priority, categoryId, assignedTo, userId, search, companyId, statusId } = req.query;
+  const { status, priority, categoryId, assignedTo, userId, search, companyId, statusId, excludeResolved } = req.query;
   const where = {};
 
   if (companyId) where.companyId = companyId;
-  if (status) where.status = status;
+  if (status) {
+    where.status = status;
+  } else if (excludeResolved === 'true') {
+    where.status = { not: 'RESOLVED' };
+  }
   if (statusId) where.statusId = statusId;
   if (priority) where.priority = priority;
   if (categoryId) where.categoryId = categoryId;

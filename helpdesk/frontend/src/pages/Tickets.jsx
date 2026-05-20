@@ -50,8 +50,14 @@ export default function Tickets() {
     ticketService.list(params).then(setTickets).finally(() => setLoading(false));
   };
 
+  const buildApiParams = (f) => {
+    const params = { ...f };
+    if (!params.statusId && !params.status) params.excludeResolved = 'true';
+    return params;
+  };
+
   useEffect(() => {
-    load();
+    load(buildApiParams({}));
     categoryService.list({ active: 'true' }).then(list => {
       const unique = list.filter((c, i, arr) => arr.findIndex(x => x.name.toLowerCase() === c.name.toLowerCase()) === i);
       unique.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
@@ -125,7 +131,7 @@ export default function Tickets() {
       await ticketService.remove(deleteModal.id);
       message.success('Chamado excluído com sucesso');
       setDeleteModal(null);
-      load(filters);
+      load(buildApiParams(filters));
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao excluir chamado');
     } finally {
@@ -135,9 +141,19 @@ export default function Tickets() {
 
   const applyFilters = (changed) => {
     const newFilters = { ...filters, ...changed };
-    Object.keys(newFilters).forEach(k => { if (!newFilters[k]) delete newFilters[k]; });
+    Object.keys(newFilters).forEach(k => { if (newFilters[k] === undefined || newFilters[k] === null || newFilters[k] === '') delete newFilters[k]; });
     setFilters(newFilters);
-    load(newFilters);
+    load(buildApiParams(newFilters));
+  };
+
+  const handleStatusFilterChange = (v) => {
+    if (!v) {
+      applyFilters({ statusId: undefined, status: undefined });
+    } else if (v === '__RESOLVED__') {
+      applyFilters({ status: 'RESOLVED', statusId: undefined });
+    } else {
+      applyFilters({ statusId: v, status: undefined });
+    }
   };
 
   const isSlaExpired = (t) =>
@@ -288,7 +304,7 @@ export default function Tickets() {
         display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16,
         padding: '14px 16px', background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb',
       }}>
-        <Select allowClear placeholder="Todos os status" style={{ minWidth: 150, flex: 1 }} onChange={v => applyFilters({ statusId: v })}>
+        <Select allowClear placeholder="Todos os status" style={{ minWidth: 150, flex: 1 }} onChange={handleStatusFilterChange}>
           {statuses.map(s => (
             <Option key={s.id} value={s.id}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -297,6 +313,12 @@ export default function Tickets() {
               </span>
             </Option>
           ))}
+          <Option key="__RESOLVED__" value="__RESOLVED__">
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#52c41a', display: 'inline-block' }} />
+              Resolvido
+            </span>
+          </Option>
         </Select>
         <Select allowClear placeholder="Todas as prioridades" style={{ minWidth: 160, flex: 1 }} onChange={v => applyFilters({ priority: v })}>
           {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
