@@ -257,11 +257,13 @@ export default function TicketDetail() {
         attachments: commentFiles,
         createdAt: commentDate?.toISOString(),
       });
-      const updated = await ticketService.update(id, {
-        status: commentStatus,
-        statusId: commentStatus === 'RESOLVED' ? null : undefined,
-      });
-      setTicket(updated);
+      if (commentStatus !== ticket.status) {
+        await ticketService.update(id, {
+          status: commentStatus,
+          statusId: commentStatus === 'RESOLVED' ? null : undefined,
+        });
+      }
+      load();
       setComment('');
       setCommentFiles([]);
       setCommentDate(dayjs());
@@ -881,6 +883,9 @@ export default function TicketDetail() {
                 ticket.technician && { label: 'Técnico', value: ticket.technician.name },
                 { label: 'Aberto em', value: dayjs(ticket.createdAt).format('DD/MM/YYYY HH:mm') },
                 ticket.resolvedAt && { label: 'Resolvido em', value: dayjs(ticket.resolvedAt).format('DD/MM/YYYY HH:mm') },
+                { label: 'Status', value: TICKET_STATUS[ticket.status]?.label },
+                { label: 'Prioridade', value: PRIORITY[ticket.priority]?.label },
+                ticket.category && { label: 'Categoria', value: ticket.category.name },
               ].filter(Boolean).map(item => (
                 <div key={item.label}>
                   <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
@@ -921,32 +926,6 @@ export default function TicketDetail() {
               </>
             )}
 
-            {canEdit && (
-              <>
-                <Divider style={{ margin: '16px 0' }} />
-                <h3 style={{ fontWeight: 700, fontSize: 14, color: '#111827', margin: '0 0 12px' }}>Gerenciar</h3>
-                <Space direction="vertical" style={{ width: '100%' }} size={10}>
-                  <div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>STATUS</div>
-                    <Select value={ticket.status} style={{ width: '100%' }} onChange={handleStatusChange} size="small">
-                      {Object.entries(TICKET_STATUS).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
-                    </Select>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>PRIORIDADE</div>
-                    <Select value={ticket.priority} style={{ width: '100%' }} onChange={v => handleUpdate('priority', v)} size="small">
-                      {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
-                    </Select>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, marginBottom: 4 }}>CATEGORIA</div>
-                    <Select value={ticket.categoryId} style={{ width: '100%' }} allowClear placeholder="Sem categoria" onChange={v => handleUpdate('categoryId', v)} size="small">
-                      {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-                    </Select>
-                  </div>
-                </Space>
-              </>
-            )}
           </div>
         </Col>
       </Row>
