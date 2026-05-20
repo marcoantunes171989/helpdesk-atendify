@@ -10,7 +10,7 @@ exports.list = async (req, res) => {
   const technicians = await prisma.technician.findMany({
     where,
     include: { _count: { select: { tickets: true } } },
-    orderBy: { name: 'asc' },
+    orderBy: { code: { sort: 'asc', nulls: 'last' } },
   });
   res.json(technicians);
 };
