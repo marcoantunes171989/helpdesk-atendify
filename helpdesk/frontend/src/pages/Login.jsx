@@ -4,8 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const BREAKPOINT = 768;
 
-const PHOTO_URL =
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1260&q=80';
+const PHOTO_URL = '/Atendexa.png';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -41,7 +40,7 @@ export default function Login() {
           backgroundColor: '#111827',
           backgroundImage: `url('${PHOTO_URL}')`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center top',
+          backgroundPosition: 'center center',
         }}>
           {/* Overlay gradiente escuro para legibilidade */}
           <div style={{
