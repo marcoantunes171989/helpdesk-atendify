@@ -416,7 +416,7 @@ export default function Tickets() {
           </Space>
         }
       >
-        <div className="drawer-form-body" style={{ maxWidth: 640 }}>
+        <div className="drawer-form-body" style={{ maxWidth: 640, margin: '0 auto' }}>
           <Form form={form} layout="vertical" onFinish={handleCreate}>
             <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Informe o título' }]}>
               <Input placeholder="Descreva o problema brevemente" size="large" />
