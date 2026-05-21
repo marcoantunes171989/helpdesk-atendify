@@ -46,6 +46,26 @@ export default function AppLayout() {
       .ant-table-tbody > tr:last-child > td {
         border-bottom: none !important;
       }
+
+      /* Tags: apenas texto, sem background nem borda */
+      .ant-tag {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+      }
+      .ant-tag-blue   { color: #60a5fa !important; }
+      .ant-tag-green, .ant-tag-success { color: #4ade80 !important; }
+      .ant-tag-orange { color: #fbbf24 !important; }
+      .ant-tag-red,   .ant-tag-error   { color: #f87171 !important; }
+      .ant-tag-purple { color: #c084fc !important; }
+      .ant-tag-cyan   { color: #22d3ee !important; }
+      .ant-tag-default, .ant-tag:not([class*="ant-tag-"]) {
+        color: rgba(255,255,255,0.50) !important;
+      }
     `;
     document.head.appendChild(style);
     return () => { document.getElementById('antd-table-dark-override')?.remove(); };
