@@ -82,7 +82,14 @@ export const statusService = {
 };
 
 export const dashboardService = {
-  stats: () => api.get('/dashboard/stats').then(r => r.data),
+  stats:         ()           => api.get('/dashboard/stats').then(r => r.data),
+  kpis:          (period)     => api.get('/dashboard/kpis',            { params: { period } }).then(r => r.data),
+  volume:        (period)     => api.get('/dashboard/volume',          { params: { period } }).then(r => r.data),
+  categories:    (period)     => api.get('/dashboard/categories',      { params: { period, limit: 10 } }).then(r => r.data),
+  slaByPriority: (period)     => api.get('/dashboard/sla-by-priority', { params: { period } }).then(r => r.data),
+  peakHours:     ()           => api.get('/dashboard/peak-hours',      { params: { period: '30d' } }).then(r => r.data),
+  agents:        (period)     => api.get('/dashboard/agents',          { params: { period } }).then(r => r.data),
+  queue:         ()           => api.get('/dashboard/queue/realtime').then(r => r.data),
 };
 
 export const employeeService = {
