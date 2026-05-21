@@ -116,7 +116,7 @@ model TicketStatusRef {
   observation   String?
   color         String        @default("#6b7280")
   active        Boolean       @default(true)
-  builtinStatus TicketStatus? @map("builtin_status")
+  builtinStatus String?       @map("builtin_status")
   tickets       Ticket[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt

@@ -371,11 +371,11 @@ export default function Dashboard() {
       {/* Recent tickets */}
       <GlassCard style={{ overflow: 'hidden' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '18px 22px',
+          display: 'flex', alignItems: 'center', gap: 16,
+          padding: '16px 22px',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.58)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Chamados Recentes
             </span>
@@ -385,15 +385,14 @@ export default function Dashboard() {
               </span>
             )}
           </div>
-          <div className="db-dark">
-            <Input.Search
-              placeholder="Buscar..."
+          <div className="db-dark" style={{ flex: 1 }}>
+            <Input
+              placeholder="Buscar por título, empresa, status, prioridade..."
               allowClear
               value={search}
               onChange={e => setSearch(e.target.value)}
-              onSearch={v => setSearch(v)}
-              style={{ width: 220 }}
-              size="small"
+              style={{ width: '100%' }}
+              size="middle"
             />
           </div>
         </div>
