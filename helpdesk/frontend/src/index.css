@@ -394,6 +394,18 @@ h1, h2, h3, h4, h5 {
   background-color: #ffffff !important;
 }
 
+/* Cabeçalho das tabelas: branco no light */
+[data-theme="light"] .page-table-wrap .ant-table-thead > tr > th,
+[data-theme="light"] .page-table-wrap .ant-table-thead > tr > td {
+  background: #ffffff !important;
+}
+[data-theme="light"] .page-table-wrap {
+  --ant-table-header-bg: #ffffff;
+  --ant-table-header-sort-bg: #f8fafc;
+  --ant-table-header-sort-hover-bg: #f1f5f9;
+  --ant-table-row-hover-bg: #f8fafc;
+}
+
 /* ============================================================
    Ant Design dark overrides — Layout / Nav
    ============================================================ */
