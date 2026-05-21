@@ -26,6 +26,32 @@ export default function AppLayout() {
   const location = useLocation();
 
   useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'antd-table-dark-override';
+    style.textContent = `
+      .ant-table-wrapper, .ant-table, .ant-table-container,
+      .ant-table-content, .ant-table-body, .ant-table-header {
+        background: transparent !important;
+      }
+      .ant-table-tbody > tr > td,
+      .ant-table-tbody > tr > td.ant-table-cell,
+      .ant-table-tbody > tr > td.ant-table-column-sort,
+      .ant-table-tbody > tr > td.ant-table-cell-row-hover {
+        background: transparent !important;
+      }
+      .ant-table-tbody > tr:hover > td,
+      .ant-table-tbody > tr.ant-table-row:hover > td {
+        background: rgba(255,255,255,0.04) !important;
+      }
+      .ant-table-tbody > tr:last-child > td {
+        border-bottom: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { document.getElementById('antd-table-dark-override')?.remove(); };
+  }, []);
+
+  useEffect(() => {
     const handler = () => {
       const mobile = window.innerWidth < BREAKPOINT;
       setIsMobile(mobile);
