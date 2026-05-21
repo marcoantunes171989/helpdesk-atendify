@@ -557,10 +557,26 @@ export default function TicketDetail() {
                       style={{ width: '100%' }}
                       onChange={handleEditCompanyChange}
                       showSearch
-                      optionFilterProp="children"
                       placeholder="Selecione a empresa"
+                      filterOption={(input, option) => {
+                        const c = companies.find(co => co.id === option.value);
+                        const q = input.toLowerCase();
+                        return (
+                          c?.name?.toLowerCase().includes(q) ||
+                          (c?.fantasia || '').toLowerCase().includes(q)
+                        );
+                      }}
                     >
-                      {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                      {companies.map(c => (
+                        <Option key={c.id} value={c.id}>
+                          <div style={{ lineHeight: 1.3 }}>
+                            <div>{c.name}</div>
+                            {c.fantasia && (
+                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>{c.fantasia}</div>
+                            )}
+                          </div>
+                        </Option>
+                      ))}
                     </Select>
                   </Col>
                   <Col xs={24} sm={12}>

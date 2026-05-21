@@ -423,10 +423,29 @@ export default function Tickets() {
             </Form.Item>
             <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
               <Select
-                placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large"
+                placeholder="Selecione a empresa"
+                showSearch
+                size="large"
                 onChange={handleCompanyChange}
+                filterOption={(input, option) => {
+                  const c = companies.find(co => co.id === option.value);
+                  const q = input.toLowerCase();
+                  return (
+                    c?.name?.toLowerCase().includes(q) ||
+                    (c?.fantasia || '').toLowerCase().includes(q)
+                  );
+                }}
               >
-                {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                {companies.map(c => (
+                  <Option key={c.id} value={c.id}>
+                    <div style={{ lineHeight: 1.3 }}>
+                      <div>{c.name}</div>
+                      {c.fantasia && (
+                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>{c.fantasia}</div>
+                      )}
+                    </div>
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item name="employeeId" label="Funcionário" rules={[{ required: true, message: 'Selecione o funcionário responsável pelo chamado' }]}>
