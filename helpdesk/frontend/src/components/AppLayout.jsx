@@ -66,6 +66,89 @@ export default function AppLayout() {
       .ant-tag-default, .ant-tag:not([class*="ant-tag-"]) {
         color: rgba(255,255,255,0.50) !important;
       }
+
+      /* Select / AutoComplete dropdown popup */
+      .ant-select-dropdown {
+        background: #12121f !important;
+        border: 1px solid rgba(255,255,255,0.10) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+        border-radius: 10px !important;
+      }
+      .ant-select-item {
+        color: rgba(255,255,255,0.75) !important;
+        background: transparent !important;
+        border-radius: 6px !important;
+      }
+      .ant-select-item-option-active,
+      .ant-select-item-option:hover {
+        background: rgba(255,255,255,0.06) !important;
+      }
+      .ant-select-item-option-selected {
+        background: rgba(37,99,235,0.22) !important;
+        color: #60a5fa !important;
+        font-weight: 600 !important;
+      }
+      .ant-select-item-option-selected .ant-select-item-option-content {
+        color: #60a5fa !important;
+      }
+      .ant-select-item-empty,
+      .ant-empty-description {
+        color: rgba(255,255,255,0.28) !important;
+      }
+      .ant-select-dropdown .ant-empty-image svg {
+        opacity: 0.25;
+      }
+
+      /* Cascader / TreeSelect dropdown */
+      .ant-cascader-dropdown,
+      .ant-tree-select-dropdown {
+        background: #12121f !important;
+        border: 1px solid rgba(255,255,255,0.10) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+        border-radius: 10px !important;
+      }
+      .ant-cascader-menu-item,
+      .ant-tree-treenode {
+        color: rgba(255,255,255,0.75) !important;
+      }
+      .ant-cascader-menu-item:hover,
+      .ant-tree-treenode:hover {
+        background: rgba(255,255,255,0.06) !important;
+      }
+
+      /* DatePicker dropdown */
+      .ant-picker-dropdown {
+        background: #12121f !important;
+      }
+      .ant-picker-panel-container {
+        background: #12121f !important;
+        border: 1px solid rgba(255,255,255,0.10) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+        border-radius: 10px !important;
+      }
+      .ant-picker-header, .ant-picker-body {
+        background: transparent !important;
+        color: rgba(255,255,255,0.75) !important;
+        border-color: rgba(255,255,255,0.08) !important;
+      }
+      .ant-picker-cell-in-view .ant-picker-cell-inner {
+        color: rgba(255,255,255,0.82) !important;
+      }
+      .ant-picker-cell:not(.ant-picker-cell-in-view) .ant-picker-cell-inner {
+        color: rgba(255,255,255,0.20) !important;
+      }
+      .ant-picker-cell-selected .ant-picker-cell-inner {
+        background: #2563eb !important;
+      }
+      .ant-picker-cell-today .ant-picker-cell-inner::before {
+        border-color: #2563eb !important;
+      }
+      .ant-picker-header button {
+        color: rgba(255,255,255,0.55) !important;
+      }
+      .ant-picker-header button:hover {
+        color: #fff !important;
+      }
     `;
     document.head.appendChild(style);
     return () => { document.getElementById('antd-table-dark-override')?.remove(); };
