@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer } from 'antd';
 import {
@@ -25,23 +25,23 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const style = document.createElement('style');
     style.id = 'antd-table-dark-override';
     style.textContent = `
       .ant-table-wrapper, .ant-table, .ant-table-container,
       .ant-table-content, .ant-table-body, .ant-table-header {
-        background: transparent !important;
+        background: #0d0d1a !important;
       }
       .ant-table-tbody > tr > td,
       .ant-table-tbody > tr > td.ant-table-cell,
       .ant-table-tbody > tr > td.ant-table-column-sort,
       .ant-table-tbody > tr > td.ant-table-cell-row-hover {
-        background: transparent !important;
+        background: #0d0d1a !important;
       }
       .ant-table-tbody > tr:hover > td,
       .ant-table-tbody > tr.ant-table-row:hover > td {
-        background: rgba(255,255,255,0.04) !important;
+        background: #151525 !important;
       }
       .ant-table-tbody > tr:last-child > td {
         border-bottom: none !important;
