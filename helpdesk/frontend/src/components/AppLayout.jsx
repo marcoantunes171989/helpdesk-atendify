@@ -1,10 +1,11 @@
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer } from 'antd';
 import {
   DashboardOutlined, TeamOutlined, UserOutlined, AppstoreOutlined,
   CustomerServiceOutlined, LogoutOutlined, BankOutlined,
-  MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined, IdcardOutlined, TagsOutlined, ToolOutlined,
+  MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined, IdcardOutlined,
+  TagsOutlined, ToolOutlined, SettingOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { canManageCompanies, canManageUsers, canManageCategories, ROLES } from '../utils/constants';
@@ -13,10 +14,6 @@ const { Header, Sider, Content } = Layout;
 
 const BREAKPOINT = 768;
 
-const SIDEBAR_BG = '#0c0c18';
-const SIDEBAR_BORDER = 'rgba(255,255,255,0.08)';
-const HEADER_BG = 'rgba(10,10,20,0.96)';
-
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < BREAKPOINT);
@@ -24,135 +21,6 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
-  useLayoutEffect(() => {
-    const style = document.createElement('style');
-    style.id = 'antd-table-dark-override';
-    style.textContent = `
-      .ant-table-wrapper, .ant-table, .ant-table-container,
-      .ant-table-content, .ant-table-body, .ant-table-header {
-        background: #0d0d1a !important;
-      }
-      .ant-table-tbody > tr > td,
-      .ant-table-tbody > tr > td.ant-table-cell,
-      .ant-table-tbody > tr > td.ant-table-column-sort,
-      .ant-table-tbody > tr > td.ant-table-cell-row-hover {
-        background: #0d0d1a !important;
-      }
-      .ant-table-tbody > tr:hover > td,
-      .ant-table-tbody > tr.ant-table-row:hover > td {
-        background: #151525 !important;
-      }
-      .ant-table-tbody > tr:last-child > td {
-        border-bottom: none !important;
-      }
-
-      /* Tags: apenas texto, sem background nem borda */
-      .ant-tag {
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        font-weight: 600 !important;
-        font-size: 12px !important;
-        line-height: 1.5 !important;
-      }
-      .ant-tag-blue   { color: #60a5fa !important; }
-      .ant-tag-green, .ant-tag-success { color: #4ade80 !important; }
-      .ant-tag-orange { color: #fbbf24 !important; }
-      .ant-tag-red,   .ant-tag-error   { color: #f87171 !important; }
-      .ant-tag-purple { color: #c084fc !important; }
-      .ant-tag-cyan   { color: #22d3ee !important; }
-      .ant-tag-default, .ant-tag:not([class*="ant-tag-"]) {
-        color: rgba(255,255,255,0.50) !important;
-      }
-
-      /* Select / AutoComplete dropdown popup */
-      .ant-select-dropdown {
-        background: #12121f !important;
-        border: 1px solid rgba(255,255,255,0.10) !important;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
-        border-radius: 10px !important;
-      }
-      .ant-select-item {
-        color: rgba(255,255,255,0.75) !important;
-        background: transparent !important;
-        border-radius: 6px !important;
-      }
-      .ant-select-item-option-active,
-      .ant-select-item-option:hover {
-        background: rgba(255,255,255,0.06) !important;
-      }
-      .ant-select-item-option-selected {
-        background: rgba(37,99,235,0.22) !important;
-        color: #60a5fa !important;
-        font-weight: 600 !important;
-      }
-      .ant-select-item-option-selected .ant-select-item-option-content {
-        color: #60a5fa !important;
-      }
-      .ant-select-item-empty,
-      .ant-empty-description {
-        color: rgba(255,255,255,0.28) !important;
-      }
-      .ant-select-dropdown .ant-empty-image svg {
-        opacity: 0.25;
-      }
-
-      /* Cascader / TreeSelect dropdown */
-      .ant-cascader-dropdown,
-      .ant-tree-select-dropdown {
-        background: #12121f !important;
-        border: 1px solid rgba(255,255,255,0.10) !important;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
-        border-radius: 10px !important;
-      }
-      .ant-cascader-menu-item,
-      .ant-tree-treenode {
-        color: rgba(255,255,255,0.75) !important;
-      }
-      .ant-cascader-menu-item:hover,
-      .ant-tree-treenode:hover {
-        background: rgba(255,255,255,0.06) !important;
-      }
-
-      /* DatePicker dropdown */
-      .ant-picker-dropdown {
-        background: #12121f !important;
-      }
-      .ant-picker-panel-container {
-        background: #12121f !important;
-        border: 1px solid rgba(255,255,255,0.10) !important;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
-        border-radius: 10px !important;
-      }
-      .ant-picker-header, .ant-picker-body {
-        background: transparent !important;
-        color: rgba(255,255,255,0.75) !important;
-        border-color: rgba(255,255,255,0.08) !important;
-      }
-      .ant-picker-cell-in-view .ant-picker-cell-inner {
-        color: rgba(255,255,255,0.82) !important;
-      }
-      .ant-picker-cell:not(.ant-picker-cell-in-view) .ant-picker-cell-inner {
-        color: rgba(255,255,255,0.20) !important;
-      }
-      .ant-picker-cell-selected .ant-picker-cell-inner {
-        background: #2563eb !important;
-      }
-      .ant-picker-cell-today .ant-picker-cell-inner::before {
-        border-color: #2563eb !important;
-      }
-      .ant-picker-header button {
-        color: rgba(255,255,255,0.55) !important;
-      }
-      .ant-picker-header button:hover {
-        color: #fff !important;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => { document.getElementById('antd-table-dark-override')?.remove(); };
-  }, []);
 
   useEffect(() => {
     const handler = () => {
@@ -173,6 +41,7 @@ export default function AppLayout() {
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/employees', icon: <IdcardOutlined />, label: 'Funcionários' },
     canManageUsers(user?.role) && { key: '/app/users', icon: <TeamOutlined />, label: 'Usuários' },
     canManageCompanies(user?.role) && { key: '/app/companies', icon: <BankOutlined />, label: 'Empresas' },
+    { key: '/app/settings', icon: <SettingOutlined />, label: 'Configurações' },
   ].filter(Boolean);
 
   const userMenu = {
@@ -181,8 +50,8 @@ export default function AppLayout() {
         key: 'profile', disabled: true,
         label: (
           <div style={{ padding: '4px 0' }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>{user?.name}</div>
-            <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11 }}>{user?.email}</div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--cl-text)' }}>{user?.name}</div>
+            <div style={{ color: 'var(--cl-text-faint)', fontSize: 11 }}>{user?.email}</div>
           </div>
         ),
       },
@@ -209,7 +78,7 @@ export default function AppLayout() {
       <div style={{
         height: 64, display: 'flex', alignItems: 'center',
         padding: collapsed && !isMobile ? '0 24px' : '0 20px',
-        borderBottom: `1px solid ${SIDEBAR_BORDER}`, gap: 10, flexShrink: 0,
+        borderBottom: '1px solid var(--cl-border)', gap: 10, flexShrink: 0,
       }}>
         <div style={{
           width: 32, height: 32, borderRadius: 8,
@@ -220,7 +89,7 @@ export default function AppLayout() {
           <CustomerServiceOutlined style={{ color: '#fff', fontSize: 16 }} />
         </div>
         {(!collapsed || isMobile) && (
-          <span style={{ fontWeight: 700, fontSize: 16, color: '#fff', fontFamily: "'Poppins', sans-serif" }}>
+          <span style={{ fontWeight: 700, fontSize: 16, color: 'var(--cl-sidebar-logo)', fontFamily: "'Poppins', sans-serif" }}>
             Atendexa
           </span>
         )}
@@ -241,8 +110,8 @@ export default function AppLayout() {
       {(!collapsed || isMobile) && (
         <div style={{
           padding: '12px 16px',
-          borderTop: `1px solid ${SIDEBAR_BORDER}`,
-          background: 'rgba(255,255,255,0.03)',
+          borderTop: '1px solid var(--cl-border)',
+          background: 'var(--cl-bg)',
           flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -254,10 +123,10 @@ export default function AppLayout() {
               {user?.name?.charAt(0).toUpperCase()}
             </Avatar>
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--cl-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {user?.name}
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{roleInfo?.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{roleInfo?.label}</div>
             </div>
           </div>
         </div>
@@ -266,15 +135,15 @@ export default function AppLayout() {
   );
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#090912' }}>
+    <Layout style={{ minHeight: '100vh', background: 'var(--cl-page-bg)' }}>
       {/* Desktop Sidebar */}
       {!isMobile && (
         <Sider
           collapsible collapsed={collapsed} onCollapse={setCollapsed}
           trigger={null} width={220}
           style={{
-            background: SIDEBAR_BG,
-            borderRight: `1px solid ${SIDEBAR_BORDER}`,
+            background: 'var(--cl-sidebar)',
+            borderRight: '1px solid var(--cl-border)',
             position: 'fixed', height: '100vh', left: 0, top: 0, zIndex: 100,
           }}
         >
@@ -290,7 +159,7 @@ export default function AppLayout() {
           placement="left"
           width={240}
           styles={{
-            body: { padding: 0, background: SIDEBAR_BG },
+            body: { padding: 0, background: 'var(--cl-sidebar)' },
             header: { display: 'none' },
           }}
         >
@@ -301,10 +170,10 @@ export default function AppLayout() {
       <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 220), transition: 'margin-left 0.2s', background: 'transparent' }}>
         {/* Header */}
         <Header style={{
-          background: HEADER_BG,
+          background: 'var(--cl-header)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${SIDEBAR_BORDER}`,
+          borderBottom: '1px solid var(--cl-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 16px', height: 64, position: 'sticky', top: 0, zIndex: 99,
         }}>
@@ -315,11 +184,11 @@ export default function AppLayout() {
               : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
             }
             onClick={() => isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed)}
-            style={{ color: 'rgba(255,255,255,0.5)' }}
+            style={{ color: 'var(--cl-text-soft)' }}
           />
 
           <Space size={8}>
-            <Button type="text" icon={<BellOutlined />} style={{ color: 'rgba(255,255,255,0.5)' }} />
+            <Button type="text" icon={<BellOutlined />} style={{ color: 'var(--cl-text-soft)' }} />
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
@@ -334,8 +203,8 @@ export default function AppLayout() {
                 </Avatar>
                 {!isMobile && (
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', lineHeight: 1.2 }}>{user?.name}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', lineHeight: 1.2 }}>{roleInfo?.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text)', lineHeight: 1.2 }}>{user?.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', lineHeight: 1.2 }}>{roleInfo?.label}</div>
                   </div>
                 )}
               </div>

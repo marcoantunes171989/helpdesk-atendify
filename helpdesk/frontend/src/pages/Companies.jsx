@@ -152,9 +152,9 @@ export default function Companies() {
               {r.name?.charAt(0).toUpperCase()}
             </Avatar>
             <div>
-              <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13, lineHeight: 1.3 }}>{r.name}</div>
-              {r.fantasia && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.42)' }}>{r.fantasia}</div>}
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', fontFamily: 'monospace' }}>{maskCNPJ(r.cnpj || '')}</div>
+              <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13, lineHeight: 1.3 }}>{r.name}</div>
+              {r.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-soft)' }}>{r.fantasia}</div>}
+              <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', fontFamily: 'monospace' }}>{maskCNPJ(r.cnpj || '')}</div>
             </div>
           </div>
         );
@@ -165,8 +165,8 @@ export default function Companies() {
       sorter: (a, b) => a.email.localeCompare(b.email, 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.68)' }}>{r.email}</div>
-          {r.phone && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{maskPhone(r.phone)}</div>}
+          <div style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{r.email}</div>
+          {r.phone && <div style={{ fontSize: 12, color: 'var(--cl-text-muted)' }}>{maskPhone(r.phone)}</div>}
         </div>
       ),
     },
@@ -174,8 +174,8 @@ export default function Companies() {
       title: 'Localização', key: 'location',
       sorter: (a, b) => (a.city || '').localeCompare(b.city || '', 'pt-BR'),
       render: (_, r) => r.city
-        ? <span style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13 }}>{r.city}{r.state ? ` / ${r.state}` : ''}</span>
-        : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>,
+        ? <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.city}{r.state ? ` / ${r.state}` : ''}</span>
+        : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
       title: 'Funcionários', key: 'employees',
@@ -185,7 +185,7 @@ export default function Companies() {
     {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
-      render: (_, r) => <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: 'var(--cl-text-sub)', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
     },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
@@ -199,7 +199,7 @@ export default function Companies() {
     {
       title: 'Desde', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 100,
@@ -211,7 +211,7 @@ export default function Companies() {
           </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
+              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Excluir">
             <Button type="text" icon={<DeleteOutlined />} size="small"
@@ -233,7 +233,7 @@ export default function Companies() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Empresas</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredCompanies.filter(c => c.active).length} ativa{filteredCompanies.filter(c => c.active).length !== 1 ? 's' : ''} · {filteredCompanies.length} total
           </p>
         </div>

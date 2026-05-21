@@ -1,3 +1,61 @@
+/* ============================================================
+   CSS Custom Properties — Dark (default) e Light
+   ============================================================ */
+:root {
+  /* Text */
+  --cl-text-hi:    rgba(255,255,255,0.88);
+  --cl-text:       rgba(255,255,255,0.82);
+  --cl-text-sub:   rgba(255,255,255,0.75);
+  --cl-text-soft:  rgba(255,255,255,0.55);
+  --cl-text-muted: rgba(255,255,255,0.38);
+  --cl-text-faint: rgba(255,255,255,0.28);
+  --cl-text-dim:   rgba(255,255,255,0.18);
+  /* Backgrounds */
+  --cl-bg:         rgba(255,255,255,0.04);
+  --cl-bg-soft:    rgba(255,255,255,0.06);
+  --cl-bg-input:   rgba(255,255,255,0.07);
+  /* Borders */
+  --cl-border-subtle: rgba(255,255,255,0.05);
+  --cl-border:     rgba(255,255,255,0.08);
+  --cl-border-input: rgba(255,255,255,0.12);
+  /* Page structure */
+  --cl-page-bg:    #090912;
+  --cl-sidebar:    #0c0c18;
+  --cl-header:     rgba(10,10,20,0.96);
+  --cl-page-grad:  linear-gradient(160deg,#090912 0%,#0d0d1a 55%,#080810 100%);
+  --cl-shadow:     0 4px 28px rgba(0,0,0,0.35);
+  --cl-title-grad: linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.58) 100%);
+  --cl-sidebar-text: rgba(255,255,255,0.82);
+  --cl-sidebar-logo: #fff;
+}
+
+[data-theme="light"] {
+  --cl-text-hi:    #111827;
+  --cl-text:       #1f2937;
+  --cl-text-sub:   #374151;
+  --cl-text-soft:  #4b5563;
+  --cl-text-muted: #6b7280;
+  --cl-text-faint: #9ca3af;
+  --cl-text-dim:   #d1d5db;
+  --cl-bg:         rgba(0,0,0,0.02);
+  --cl-bg-soft:    rgba(0,0,0,0.04);
+  --cl-bg-input:   #f8fafc;
+  --cl-border-subtle: rgba(0,0,0,0.04);
+  --cl-border:     rgba(0,0,0,0.08);
+  --cl-border-input: rgba(0,0,0,0.13);
+  --cl-page-bg:    #f0f2f5;
+  --cl-sidebar:    #ffffff;
+  --cl-header:     rgba(255,255,255,0.97);
+  --cl-page-grad:  linear-gradient(160deg,#f0f2f5 0%,#e8edf5 55%,#ecf0f5 100%);
+  --cl-shadow:     0 2px 12px rgba(0,0,0,0.09);
+  --cl-title-grad: linear-gradient(135deg,#111827 0%,rgba(55,65,81,0.82) 100%);
+  --cl-sidebar-text: #1f2937;
+  --cl-sidebar-logo: #1f2937;
+}
+
+/* ============================================================
+   Reset
+   ============================================================ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,19 +64,22 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #090912;
-  color: rgba(255,255,255,0.82);
+  background: var(--cl-page-bg);
+  color: var(--cl-text);
+  transition: background 0.2s, color 0.2s;
 }
 
 h1, h2, h3, h4, h5 {
   font-family: 'Poppins', 'Inter', sans-serif;
 }
 
-/* -- Page structure -- */
+/* ============================================================
+   Page structure
+   ============================================================ */
 .page-wrap {
   margin: -24px;
   padding: 28px 28px 48px;
-  background: linear-gradient(160deg, #090912 0%, #0d0d1a 55%, #080810 100%);
+  background: var(--cl-page-grad);
   min-height: calc(100vh - 64px);
 }
 
@@ -38,7 +99,7 @@ h1, h2, h3, h4, h5 {
 .page-title {
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.65) 100%);
+  background: var(--cl-title-grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -53,25 +114,26 @@ h1, h2, h3, h4, h5 {
   .page-header > *:last-child .ant-btn { flex: 1; }
 }
 
-/* -- Glass table container -- */
+/* ============================================================
+   Glass table container
+   ============================================================ */
 .page-table-wrap {
-  background: rgba(255,255,255,0.04);
+  background: var(--cl-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--cl-border);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 28px rgba(0,0,0,0.35);
-  /* Ant Design 5 CSS vars - override internal table tokens */
+  box-shadow: var(--cl-shadow);
   --ant-color-bg-container: transparent;
   --ant-color-fill-alter: transparent;
-  --ant-table-header-bg: rgba(255,255,255,0.04);
+  --ant-table-header-bg: var(--cl-bg);
   --ant-table-body-bg: transparent;
   --ant-table-row-bg: transparent;
-  --ant-table-row-hover-bg: rgba(255,255,255,0.04);
+  --ant-table-row-hover-bg: var(--cl-bg-soft);
   --ant-table-body-sort-bg: transparent;
-  --ant-table-header-sort-bg: rgba(255,255,255,0.06);
-  --ant-table-header-sort-hover-bg: rgba(255,255,255,0.08);
+  --ant-table-header-sort-bg: var(--cl-bg-soft);
+  --ant-table-header-sort-hover-bg: var(--cl-bg-input);
   --ant-table-selected-row-bg: rgba(37,99,235,0.12);
   --ant-table-selected-row-hover-bg: rgba(37,99,235,0.16);
   --ant-table-expanded-row-bg: transparent;
@@ -79,21 +141,25 @@ h1, h2, h3, h4, h5 {
   --ant-table-footer-bg: transparent;
 }
 
-/* -- Dark filter bar -- */
+/* ============================================================
+   Filter bar
+   ============================================================ */
 .filter-bar {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: rgba(255,255,255,0.04);
+  background: var(--cl-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--cl-border);
 }
 
-/* -- Form section labels -- */
+/* ============================================================
+   Misc
+   ============================================================ */
 .form-section-label {
   font-size: 11px;
   font-weight: 700;
@@ -109,10 +175,33 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ============================================================
-   Ant Design dark overrides - Table
+   Dashboard grid (db-wrap, db-stat-grid, db-chart-grid)
    ============================================================ */
+.db-wrap {
+  margin: -24px;
+  padding: 32px 28px 48px;
+  background: var(--cl-page-grad);
+  min-height: calc(100vh - 64px);
+}
+.db-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6,1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.db-chart-grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1280px) { .db-stat-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 900px)  { .db-stat-grid { grid-template-columns: repeat(2,1fr); } .db-chart-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px)  { .db-wrap { margin: -16px; padding: 20px 16px 32px; } }
 
-/* Zerar todos os backgrounds da cadeia de wrappers */
+/* ============================================================
+   Ant Design dark overrides — Table (.page-table-wrap e .db-dark)
+   ============================================================ */
 .page-table-wrap .ant-table-wrapper,
 .page-table-wrap .ant-spin-nested-loading,
 .page-table-wrap .ant-spin-container,
@@ -129,17 +218,16 @@ h1, h2, h3, h4, h5 {
 .db-dark .ant-table-content,
 .db-dark .ant-table-body {
   background: transparent !important;
-  color: rgba(255,255,255,0.82) !important;
+  color: var(--cl-text) !important;
 }
 
-/* Cabecalho */
 .page-table-wrap .ant-table-thead > tr > th,
 .page-table-wrap .ant-table-thead > tr > td,
 .db-dark .ant-table-thead > tr > th,
 .db-dark .ant-table-thead > tr > td {
-  background: rgba(255,255,255,0.04) !important;
-  color: rgba(255,255,255,0.38) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  background: var(--cl-bg) !important;
+  color: var(--cl-text-muted) !important;
+  border-bottom: 1px solid var(--cl-border-subtle) !important;
   font-size: 10px !important;
   font-weight: 700 !important;
   text-transform: uppercase;
@@ -147,7 +235,6 @@ h1, h2, h3, h4, h5 {
   padding: 10px 12px !important;
 }
 
-/* Linhas - sem background */
 .page-table-wrap .ant-table-tbody > tr,
 .page-table-wrap .ant-table-tbody > tr.ant-table-row,
 .db-dark .ant-table-tbody > tr,
@@ -155,7 +242,6 @@ h1, h2, h3, h4, h5 {
   background: transparent !important;
 }
 
-/* Celulas - sem background (incluindo hover, sort e todas as variantes do Ant Design 5) */
 .page-table-wrap .ant-table-tbody > tr > td,
 .page-table-wrap .ant-table-tbody > tr > td.ant-table-cell,
 .page-table-wrap .ant-table-tbody > tr > td.ant-table-cell-row-hover,
@@ -168,57 +254,50 @@ h1, h2, h3, h4, h5 {
 .db-dark .ant-table-tbody > tr > td.ant-table-column-sort,
 .db-dark .ant-table-tbody > tr.ant-table-row > td,
 .db-dark .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort {
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  border-bottom: 1px solid var(--cl-border-subtle) !important;
   background: transparent !important;
-  color: rgba(255,255,255,0.75) !important;
+  color: var(--cl-text-sub) !important;
 }
 
-/* Hover sutil */
 .page-table-wrap .ant-table-tbody > tr.ant-table-row:hover > td,
 .page-table-wrap .ant-table-tbody > tr:hover > td,
 .db-dark .ant-table-tbody > tr.ant-table-row:hover > td,
 .db-dark .ant-table-tbody > tr:hover > td {
-  background: rgba(255,255,255,0.04) !important;
+  background: var(--cl-bg-soft) !important;
 }
 
-/* Ultima linha sem borda */
 .page-table-wrap .ant-table-tbody > tr:last-child > td,
 .db-dark .ant-table-tbody > tr:last-child > td {
   border-bottom: none !important;
 }
 
-/* Linha selecionada */
 .page-table-wrap .ant-table-tbody > tr.ant-table-row-selected > td,
 .db-dark .ant-table-tbody > tr.ant-table-row-selected > td {
   background: rgba(37,99,235,0.12) !important;
 }
 
-/* Placeholder vazio */
 .page-table-wrap .ant-table-placeholder,
 .db-dark .ant-table-placeholder { background: transparent !important; }
 .page-table-wrap .ant-table-placeholder td,
 .db-dark .ant-table-placeholder td { background: transparent !important; border-bottom: none !important; }
 .page-table-wrap .ant-empty-description,
-.db-dark .ant-empty-description { color: rgba(255,255,255,0.3) !important; }
+.db-dark .ant-empty-description { color: var(--cl-text-faint) !important; }
 
-/* Sorter */
 .page-table-wrap .ant-table-column-sorter,
-.db-dark .ant-table-column-sorter { color: rgba(255,255,255,0.2) !important; }
-
+.db-dark .ant-table-column-sorter { color: var(--cl-text-dim) !important; }
 .page-table-wrap .ant-table-column-sorter-up.active,
 .page-table-wrap .ant-table-column-sorter-down.active,
 .db-dark .ant-table-column-sorter-up.active,
 .db-dark .ant-table-column-sorter-down.active { color: #60a5fa !important; }
 
-/* Paginacao */
+/* Paginação */
 .page-table-wrap .ant-pagination-item,
 .db-dark .ant-pagination-item {
-  background: rgba(255,255,255,0.05) !important;
-  border-color: rgba(255,255,255,0.1) !important;
+  background: var(--cl-bg) !important;
+  border-color: var(--cl-border) !important;
 }
 .page-table-wrap .ant-pagination-item a,
-.db-dark .ant-pagination-item a { color: rgba(255,255,255,0.6) !important; }
-
+.db-dark .ant-pagination-item a { color: var(--cl-text-soft) !important; }
 .page-table-wrap .ant-pagination-item-active,
 .db-dark .ant-pagination-item-active {
   border-color: #2563eb !important;
@@ -226,84 +305,169 @@ h1, h2, h3, h4, h5 {
 }
 .page-table-wrap .ant-pagination-item-active a,
 .db-dark .ant-pagination-item-active a { color: #60a5fa !important; }
-
 .page-table-wrap .ant-pagination-prev button,
 .page-table-wrap .ant-pagination-next button {
-  color: rgba(255,255,255,0.5) !important;
-  background: rgba(255,255,255,0.05) !important;
-  border-color: rgba(255,255,255,0.1) !important;
+  color: var(--cl-text-soft) !important;
+  background: var(--cl-bg) !important;
+  border-color: var(--cl-border) !important;
 }
-.page-table-wrap .ant-pagination-total-text { color: rgba(255,255,255,0.35) !important; }
+.page-table-wrap .ant-pagination-total-text { color: var(--cl-text-faint) !important; }
 .page-table-wrap .ant-select-selector {
-  background: rgba(255,255,255,0.05) !important;
-  border-color: rgba(255,255,255,0.1) !important;
-  color: rgba(255,255,255,0.6) !important;
+  background: var(--cl-bg) !important;
+  border-color: var(--cl-border) !important;
+  color: var(--cl-text-soft) !important;
 }
-.page-table-wrap .ant-pagination .ant-select-arrow { color: rgba(255,255,255,0.3) !important; }
+.page-table-wrap .ant-pagination .ant-select-arrow { color: var(--cl-text-dim) !important; }
 
 /* ============================================================
-   Ant Design dark overrides - Inputs / Selects em filter-bar
+   Ant Design dark overrides — Inputs / Selects em filter-bar
    ============================================================ */
 .filter-bar .ant-input-affix-wrapper,
 .page-table-wrap .ant-input-affix-wrapper,
 .db-dark .ant-input-affix-wrapper {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.12) !important;
+  background: var(--cl-bg-input) !important;
+  border-color: var(--cl-border-input) !important;
   box-shadow: none !important;
 }
 .filter-bar .ant-input-affix-wrapper:hover,
 .filter-bar .ant-input-affix-wrapper:focus-within,
 .page-table-wrap .ant-input-affix-wrapper:hover,
 .page-table-wrap .ant-input-affix-wrapper:focus-within {
-  border-color: rgba(255,255,255,0.28) !important;
+  border-color: var(--cl-text-dim) !important;
   box-shadow: none !important;
 }
-
 .filter-bar .ant-input,
 .page-table-wrap .ant-input,
 .db-dark .ant-input {
   background: transparent !important;
-  color: rgba(255,255,255,0.82) !important;
+  color: var(--cl-text) !important;
 }
 .filter-bar .ant-input::placeholder,
 .page-table-wrap .ant-input::placeholder,
-.db-dark .ant-input::placeholder { color: rgba(255,255,255,0.22) !important; }
-
+.db-dark .ant-input::placeholder { color: var(--cl-text-dim) !important; }
 .filter-bar .anticon,
-.db-dark .anticon { color: rgba(255,255,255,0.35) !important; }
-.db-dark .ant-btn-text:hover { background: rgba(255,255,255,0.06) !important; }
+.db-dark .anticon { color: var(--cl-text-muted) !important; }
+.db-dark .ant-btn-text:hover { background: var(--cl-bg-soft) !important; }
 
-/* Select em filter-bar */
 .filter-bar .ant-select-selector {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.12) !important;
-  color: rgba(255,255,255,0.75) !important;
+  background: var(--cl-bg-input) !important;
+  border-color: var(--cl-border-input) !important;
+  color: var(--cl-text-sub) !important;
 }
-.filter-bar .ant-select-selector:hover { border-color: rgba(255,255,255,0.28) !important; }
-.filter-bar .ant-select-selection-placeholder { color: rgba(255,255,255,0.28) !important; }
-.filter-bar .ant-select-arrow { color: rgba(255,255,255,0.32) !important; }
-.filter-bar .ant-select-clear { background: rgba(255,255,255,0.1) !important; }
-.filter-bar .ant-select-selection-item { color: rgba(255,255,255,0.82) !important; }
+.filter-bar .ant-select-selector:hover { border-color: var(--cl-text-dim) !important; }
+.filter-bar .ant-select-selection-placeholder { color: var(--cl-text-dim) !important; }
+.filter-bar .ant-select-arrow { color: var(--cl-text-faint) !important; }
+.filter-bar .ant-select-clear { background: var(--cl-bg-input) !important; }
+.filter-bar .ant-select-selection-item { color: var(--cl-text) !important; }
 .filter-bar .ant-select-multiple .ant-select-selection-item {
-  background: rgba(255,255,255,0.1) !important;
-  border-color: rgba(255,255,255,0.15) !important;
-  color: rgba(255,255,255,0.82) !important;
+  background: var(--cl-bg-soft) !important;
+  border-color: var(--cl-border) !important;
+  color: var(--cl-text) !important;
 }
 
 /* ============================================================
-   Ant Design dark overrides - Layout / Nav
+   Ant Design dark overrides — Layout / Nav
    ============================================================ */
 .ant-layout-sider {
-  box-shadow: 1px 0 0 rgba(255,255,255,0.07) !important;
+  box-shadow: 1px 0 0 var(--cl-border) !important;
 }
 
-/* Dark sidebar Menu */
 .app-sidebar .ant-menu { background: transparent !important; border: none !important; }
-.app-sidebar .ant-menu-item { color: rgba(255,255,255,0.55) !important; border-radius: 8px !important; margin: 2px 8px !important; }
-.app-sidebar .ant-menu-item:hover { background: rgba(255,255,255,0.07) !important; color: rgba(255,255,255,0.88) !important; }
+.app-sidebar .ant-menu-item { color: var(--cl-text-soft) !important; border-radius: 8px !important; margin: 2px 8px !important; }
+.app-sidebar .ant-menu-item:hover { background: var(--cl-bg-soft) !important; color: var(--cl-text) !important; }
 .app-sidebar .ant-menu-item-selected { background: rgba(37,99,235,0.2) !important; color: #60a5fa !important; }
 .app-sidebar .ant-menu-item-selected .anticon { color: #60a5fa !important; }
 .app-sidebar .ant-menu-item .anticon { color: inherit !important; }
+
+[data-theme="light"] .app-sidebar .ant-menu-item-selected {
+  background: rgba(37,99,235,0.1) !important;
+  color: #2563eb !important;
+}
+[data-theme="light"] .app-sidebar .ant-menu-item-selected .anticon { color: #2563eb !important; }
+
+/* ============================================================
+   Dark-only: Select / Cascader / DatePicker popup overrides
+   ============================================================ */
+[data-theme="dark"] .ant-select-dropdown {
+  background: #12121f !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+  border-radius: 10px !important;
+}
+[data-theme="dark"] .ant-select-item {
+  color: rgba(255,255,255,0.75) !important;
+  background: transparent !important;
+  border-radius: 6px !important;
+}
+[data-theme="dark"] .ant-select-item-option-active,
+[data-theme="dark"] .ant-select-item-option:hover {
+  background: rgba(255,255,255,0.06) !important;
+}
+[data-theme="dark"] .ant-select-item-option-selected {
+  background: rgba(37,99,235,0.22) !important;
+  color: #60a5fa !important;
+  font-weight: 600 !important;
+}
+[data-theme="dark"] .ant-select-item-option-selected .ant-select-item-option-content {
+  color: #60a5fa !important;
+}
+[data-theme="dark"] .ant-select-item-empty,
+[data-theme="dark"] .ant-empty-description {
+  color: rgba(255,255,255,0.28) !important;
+}
+[data-theme="dark"] .ant-select-dropdown .ant-empty-image svg { opacity: 0.25; }
+
+[data-theme="dark"] .ant-cascader-dropdown,
+[data-theme="dark"] .ant-tree-select-dropdown {
+  background: #12121f !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+  border-radius: 10px !important;
+}
+[data-theme="dark"] .ant-cascader-menu-item,
+[data-theme="dark"] .ant-tree-treenode { color: rgba(255,255,255,0.75) !important; }
+[data-theme="dark"] .ant-cascader-menu-item:hover,
+[data-theme="dark"] .ant-tree-treenode:hover { background: rgba(255,255,255,0.06) !important; }
+
+[data-theme="dark"] .ant-picker-dropdown { background: #12121f !important; }
+[data-theme="dark"] .ant-picker-panel-container {
+  background: #12121f !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55) !important;
+  border-radius: 10px !important;
+}
+[data-theme="dark"] .ant-picker-header,
+[data-theme="dark"] .ant-picker-body {
+  background: transparent !important;
+  color: rgba(255,255,255,0.75) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+[data-theme="dark"] .ant-picker-cell-in-view .ant-picker-cell-inner { color: rgba(255,255,255,0.82) !important; }
+[data-theme="dark"] .ant-picker-cell:not(.ant-picker-cell-in-view) .ant-picker-cell-inner { color: rgba(255,255,255,0.20) !important; }
+[data-theme="dark"] .ant-picker-cell-selected .ant-picker-cell-inner { background: #2563eb !important; }
+[data-theme="dark"] .ant-picker-cell-today .ant-picker-cell-inner::before { border-color: #2563eb !important; }
+[data-theme="dark"] .ant-picker-header button { color: rgba(255,255,255,0.55) !important; }
+[data-theme="dark"] .ant-picker-header button:hover { color: #fff !important; }
+
+/* Tags no escuro */
+[data-theme="dark"] .ant-tag {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+[data-theme="dark"] .ant-tag-blue   { color: #60a5fa !important; }
+[data-theme="dark"] .ant-tag-green, [data-theme="dark"] .ant-tag-success { color: #4ade80 !important; }
+[data-theme="dark"] .ant-tag-orange { color: #fbbf24 !important; }
+[data-theme="dark"] .ant-tag-red,   [data-theme="dark"] .ant-tag-error   { color: #f87171 !important; }
+[data-theme="dark"] .ant-tag-purple { color: #c084fc !important; }
+[data-theme="dark"] .ant-tag-cyan   { color: #22d3ee !important; }
+[data-theme="dark"] .ant-tag-default, [data-theme="dark"] .ant-tag:not([class*="ant-tag-"]) {
+  color: rgba(255,255,255,0.50) !important;
+}
 
 /* ============================================================
    Misc global
@@ -311,15 +475,13 @@ h1, h2, h3, h4, h5 {
 .ant-tag {
   border-radius: 6px !important;
   font-weight: 600 !important;
-  border: none !important;
-  background: transparent !important;
 }
 
 .stat-card {
-  border: 1px solid rgba(255,255,255,0.08) !important;
+  border: 1px solid var(--cl-border) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
-  background: rgba(255,255,255,0.04) !important;
+  background: var(--cl-bg) !important;
 }
 
 .sla-expired {
@@ -333,4 +495,8 @@ h1, h2, h3, h4, h5 {
 
 .ant-menu-item-selected::after {
   border-right-color: #60a5fa !important;
+}
+
+[data-theme="light"] .ant-menu-item-selected::after {
+  border-right-color: #2563eb !important;
 }

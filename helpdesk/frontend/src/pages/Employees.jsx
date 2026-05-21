@@ -107,7 +107,7 @@ export default function Employees() {
             <Avatar size={36} style={{ background: c.bg, color: c.color, fontWeight: 700, fontSize: 14, flexShrink: 0, border: `1px solid ${c.color}44` }}>
               {r.name?.charAt(0).toUpperCase()}
             </Avatar>
-            <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</span>
+            <span style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</span>
           </div>
         );
       },
@@ -115,21 +115,21 @@ export default function Employees() {
     {
       title: 'Cargo', dataIndex: 'position', key: 'position',
       sorter: (a, b) => (a.position || '').localeCompare(b.position || '', 'pt-BR'),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Telefone', dataIndex: 'phone', key: 'phone',
       sorter: (a, b) => (a.phone || '').localeCompare(b.phone || ''),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Empresa', key: 'company',
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{r.company.fantasia}</div>
+            <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{r.company.fantasia}</div>
           )}
         </div>
       ),

@@ -18,7 +18,7 @@ const roleColors = {
   SUPER_ADMIN: { bg: 'rgba(124,58,237,0.2)', color: '#a78bfa' },
   ADMIN:       { bg: 'rgba(37,99,235,0.2)',  color: '#60a5fa' },
   AGENT:       { bg: 'rgba(29,78,216,0.2)',  color: '#93c5fd' },
-  CLIENT:      { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)' },
+  CLIENT:      { bg: 'var(--cl-bg-input)', color: 'var(--cl-text-soft)' },
 };
 
 export default function Users() {
@@ -125,8 +125,8 @@ export default function Users() {
             {r.name?.charAt(0).toUpperCase()}
           </Avatar>
           <div>
-            <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{r.email}</div>
+            <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--cl-text-muted)' }}>{r.email}</div>
           </div>
         </div>
       ),
@@ -148,17 +148,17 @@ export default function Users() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 110,
       render: (_, record) => (
         <Space>
           <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
+            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Redefinir senha">
-            <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => setPwdModal(record.id)} />
+            <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => setPwdModal(record.id)} />
           </Tooltip>
           {record.id !== user?.id && (
             <Tooltip title="Excluir">
@@ -176,7 +176,7 @@ export default function Users() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Usuários</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredUsers.length} usuário{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}
           </p>
         </div>

@@ -43,7 +43,7 @@ function ColorPicker({ value, onChange }) {
           title={c.label}
           style={{
             width: 28, height: 28, borderRadius: 6, background: c.value, cursor: 'pointer',
-            border: value === c.value ? '3px solid #fff' : '2px solid rgba(255,255,255,0.15)',
+            border: value === c.value ? '3px solid var(--cl-text-hi)' : '2px solid var(--cl-border-input)',
             boxSizing: 'border-box', transition: 'border 0.15s',
             boxShadow: value === c.value ? `0 0 8px ${c.value}80` : 'none',
           }}
@@ -141,9 +141,9 @@ export default function Status() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 12, height: 12, borderRadius: '50%', background: r.color, flexShrink: 0, boxShadow: `0 0 6px ${r.color}80` }} />
           <div>
-            <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</div>
+            <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</div>
             {r.description && (
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginTop: 2 }}>{r.description}</div>
+              <div style={{ fontSize: 12, color: 'var(--cl-text-muted)', marginTop: 2 }}>{r.description}</div>
             )}
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function Status() {
     {
       title: 'Observação', dataIndex: 'observation', key: 'observation',
       sorter: (a, b) => (a.observation || '').localeCompare(b.observation || '', 'pt-BR'),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
@@ -166,7 +166,7 @@ export default function Status() {
       sorter: (a, b) => (a.builtinStatus || '').localeCompare(b.builtinStatus || ''),
       render: v => v ? (
         <Tag style={{ borderRadius: 6, fontSize: 11, fontFamily: 'monospace' }}>{v}</Tag>
-      ) : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>,
+      ) : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
@@ -180,7 +180,7 @@ export default function Status() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 80,
@@ -188,7 +188,7 @@ export default function Status() {
         <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
+              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Remover">
             <Button type="text" icon={<DeleteOutlined />} size="small" danger
@@ -208,7 +208,7 @@ export default function Status() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Status de Chamados</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredStatuses.length} status cadastrado{filteredStatuses.length !== 1 ? 's' : ''}
           </p>
         </div>

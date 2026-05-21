@@ -200,9 +200,9 @@ export default function Tickets() {
             </Tooltip>
           )}
           <div>
-            <div style={{ fontWeight: 500, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{v}</div>
+            <div style={{ fontWeight: 500, color: 'var(--cl-text-hi)', fontSize: 13 }}>{v}</div>
             {r._count?.comments > 0 && (
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>
+              <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>
                 {r._count.comments} msg{r._count.comments !== 1 ? 's' : ''}
                 {r._count?.attachments > 0 ? ` · ${r._count.attachments} anexo${r._count.attachments !== 1 ? 's' : ''}` : ''}
               </span>
@@ -216,9 +216,9 @@ export default function Tickets() {
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{r.company.fantasia}</div>
+            <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{r.company.fantasia}</div>
           )}
         </div>
       ),
@@ -228,20 +228,20 @@ export default function Tickets() {
       sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee ? (
         <div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{r.employee.name}</div>
-          {r.employee.position && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>{r.employee.position}</div>}
+          <div style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{r.employee.name}</div>
+          {r.employee.position && <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{r.employee.position}</div>}
         </div>
-      ) : <span style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>,
+      ) : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
       title: 'Técnico', key: 'technician',
       sorter: (a, b) => (a.technician?.name || '').localeCompare(b.technician?.name || '', 'pt-BR'),
-      render: (_, r) => <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
+      render: (_, r) => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
     },
     {
       title: 'Categoria', key: 'category',
       sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'),
-      render: (_, r) => <span style={{ color: 'rgba(255,255,255,0.48)', fontSize: 13 }}>{r.category?.name || '—'}</span>,
+      render: (_, r) => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
     {
       title: 'Status', key: 'status',
@@ -274,7 +274,7 @@ export default function Tickets() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', width: 130,
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY HH:mm')}</span>,
     },
     {
       title: '', key: 'actions', width: 60,
@@ -298,7 +298,7 @@ export default function Tickets() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Chamados</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''}{search ? ` (de ${tickets.length})` : ''} · {' '}
             {statuses.filter(s => statusCounts[s.id] > 0).map(s => (
               <Tag

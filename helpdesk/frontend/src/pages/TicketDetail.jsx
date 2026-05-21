@@ -25,8 +25,8 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 const CARD = {
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)',
+  background: 'var(--cl-bg)',
+  border: '1px solid var(--cl-border)',
   borderRadius: 12,
 };
 
@@ -34,11 +34,11 @@ const roleColors = {
   SUPER_ADMIN: { bg: 'rgba(124,58,237,0.18)', color: '#a78bfa' },
   ADMIN:       { bg: 'rgba(37,99,235,0.18)',  color: '#60a5fa' },
   AGENT:       { bg: 'rgba(37,99,235,0.14)',  color: '#60a5fa' },
-  CLIENT:      { bg: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)' },
+  CLIENT:      { bg: 'var(--cl-bg-input)', color: 'var(--cl-text-soft)' },
 };
 
 const LABEL_STYLE = {
-  fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 700,
+  fontSize: 11, color: 'var(--cl-text-muted)', fontWeight: 700,
   textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4,
 };
 
@@ -375,7 +375,7 @@ export default function TicketDetail() {
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, background: '#090912' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, background: 'var(--cl-page-bg)' }}>
       <Spin size="large" />
     </div>
   );
@@ -398,7 +398,7 @@ export default function TicketDetail() {
           src={src}
           alt={att.name}
           title={att.name}
-          style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.12)', flexShrink: 0 }}
+          style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--cl-border-input)', flexShrink: 0 }}
           onClick={() => setPreviewImage({ src, name: att.name })}
         />
       ) : (
@@ -407,7 +407,7 @@ export default function TicketDetail() {
             type="text"
             icon={<FileOutlined />}
             size="small"
-            style={{ color: 'rgba(255,255,255,0.38)' }}
+            style={{ color: 'var(--cl-text-muted)' }}
             onClick={() => downloadAttachment(att)}
           />
         </Tooltip>
@@ -418,8 +418,8 @@ export default function TicketDetail() {
       <div key={att.id} style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '10px 14px', borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.08)',
-        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid var(--cl-border)',
+        background: 'var(--cl-bg)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
           {isImage ? (
@@ -430,20 +430,20 @@ export default function TicketDetail() {
               onClick={() => setPreviewImage({ src, name: att.name })}
             />
           ) : (
-            <FileOutlined style={{ color: 'rgba(255,255,255,0.38)', fontSize: 18, flexShrink: 0 }} />
+            <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 18, flexShrink: 0 }} />
           )}
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,0.82)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--cl-text-hi)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {att.name}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.30)' }}>{formatSize(att.size)}</div>
+            <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{formatSize(att.size)}</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {isImage && (
             <Tooltip title="Visualizar">
               <Button type="text" icon={<EyeOutlined />} size="small"
-                style={{ color: 'rgba(255,255,255,0.38)' }} onClick={() => setPreviewImage({ src, name: att.name })} />
+                style={{ color: 'var(--cl-text-muted)' }} onClick={() => setPreviewImage({ src, name: att.name })} />
             </Tooltip>
           )}
           <Tooltip title="Baixar">
@@ -461,7 +461,7 @@ export default function TicketDetail() {
         type="text"
         icon={<ArrowLeftOutlined />}
         onClick={() => navigate('/app/tickets')}
-        style={{ color: 'rgba(255,255,255,0.45)', marginBottom: 16, padding: 0 }}
+        style={{ color: 'var(--cl-text-soft)', marginBottom: 16, padding: 0 }}
       >
         Voltar para Chamados
       </Button>
@@ -497,7 +497,7 @@ export default function TicketDetail() {
                     SLA Vencido
                   </Tag>
                 )}
-                <code style={{ fontSize: 11, color: 'rgba(255,255,255,0.30)', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4 }}>
+                <code style={{ fontSize: 11, color: 'var(--cl-text-faint)', background: 'var(--cl-bg-soft)', padding: '2px 8px', borderRadius: 4 }}>
                   #{ticket.id.slice(-8).toUpperCase()}
                 </code>
               </Space>
@@ -572,7 +572,7 @@ export default function TicketDetail() {
                           <div style={{ lineHeight: 1.3 }}>
                             <div>{c.name}</div>
                             {c.fantasia && (
-                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>{c.fantasia}</div>
+                              <div style={{ fontSize: 11, color: 'var(--cl-text-muted)', marginTop: 1 }}>{c.fantasia}</div>
                             )}
                           </div>
                         </Option>
@@ -666,10 +666,10 @@ export default function TicketDetail() {
               </div>
             ) : (
               <>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.88)', margin: '0 0 12px' }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--cl-text-hi)', margin: '0 0 12px' }}>
                   {ticket.title}
                 </h2>
-                <Paragraph style={{ color: 'rgba(255,255,255,0.65)', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.7 }}>
+                <Paragraph style={{ color: 'var(--cl-text)', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.7 }}>
                   {ticket.description}
                 </Paragraph>
               </>
@@ -680,10 +680,10 @@ export default function TicketDetail() {
           {ticket.attachments?.length > 0 && (
             <div style={{ ...CARD, padding: 24, marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <Badge count={ticket.attachments.length} color="#6b7280" size="small">
-                  <PaperClipOutlined style={{ fontSize: 16, color: 'rgba(255,255,255,0.55)' }} />
+                <Badge count={ticket.attachments.length} color="var(--cl-text-soft)" size="small">
+                  <PaperClipOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
                 </Badge>
-                <h3 style={{ fontWeight: 700, fontSize: 15, color: 'rgba(255,255,255,0.82)', margin: 0 }}>
+                <h3 style={{ fontWeight: 700, fontSize: 15, color: 'var(--cl-text-hi)', margin: 0 }}>
                   Anexos ({ticket.attachments.length})
                 </h3>
               </div>
@@ -697,15 +697,15 @@ export default function TicketDetail() {
           <div style={{ ...CARD, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
               <Badge count={ticket.comments.length} color="#2563eb" size="small">
-                <MessageOutlined style={{ fontSize: 16, color: 'rgba(255,255,255,0.55)' }} />
+                <MessageOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
               </Badge>
-              <h3 style={{ fontWeight: 700, fontSize: 15, color: 'rgba(255,255,255,0.82)', margin: 0 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 15, color: 'var(--cl-text-hi)', margin: 0 }}>
                 Trâmites ({ticket.comments.length})
               </h3>
             </div>
 
             {ticket.comments.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.25)', fontSize: 14 }}>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--cl-text-faint)', fontSize: 14 }}>
                 Nenhum trâmite ainda. Seja o primeiro a responder.
               </div>
             )}
@@ -742,7 +742,7 @@ export default function TicketDetail() {
                           margin: '4px 40px 8px', padding: '8px 14px', borderRadius: 8, fontSize: 13,
                           background: isSysResolved ? 'rgba(37,99,235,0.08)' : 'rgba(234,88,12,0.08)',
                           border: `1px solid ${isSysResolved ? 'rgba(96,165,250,0.15)' : 'rgba(251,146,60,0.15)'}`,
-                          color: 'rgba(255,255,255,0.65)', whiteSpace: 'pre-wrap', lineHeight: 1.6,
+                          color: 'var(--cl-text)', whiteSpace: 'pre-wrap', lineHeight: 1.6,
                         }}>
                           {sysMsg}
                         </div>
@@ -771,7 +771,7 @@ export default function TicketDetail() {
                         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4,
                         flexDirection: isAgent ? 'row' : 'row-reverse',
                       }}>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: 'rgba(255,255,255,0.82)' }}>{c.user.name}</span>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--cl-text-hi)' }}>{c.user.name}</span>
                         <span style={{
                           fontSize: 11, padding: '1px 8px', borderRadius: 4,
                           background: roleColors[c.user.role]?.bg,
@@ -780,12 +780,12 @@ export default function TicketDetail() {
                         }}>
                           {ROLES[c.user.role]?.label}
                         </span>
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)' }}>
+                        <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>
                           {dayjs(c.createdAt).format('DD/MM HH:mm')}
                         </span>
                         {c.attachments?.length > 0 && (
-                          <Badge count={c.attachments.length} size="small" color="#6b7280" offset={[4, 0]}>
-                            <PaperClipOutlined style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }} />
+                          <Badge count={c.attachments.length} size="small" color="var(--cl-text-soft)" offset={[4, 0]}>
+                            <PaperClipOutlined style={{ fontSize: 12, color: 'var(--cl-text-faint)' }} />
                           </Badge>
                         )}
                         {canEditComment && !isEditingThis && !isClosed && (
@@ -795,7 +795,7 @@ export default function TicketDetail() {
                                 type="text"
                                 icon={<EditOutlined />}
                                 size="small"
-                                style={{ color: 'rgba(255,255,255,0.22)', padding: 0, height: 'auto' }}
+                                style={{ color: 'var(--cl-text-dim)', padding: 0, height: 'auto' }}
                                 onClick={() => { setEditingCommentId(c.id); setEditingCommentText(c.message); setEditingCommentDate(dayjs(c.createdAt)); }}
                               />
                             </Tooltip>
@@ -812,7 +812,7 @@ export default function TicketDetail() {
                                   type="text"
                                   icon={<DeleteOutlined />}
                                   size="small"
-                                  style={{ color: 'rgba(255,255,255,0.22)', padding: 0, height: 'auto' }}
+                                  style={{ color: 'var(--cl-text-dim)', padding: 0, height: 'auto' }}
                                 />
                               </Tooltip>
                             </Popconfirm>
@@ -834,15 +834,15 @@ export default function TicketDetail() {
                               {editingCommentFiles.map((f, i) => (
                                 <div key={i} style={{
                                   display: 'flex', alignItems: 'center', gap: 6,
-                                  background: 'rgba(255,255,255,0.07)', borderRadius: 6, padding: '3px 10px', fontSize: 12, maxWidth: 220,
+                                  background: 'var(--cl-bg-input)', borderRadius: 6, padding: '3px 10px', fontSize: 12, maxWidth: 220,
                                 }}>
-                                  <FileOutlined style={{ color: 'rgba(255,255,255,0.38)', fontSize: 11, flexShrink: 0 }} />
-                                  <span style={{ color: 'rgba(255,255,255,0.72)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 11, flexShrink: 0 }} />
+                                  <span style={{ color: 'var(--cl-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {f.name}
                                   </span>
                                   <button
                                     onClick={() => setEditingCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', padding: 0, fontSize: 14, lineHeight: 1 }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cl-text-muted)', padding: 0, fontSize: 14, lineHeight: 1 }}
                                   >
                                     ×
                                   </button>
@@ -873,7 +873,7 @@ export default function TicketDetail() {
                                       <PaperClipOutlined style={{ fontSize: 15 }} />
                                     </Badge>
                                   }
-                                  style={{ color: editingCommentFiles.length > 0 ? '#60a5fa' : 'rgba(255,255,255,0.35)' }}
+                                  style={{ color: editingCommentFiles.length > 0 ? '#60a5fa' : 'var(--cl-text-muted)' }}
                                 />
                               </Tooltip>
                             </Upload>
@@ -894,9 +894,9 @@ export default function TicketDetail() {
                         <>
                           <div style={{
                             padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
-                            background: isAgent ? 'rgba(37,99,235,0.10)' : 'rgba(255,255,255,0.04)',
-                            color: 'rgba(255,255,255,0.75)', whiteSpace: 'pre-wrap',
-                            border: `1px solid ${isAgent ? 'rgba(96,165,250,0.18)' : 'rgba(255,255,255,0.07)'}`,
+                            background: isAgent ? 'rgba(37,99,235,0.10)' : 'var(--cl-bg)',
+                            color: 'var(--cl-text)', whiteSpace: 'pre-wrap',
+                            border: `1px solid ${isAgent ? 'rgba(96,165,250,0.18)' : 'var(--cl-border)'}`,
                           }}>
                             {c.message}
                           </div>
@@ -914,14 +914,14 @@ export default function TicketDetail() {
             </div>
 
             {!isClosed && (
-              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--cl-border-subtle)' }}>
                 <div
                   onClick={() => { setComment(''); setCommentFiles([]); setCommentDate(dayjs()); setTramiteModal(true); }}
                   style={{
                     width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 14,
-                    color: 'rgba(255,255,255,0.28)',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px dashed rgba(255,255,255,0.13)',
+                    color: 'var(--cl-text-faint)',
+                    background: 'var(--cl-bg)',
+                    border: '1px dashed var(--cl-border)',
                     cursor: 'pointer', userSelect: 'none',
                   }}
                 >
@@ -935,7 +935,7 @@ export default function TicketDetail() {
         {/* Sidebar direita */}
         <Col xs={24} lg={8}>
           <div style={{ ...CARD, padding: 20 }}>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,0.82)', margin: '0 0 16px' }}>Informações</h3>
+            <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 16px' }}>Informações</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
@@ -950,7 +950,7 @@ export default function TicketDetail() {
               ].filter(Boolean).map(item => (
                 <div key={item.label}>
                   <div style={LABEL_STYLE}>{item.label}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', fontWeight: 500 }}>{item.value}</div>
+                  <div style={{ fontSize: 13, color: 'var(--cl-text)', fontWeight: 500 }}>{item.value}</div>
                 </div>
               ))}
 
@@ -972,7 +972,7 @@ export default function TicketDetail() {
 
             {!isClosed && canEdit && (
               <>
-                <Divider style={{ margin: '16px 0', borderColor: 'rgba(255,255,255,0.08)' }} />
+                <Divider style={{ margin: '16px 0', borderColor: 'var(--cl-border)' }} />
                 <Button
                   danger block icon={<DeleteOutlined />}
                   onClick={() => setDeleteModal(true)}
@@ -1006,7 +1006,7 @@ export default function TicketDetail() {
         }
       >
         <div style={{ padding: '8px 0' }}>
-          <p style={{ color: 'rgba(255,255,255,0.65)', marginBottom: 16 }}>
+          <p style={{ marginBottom: 16 }}>
             Você está prestes a excluir o chamado <strong>"{ticket?.title}"</strong> permanentemente. Esta ação não pode ser desfeita.
           </p>
           <div style={{ background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
@@ -1115,15 +1115,15 @@ export default function TicketDetail() {
                   {commentFiles.map((f, i) => (
                     <div key={i} style={{
                       display: 'flex', alignItems: 'center', gap: 6,
-                      background: 'rgba(255,255,255,0.07)', borderRadius: 6, padding: '4px 12px', fontSize: 13,
+                      background: 'var(--cl-bg-input)', borderRadius: 6, padding: '4px 12px', fontSize: 13,
                     }}>
-                      <FileOutlined style={{ color: 'rgba(255,255,255,0.38)', fontSize: 12 }} />
-                      <span style={{ color: 'rgba(255,255,255,0.72)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 12 }} />
+                      <span style={{ color: 'var(--cl-text)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {f.name}
                       </span>
                       <button
                         onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', padding: 0, fontSize: 16, lineHeight: 1 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cl-text-muted)', padding: 0, fontSize: 16, lineHeight: 1 }}
                       >×</button>
                     </div>
                   ))}
@@ -1200,15 +1200,15 @@ export default function TicketDetail() {
                 {statusChangeFiles.map((f, i) => (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', gap: 4,
-                    background: 'rgba(255,255,255,0.07)', borderRadius: 6, padding: '2px 8px', fontSize: 11,
+                    background: 'var(--cl-bg-input)', borderRadius: 6, padding: '2px 8px', fontSize: 11,
                   }}>
-                    <FileOutlined style={{ color: 'rgba(255,255,255,0.38)', fontSize: 10 }} />
-                    <span style={{ color: 'rgba(255,255,255,0.72)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 10 }} />
+                    <span style={{ color: 'var(--cl-text)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {f.name}
                     </span>
                     <button
                       onClick={() => setStatusChangeFiles(prev => prev.filter((_, idx) => idx !== i))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', padding: 0, lineHeight: 1 }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cl-text-muted)', padding: 0, lineHeight: 1 }}
                     >×</button>
                   </div>
                 ))}

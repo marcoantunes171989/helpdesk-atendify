@@ -95,9 +95,9 @@ export default function Technicians() {
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>{r.name}</div>
+          <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</div>
           {r.description && (
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginTop: 2 }}>{r.description}</div>
+            <div style={{ fontSize: 12, color: 'var(--cl-text-muted)', marginTop: 2 }}>{r.description}</div>
           )}
         </div>
       ),
@@ -105,7 +105,7 @@ export default function Technicians() {
     {
       title: 'Observação', dataIndex: 'observation', key: 'observation',
       sorter: (a, b) => (a.observation || '').localeCompare(b.observation || '', 'pt-BR'),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
@@ -126,7 +126,7 @@ export default function Technicians() {
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
       title: '', key: 'actions', width: 80,
@@ -134,7 +134,7 @@ export default function Technicians() {
         <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
+              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Tooltip title="Remover">
             <Button type="text" icon={<DeleteOutlined />} size="small" danger
@@ -154,7 +154,7 @@ export default function Technicians() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Técnicos</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredTechnicians.length} técnico{filteredTechnicians.length !== 1 ? 's' : ''} cadastrado{filteredTechnicians.length !== 1 ? 's' : ''}
           </p>
         </div>

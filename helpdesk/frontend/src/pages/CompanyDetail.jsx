@@ -30,8 +30,8 @@ const StatCard = ({ icon, label, value, color, bg }) => (
         <span style={{ color, fontSize: 18 }}>{icon}</span>
       </div>
       <div>
-        <div style={{ fontSize: 11, color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: '#111827', lineHeight: 1.2 }}>{value}</div>
+        <div style={{ fontSize: 11, color: 'var(--cl-text-soft)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+        <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--cl-text-hi)', lineHeight: 1.2 }}>{value}</div>
       </div>
     </div>
   </Card>
@@ -143,15 +143,15 @@ export default function CompanyDetail() {
       title: 'Funcionário', key: 'name',
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar size={32} style={{ background: '#dbeafe', color: '#2563eb', fontWeight: 700, fontSize: 13 }}>
+          <Avatar size={32} style={{ background: 'rgba(37,99,235,0.2)', color: '#60a5fa', fontWeight: 700, fontSize: 13 }}>
             {r.name?.charAt(0).toUpperCase()}
           </Avatar>
-          <span style={{ fontWeight: 600, color: '#111827', fontSize: 13 }}>{r.name}</span>
+          <span style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</span>
         </div>
       ),
     },
-    { title: 'Cargo', dataIndex: 'position', key: 'position', render: v => <span style={{ color: '#374151', fontSize: 13 }}>{v || '—'}</span> },
-    { title: 'Telefone', dataIndex: 'phone', key: 'phone', render: v => <span style={{ color: '#6b7280', fontSize: 13 }}>{v || '—'}</span> },
+    { title: 'Cargo', dataIndex: 'position', key: 'position', render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span> },
+    { title: 'Telefone', dataIndex: 'phone', key: 'phone', render: v => <span style={{ color: 'var(--cl-text-muted)', fontSize: 13 }}>{v || '—'}</span> },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
       render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
@@ -160,7 +160,7 @@ export default function CompanyDetail() {
       title: '', key: 'actions', width: 80,
       render: (_, r) => canEdit && (
         <Space>
-          <Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: '#6b7280' }} onClick={() => openEditEmp(r)} /></Tooltip>
+          <Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEditEmp(r)} /></Tooltip>
           <Button type="text" icon={<DeleteOutlined />} size="small" danger
             onClick={() => setEmpDeleteModal({ id: r.id, name: r.name })} />
         </Space>
@@ -173,15 +173,15 @@ export default function CompanyDetail() {
       title: 'Chamado', key: 'title',
       render: (_, r) => (
         <div>
-          <div style={{ fontWeight: 500, color: '#111827', fontSize: 13 }}>{r.title}</div>
-          <div style={{ fontSize: 11, color: '#9ca3af' }}>{r.user?.name}</div>
+          <div style={{ fontWeight: 500, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.title}</div>
+          <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{r.user?.name}</div>
         </div>
       ),
     },
-    { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', render: v => v ? <span style={{ color: '#6b7280', fontSize: 13 }}>{v}</span> : <span style={{ color: '#d1d5db' }}>—</span> },
+    { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', render: v => v ? <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
     { title: 'Status', dataIndex: 'status', key: 'status', render: v => <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6 }}>{TICKET_STATUS[v]?.label}</Tag> },
     { title: 'Prioridade', dataIndex: 'priority', key: 'priority', render: v => <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6 }}>{PRIORITY[v]?.label}</Tag> },
-    { title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', render: v => <span style={{ color: '#9ca3af', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span> },
+    { title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span> },
     { title: '', key: 'action', width: 60, render: (_, r) => <Button type="link" size="small" onClick={() => navigate(`/app/tickets/${r.id}`)}>Ver</Button> },
   ];
 
@@ -195,16 +195,16 @@ export default function CompanyDetail() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/app/companies')} style={{ color: '#6b7280', padding: '4px 8px' }} />
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BankOutlined style={{ color: '#2563eb', fontSize: 20 }} />
+          <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/app/companies')} style={{ color: 'var(--cl-text-soft)', padding: '4px 8px' }} />
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BankOutlined style={{ color: '#60a5fa', fontSize: 20 }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{company?.name}</h1>
+              <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--cl-text-hi)', margin: 0 }}>{company?.name}</h1>
               <Tag color={company?.active ? 'success' : 'error'} style={{ borderRadius: 6 }}>{company?.active ? 'Ativa' : 'Inativa'}</Tag>
             </div>
-            <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 2 }}>
+            <div style={{ fontSize: 13, color: 'var(--cl-text-muted)', marginTop: 2 }}>
               CNPJ: {company?.cnpj} {company?.email && `· ${company.email}`}
             </div>
           </div>
@@ -219,18 +219,18 @@ export default function CompanyDetail() {
       {/* Stats */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={12} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="#2563eb" bg="#dbeafe" />
+          <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="#60a5fa" bg="rgba(37,99,235,0.15)" />
         </Col>
         <Col xs={12} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<CustomerServiceOutlined />} label="Chamados" value={tickets.length} color="#d97706" bg="#fffbeb" />
+          <StatCard icon={<CustomerServiceOutlined />} label="Chamados" value={tickets.length} color="#fbbf24" bg="rgba(217,119,6,0.15)" />
         </Col>
         <Col xs={24} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<CustomerServiceOutlined />} label="Em Aberto" value={openTickets} color="#dc2626" bg="#fef2f2" />
+          <StatCard icon={<CustomerServiceOutlined />} label="Em Aberto" value={openTickets} color="#f87171" bg="rgba(220,38,38,0.15)" />
         </Col>
       </Row>
 
       {/* Tabs */}
-      <Card style={{ borderRadius: 12, border: '1px solid #e5e7eb' }} bodyStyle={{ padding: 0 }}>
+      <Card style={{ borderRadius: 12, border: '1px solid var(--cl-border)' }} bodyStyle={{ padding: 0 }}>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
@@ -287,10 +287,10 @@ export default function CompanyDetail() {
       >
         {empDeleteModal && (
           <div style={{ padding: '8px 0' }}>
-            <p style={{ color: '#374151', marginBottom: 16 }}>
+            <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{empDeleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 500 }}>
+            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
               O funcionário será removido do sistema e não poderá ser recuperado.
             </div>
           </div>
@@ -301,8 +301,8 @@ export default function CompanyDetail() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IdcardOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IdcardOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editingEmp ? 'Editar Funcionário' : 'Novo Funcionário'}</span>
           </div>
@@ -346,8 +346,8 @@ export default function CompanyDetail() {
       <Drawer
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BankOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BankOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>Editar Empresa</span>
           </div>

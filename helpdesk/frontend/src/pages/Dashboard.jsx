@@ -33,60 +33,15 @@ const CAT_GRADS = [
   ['#b45309', '#fbbf24'],
 ];
 
-const DB_STYLE = `
-  .db-wrap { margin: -24px; padding: 32px 28px 48px; background: linear-gradient(160deg,#090912 0%,#0d0d1a 55%,#080810 100%); min-height: calc(100vh - 64px); }
-  .db-stat-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 14px; margin-bottom: 20px; }
-  .db-chart-grid { display: grid; grid-template-columns: 2fr 3fr; gap: 14px; margin-bottom: 20px; }
-  @media (max-width: 1280px) { .db-stat-grid { grid-template-columns: repeat(3,1fr); } }
-  @media (max-width: 900px)  { .db-stat-grid { grid-template-columns: repeat(2,1fr); } .db-chart-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 768px)  { .db-wrap { margin: -16px; padding: 20px 16px 32px; } }
-
-  .db-dark {
-    --ant-color-bg-container: transparent;
-    --ant-color-fill-alter: transparent;
-    --ant-table-header-bg: rgba(255,255,255,0.04);
-    --ant-table-body-bg: transparent;
-    --ant-table-row-bg: transparent;
-    --ant-table-row-hover-bg: rgba(255,255,255,0.04);
-    --ant-table-body-sort-bg: transparent;
-    --ant-table-header-sort-bg: rgba(255,255,255,0.06);
-    --ant-table-header-sort-hover-bg: rgba(255,255,255,0.08);
-    --ant-table-selected-row-bg: rgba(37,99,235,0.12);
-    --ant-table-selected-row-hover-bg: rgba(37,99,235,0.16);
-    --ant-table-expanded-row-bg: transparent;
-    --ant-table-fixed-header-sort-active-bg: transparent;
-    --ant-table-footer-bg: transparent;
-  }
-  .db-dark .ant-table-wrapper,.db-dark .ant-spin-nested-loading,.db-dark .ant-spin-container,.db-dark .ant-table,.db-dark .ant-table-container,.db-dark .ant-table-content,.db-dark .ant-table-body { background: transparent !important; }
-  .db-dark .ant-table-thead > tr > th,.db-dark .ant-table-thead > tr > td {
-    background: rgba(255,255,255,.04) !important; color: rgba(255,255,255,.38) !important;
-    border-bottom: 1px solid rgba(255,255,255,.07) !important;
-    font-size: 10px !important; font-weight: 700 !important;
-    text-transform: uppercase; letter-spacing: .08em !important; padding: 10px 12px !important;
-  }
-  .db-dark .ant-table-tbody > tr,.db-dark .ant-table-tbody > tr.ant-table-row { background: transparent !important; }
-  .db-dark .ant-table-tbody > tr > td,.db-dark .ant-table-tbody > tr > td.ant-table-cell,.db-dark .ant-table-tbody > tr > td.ant-table-cell-row-hover,.db-dark .ant-table-tbody > tr > td.ant-table-column-sort { border-bottom: 1px solid rgba(255,255,255,.05) !important; background: transparent !important; color: rgba(255,255,255,.75) !important; }
-  .db-dark .ant-table-tbody > tr.ant-table-row:hover > td,.db-dark .ant-table-tbody > tr:hover > td,.db-dark .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort { background: rgba(255,255,255,.04) !important; }
-  .db-dark .ant-table-tbody > tr:last-child > td { border-bottom: none !important; }
-  .db-dark .ant-table-placeholder,.db-dark .ant-table-placeholder td { background: transparent !important; border-bottom: none !important; }
-  .db-dark .ant-table-column-sorter { color: rgba(255,255,255,.2) !important; }
-  .db-dark .ant-table-column-sorter-up.active, .db-dark .ant-table-column-sorter-down.active { color: #60a5fa !important; }
-  .db-dark .ant-input-affix-wrapper { background: rgba(255,255,255,.07) !important; border-color: rgba(255,255,255,.12) !important; box-shadow: none !important; }
-  .db-dark .ant-input-affix-wrapper:hover,.db-dark .ant-input-affix-wrapper:focus-within { border-color: rgba(255,255,255,.25) !important; box-shadow: none !important; }
-  .db-dark .ant-input { background: transparent !important; color: rgba(255,255,255,.82) !important; }
-  .db-dark .ant-input::placeholder { color: rgba(255,255,255,.22) !important; }
-  .db-dark .anticon { color: rgba(255,255,255,.35) !important; }
-  .db-dark .ant-btn-text:hover { background: rgba(255,255,255,.06) !important; }
-`;
 
 function GlassCard({ children, style }) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.04)',
+      background: 'var(--cl-bg)',
       backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255,255,255,0.08)',
+      border: '1px solid var(--cl-border)',
       borderRadius: 16,
-      boxShadow: '0 4px 28px rgba(0,0,0,0.35)',
+      boxShadow: 'var(--cl-shadow)',
       ...style,
     }}>
       {children}
@@ -144,16 +99,16 @@ export default function Dashboard() {
     {
       title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,
       sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
-      render: v => <span style={{ fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>{v}</span>,
+      render: v => <span style={{ fontWeight: 500, color: 'var(--cl-text)' }}>{v}</span>,
     },
     {
       title: 'Empresa', key: 'company',
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)', marginTop: 1 }}>{r.company.fantasia}</div>
+            <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', marginTop: 1 }}>{r.company.fantasia}</div>
           )}
         </div>
       ),
@@ -162,15 +117,15 @@ export default function Dashboard() {
       title: 'Funcionário', key: 'employee',
       sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee?.name
-        ? <span style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13 }}>{r.employee.name}</span>
-        : <span style={{ color: 'rgba(255,255,255,0.18)' }}>—</span>,
+        ? <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.employee.name}</span>
+        : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
       title: 'Categoria', dataIndex: ['category', 'name'], key: 'category',
       sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'),
       render: v => v
-        ? <span style={{ color: 'rgba(255,255,255,0.48)' }}>{v}</span>
-        : <span style={{ color: 'rgba(255,255,255,0.18)' }}>—</span>,
+        ? <span style={{ color: 'var(--cl-text-soft)' }}>{v}</span>
+        : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
       title: 'Status', dataIndex: 'status', key: 'status',
@@ -185,7 +140,7 @@ export default function Dashboard() {
     {
       title: 'Abertura', dataIndex: 'createdAt', key: 'createdAt',
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      render: v => <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YY HH:mm')}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YY HH:mm')}</span>,
     },
     {
       title: '', key: 'actions', width: 44,
@@ -201,8 +156,6 @@ export default function Dashboard() {
 
   return (
     <div className="db-wrap">
-      <style>{DB_STYLE}</style>
-
       {/* Header */}
       <div style={{ marginBottom: 30 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8 }}>
@@ -211,19 +164,19 @@ export default function Dashboard() {
             background: 'linear-gradient(135deg,#2563eb,#60a5fa)',
             boxShadow: '0 0 8px rgba(96,165,250,0.9)',
           }} />
-          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+          <span style={{ color: 'var(--cl-text-faint)', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
             Visão Geral
           </span>
         </div>
         <h1 style={{
           fontSize: 26, fontWeight: 700, margin: 0,
-          background: 'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.58) 100%)',
+          background: 'var(--cl-title-grad)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
           fontFamily: "'Poppins',sans-serif", letterSpacing: '-0.5px',
         }}>
           Dashboard
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: '3px 0 0' }}>
+        <p style={{ color: 'var(--cl-text-faint)', fontSize: 13, margin: '3px 0 0' }}>
           Resumo dos atendimentos em tempo real
         </p>
       </div>
@@ -235,12 +188,12 @@ export default function Dashboard() {
           const [c0, c1] = cfg.grad;
           return (
             <div key={cfg.key} style={{
-              background: 'rgba(255,255,255,0.04)',
+              background: 'var(--cl-bg)',
               backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid var(--cl-border)',
               borderRadius: 16, padding: '18px 18px 16px',
               position: 'relative', overflow: 'hidden',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.32)',
+              boxShadow: 'var(--cl-shadow)',
             }}>
               {/* Top accent line */}
               <div style={{
@@ -267,13 +220,13 @@ export default function Dashboard() {
               {/* Value */}
               <div style={{
                 fontSize: 32, fontWeight: 800, lineHeight: 1, marginBottom: 5,
-                background: `linear-gradient(135deg,${c1} 0%,#fff 100%)`,
+                background: `linear-gradient(135deg,${c1} 0%,var(--cl-text-hi) 100%)`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
               }}>
                 {value}
               </div>
               {/* Label */}
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: 10, color: 'var(--cl-text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {cfg.label}
               </div>
             </div>
@@ -285,7 +238,7 @@ export default function Dashboard() {
       <div className="db-chart-grid">
         {/* Priority */}
         <GlassCard style={{ padding: '20px 22px' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.32)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--cl-text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20 }}>
             Por Prioridade
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -295,7 +248,7 @@ export default function Dashboard() {
               return (
                 <div key={p.priority}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', fontWeight: 500 }}>
+                    <span style={{ fontSize: 12, color: 'var(--cl-text-soft)', fontWeight: 500 }}>
                       {PRIORITY[p.priority]?.label}
                     </span>
                     <span style={{
@@ -306,7 +259,7 @@ export default function Dashboard() {
                       {p._count}
                     </span>
                   </div>
-                  <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                  <div style={{ height: 5, borderRadius: 3, background: 'var(--cl-bg-soft)', overflow: 'hidden' }}>
                     <div style={{
                       width: `${pct}%`, height: '100%', borderRadius: 3,
                       background: `linear-gradient(90deg,${c0},${c1})`,
@@ -321,11 +274,11 @@ export default function Dashboard() {
 
         {/* Category */}
         <GlassCard style={{ padding: '20px 22px' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.32)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--cl-text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 20 }}>
             Top Categorias
           </div>
           {byCategory.length === 0 ? (
-            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Sem dados disponíveis</span>
+            <span style={{ color: 'var(--cl-text-dim)', fontSize: 13 }}>Sem dados disponíveis</span>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {byCategory.map((c, i) => {
@@ -343,7 +296,7 @@ export default function Dashboard() {
                         }}>
                           {i + 1}
                         </div>
-                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.62)', fontWeight: 500 }}>{c.name}</span>
+                        <span style={{ fontSize: 12, color: 'var(--cl-text-soft)', fontWeight: 500 }}>{c.name}</span>
                       </div>
                       <span style={{
                         fontSize: 13, fontWeight: 800,
@@ -353,7 +306,7 @@ export default function Dashboard() {
                         {c._count}
                       </span>
                     </div>
-                    <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                    <div style={{ height: 5, borderRadius: 3, background: 'var(--cl-bg-soft)', overflow: 'hidden' }}>
                       <div style={{
                         width: `${pct}%`, height: '100%', borderRadius: 3,
                         background: `linear-gradient(90deg,${c0},${c1})`,
@@ -373,12 +326,12 @@ export default function Dashboard() {
         <div style={{
           display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: 16,
           padding: '16px 22px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--cl-border)',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.58)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--cl-text-soft)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
             Chamados Recentes
             {search && (
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.28)', marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--cl-text-faint)', marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>
                 {filteredTickets.length}/{recentTickets.length}
               </span>
             )}
