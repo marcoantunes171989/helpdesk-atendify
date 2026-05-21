@@ -371,21 +371,19 @@ export default function Dashboard() {
       {/* Recent tickets */}
       <GlassCard style={{ overflow: 'hidden' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 16,
+          display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: 16,
           padding: '16px 22px',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.58)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Chamados Recentes
-            </span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.58)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+            Chamados Recentes
             {search && (
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)' }}>
-                {filteredTickets.length} / {recentTickets.length}
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.28)', marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>
+                {filteredTickets.length}/{recentTickets.length}
               </span>
             )}
-          </div>
-          <div className="db-dark" style={{ flex: 1 }}>
+          </span>
+          <div className="db-dark" style={{ minWidth: 0 }}>
             <Input
               placeholder="Buscar por título, empresa, status, prioridade..."
               allowClear
@@ -403,7 +401,7 @@ export default function Dashboard() {
             rowKey="id"
             pagination={false}
             size="middle"
-            scroll={{ x: 800 }}
+            scroll={{ x: 800, y: 380 }}
           />
         </div>
       </GlassCard>
