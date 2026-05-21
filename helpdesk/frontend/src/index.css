@@ -319,18 +319,7 @@ h1, h2, h3, h4, h5 {
 }
 .page-table-wrap .ant-pagination .ant-select-arrow { color: var(--cl-text-dim) !important; }
 
-/* ============================================================
-   Light: todos os inputs e selects devem ser brancos
-   ============================================================ */
-[data-theme="light"] .ant-input,
-[data-theme="light"] .ant-input-affix-wrapper,
-[data-theme="light"] .ant-input-number,
-[data-theme="light"] .ant-select-selector,
-[data-theme="light"] .ant-picker,
-[data-theme="light"] .ant-input-textarea textarea {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-}
+/* (light input overrides movidos para depois dos dark overrides — ver abaixo) */
 
 /* ============================================================
    Ant Design dark overrides — Inputs / Selects em filter-bar
@@ -376,6 +365,33 @@ h1, h2, h3, h4, h5 {
   background: var(--cl-bg-soft) !important;
   border-color: var(--cl-border) !important;
   color: var(--cl-text) !important;
+}
+
+/* ============================================================
+   Light: inputs / selects / filter-bar → fundo branco
+   (vem depois das regras dark para vencer na especificidade)
+   ============================================================ */
+[data-theme="light"] .ant-input,
+[data-theme="light"] .ant-input-affix-wrapper,
+[data-theme="light"] .ant-input-number,
+[data-theme="light"] .ant-picker,
+[data-theme="light"] .ant-input-textarea textarea {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+[data-theme="light"] .ant-select .ant-select-selector,
+[data-theme="light"] .ant-select-selector {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+[data-theme="light"] .filter-bar,
+[data-theme="light"] .filter-bar .ant-input-affix-wrapper,
+[data-theme="light"] .filter-bar .ant-select-selector,
+[data-theme="light"] .filter-bar .ant-select-clear,
+[data-theme="light"] .page-table-wrap .ant-input-affix-wrapper,
+[data-theme="light"] .page-table-wrap .ant-select-selector {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 /* ============================================================
