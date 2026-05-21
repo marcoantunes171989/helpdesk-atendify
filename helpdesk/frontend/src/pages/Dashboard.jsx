@@ -65,8 +65,8 @@ const DB_STYLE = `
     text-transform: uppercase; letter-spacing: .08em !important; padding: 10px 12px !important;
   }
   .db-dark .ant-table-tbody > tr,.db-dark .ant-table-tbody > tr.ant-table-row { background: transparent !important; }
-  .db-dark .ant-table-tbody > tr > td,.db-dark .ant-table-tbody > tr > td.ant-table-cell,.db-dark .ant-table-tbody > tr > td.ant-table-cell-row-hover { border-bottom: 1px solid rgba(255,255,255,.05) !important; background: transparent !important; color: rgba(255,255,255,.75) !important; }
-  .db-dark .ant-table-tbody > tr.ant-table-row:hover > td,.db-dark .ant-table-tbody > tr:hover > td { background: rgba(255,255,255,.04) !important; }
+  .db-dark .ant-table-tbody > tr > td,.db-dark .ant-table-tbody > tr > td.ant-table-cell,.db-dark .ant-table-tbody > tr > td.ant-table-cell-row-hover,.db-dark .ant-table-tbody > tr > td.ant-table-column-sort { border-bottom: 1px solid rgba(255,255,255,.05) !important; background: transparent !important; color: rgba(255,255,255,.75) !important; }
+  .db-dark .ant-table-tbody > tr.ant-table-row:hover > td,.db-dark .ant-table-tbody > tr:hover > td,.db-dark .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort { background: rgba(255,255,255,.04) !important; }
   .db-dark .ant-table-tbody > tr:last-child > td { border-bottom: none !important; }
   .db-dark .ant-table-placeholder,.db-dark .ant-table-placeholder td { background: transparent !important; border-bottom: none !important; }
   .db-dark .ant-table-column-sorter { color: rgba(255,255,255,.2) !important; }

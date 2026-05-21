@@ -155,15 +155,19 @@ h1, h2, h3, h4, h5 {
   background: transparent !important;
 }
 
-/* Celulas - sem background (incluindo ant-table-cell-row-hover do Ant Design 5) */
+/* Celulas - sem background (incluindo hover, sort e todas as variantes do Ant Design 5) */
 .page-table-wrap .ant-table-tbody > tr > td,
 .page-table-wrap .ant-table-tbody > tr > td.ant-table-cell,
 .page-table-wrap .ant-table-tbody > tr > td.ant-table-cell-row-hover,
+.page-table-wrap .ant-table-tbody > tr > td.ant-table-column-sort,
 .page-table-wrap .ant-table-tbody > tr.ant-table-row > td,
+.page-table-wrap .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort,
 .db-dark .ant-table-tbody > tr > td,
 .db-dark .ant-table-tbody > tr > td.ant-table-cell,
 .db-dark .ant-table-tbody > tr > td.ant-table-cell-row-hover,
-.db-dark .ant-table-tbody > tr.ant-table-row > td {
+.db-dark .ant-table-tbody > tr > td.ant-table-column-sort,
+.db-dark .ant-table-tbody > tr.ant-table-row > td,
+.db-dark .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort {
   border-bottom: 1px solid rgba(255,255,255,0.05) !important;
   background: transparent !important;
   color: rgba(255,255,255,0.75) !important;
