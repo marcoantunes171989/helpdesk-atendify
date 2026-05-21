@@ -244,12 +244,11 @@ export default function Companies() {
       </div>
 
       <div className="filter-bar">
-        <Input.Search
+        <Input
           placeholder="Buscar por nome, CNPJ, e-mail, telefone ou localização..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onSearch={v => setSearch(v)}
           style={{ width: '100%' }}
         />
       </div>

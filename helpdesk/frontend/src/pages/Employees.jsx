@@ -168,12 +168,11 @@ export default function Employees() {
       </div>
 
       <div className="filter-bar">
-        <Input.Search
+        <Input
           placeholder="Buscar por nome, cargo, telefone, empresa ou fantasia..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onSearch={v => setSearch(v)}
           style={{ width: '100%' }}
         />
       </div>

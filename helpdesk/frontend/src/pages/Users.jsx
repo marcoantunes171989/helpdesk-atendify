@@ -189,13 +189,12 @@ export default function Users() {
       </div>
 
       <div className="filter-bar">
-        <Input.Search
+        <Input
           placeholder="Buscar por nome, e-mail ou perfil..."
           style={{ flex: 1 }}
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onSearch={v => setSearch(v)}
         />
         <Select
           placeholder="Filtrar por perfil"

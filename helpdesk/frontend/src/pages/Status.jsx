@@ -219,12 +219,11 @@ export default function Status() {
       </div>
 
       <div className="filter-bar">
-        <Input.Search
+        <Input
           placeholder="Buscar por nome, descrição ou observação..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onSearch={v => setSearch(v)}
           style={{ width: '100%' }}
         />
       </div>
