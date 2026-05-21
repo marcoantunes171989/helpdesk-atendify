@@ -135,10 +135,7 @@ export default function Users() {
       title: 'Perfil', dataIndex: 'role', key: 'role',
       sorter: (a, b) => a.role.localeCompare(b.role),
       render: v => (
-        <span style={{
-          display: 'inline-block', padding: '2px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-          background: roleColors[v]?.bg, color: roleColors[v]?.color,
-        }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: roleColors[v]?.color }}>
           {ROLES[v]?.label}
         </span>
       ),
