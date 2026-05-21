@@ -39,7 +39,7 @@
   --cl-text-dim:   #d1d5db;
   --cl-bg:         #ffffff;
   --cl-bg-soft:    #f8fafc;
-  --cl-bg-input:   #f1f5f9;
+  --cl-bg-input:   #ffffff;
   --cl-border-subtle: rgba(0,0,0,0.05);
   --cl-border:     rgba(0,0,0,0.10);
   --cl-border-input: rgba(0,0,0,0.15);
@@ -133,7 +133,7 @@ h1, h2, h3, h4, h5 {
   --ant-table-row-hover-bg: var(--cl-bg-soft);
   --ant-table-body-sort-bg: transparent;
   --ant-table-header-sort-bg: var(--cl-bg-soft);
-  --ant-table-header-sort-hover-bg: var(--cl-bg-input);
+  --ant-table-header-sort-hover-bg: var(--cl-bg-soft);
   --ant-table-selected-row-bg: rgba(37,99,235,0.12);
   --ant-table-selected-row-hover-bg: rgba(37,99,235,0.16);
   --ant-table-expanded-row-bg: transparent;
@@ -318,6 +318,19 @@ h1, h2, h3, h4, h5 {
   color: var(--cl-text-soft) !important;
 }
 .page-table-wrap .ant-pagination .ant-select-arrow { color: var(--cl-text-dim) !important; }
+
+/* ============================================================
+   Light: todos os inputs e selects devem ser brancos
+   ============================================================ */
+[data-theme="light"] .ant-input,
+[data-theme="light"] .ant-input-affix-wrapper,
+[data-theme="light"] .ant-input-number,
+[data-theme="light"] .ant-select-selector,
+[data-theme="light"] .ant-picker,
+[data-theme="light"] .ant-input-textarea textarea {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
 
 /* ============================================================
    Ant Design dark overrides — Inputs / Selects em filter-bar
