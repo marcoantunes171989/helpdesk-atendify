@@ -341,13 +341,12 @@ export default function Tickets() {
         <Select allowClear placeholder="Todas as categorias" style={{ minWidth: 160, flex: 1 }} onChange={v => applyFilters({ categoryId: v })}>
           {categories.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
         </Select>
-        <Input.Search
+        <Input
           placeholder="Buscar em todos os campos..."
           style={{ flex: 2 }}
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onSearch={v => setSearch(v)}
         />
       </div>
 
