@@ -406,9 +406,11 @@ h1, h2, h3, h4, h5 {
   --ant-table-row-hover-bg: #f8fafc;
 }
 
-/* Tags dentro de tabelas: sem fundo (transparent) no light */
+/* Tags em qualquer tabela: sem fundo no tema claro */
 [data-theme="light"] .ant-table .ant-tag,
-[data-theme="light"] .page-table-wrap .ant-tag {
+[data-theme="light"] .page-table-wrap .ant-tag,
+[data-theme="light"] .ant-table-tbody .ant-tag,
+[data-theme="light"] .ant-table-cell .ant-tag {
   background: transparent !important;
   background-color: transparent !important;
 }

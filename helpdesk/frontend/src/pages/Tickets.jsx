@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { ticketService, categoryService, companyService, employeeService, statusService, technicianService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -26,6 +27,8 @@ const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
 });
 
 export default function Tickets() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [tickets, setTickets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -249,7 +252,7 @@ export default function Tickets() {
       render: (_, r) => {
         if (r.ticketStatus) {
           return (
-            <Tag style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: r.ticketStatus.color + '22', color: r.ticketStatus.color, borderColor: r.ticketStatus.color + '55' }}>
+            <Tag style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : r.ticketStatus.color + '22', color: r.ticketStatus.color, borderColor: r.ticketStatus.color + '55' }}>
               <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: r.ticketStatus.color, marginRight: 5, verticalAlign: 'middle' }} />
               {r.ticketStatus.name}
             </Tag>
@@ -303,7 +306,7 @@ export default function Tickets() {
             {statuses.filter(s => statusCounts[s.id] > 0).map(s => (
               <Tag
                 key={s.id}
-                style={{ fontSize: 11, marginRight: 4, background: s.color + '22', color: s.color, borderColor: s.color + '55' }}
+                style={{ fontSize: 11, marginRight: 4, background: isLight ? 'transparent' : s.color + '22', color: s.color, borderColor: s.color + '55' }}
               >
                 {s.name}: {statusCounts[s.id]}
               </Tag>
