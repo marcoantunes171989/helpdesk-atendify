@@ -62,6 +62,21 @@ h1, h2, h3, h4, h5 {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 28px rgba(0,0,0,0.35);
+  /* Ant Design 5 CSS vars - override internal table tokens */
+  --ant-color-bg-container: transparent;
+  --ant-color-fill-alter: transparent;
+  --ant-table-header-bg: rgba(255,255,255,0.04);
+  --ant-table-body-bg: transparent;
+  --ant-table-row-bg: transparent;
+  --ant-table-row-hover-bg: rgba(255,255,255,0.04);
+  --ant-table-body-sort-bg: transparent;
+  --ant-table-header-sort-bg: rgba(255,255,255,0.06);
+  --ant-table-header-sort-hover-bg: rgba(255,255,255,0.08);
+  --ant-table-selected-row-bg: rgba(37,99,235,0.12);
+  --ant-table-selected-row-hover-bg: rgba(37,99,235,0.16);
+  --ant-table-expanded-row-bg: transparent;
+  --ant-table-fixed-header-sort-active-bg: transparent;
+  --ant-table-footer-bg: transparent;
 }
 
 /* -- Dark filter bar -- */

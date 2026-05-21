@@ -41,6 +41,22 @@ const DB_STYLE = `
   @media (max-width: 900px)  { .db-stat-grid { grid-template-columns: repeat(2,1fr); } .db-chart-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px)  { .db-wrap { margin: -16px; padding: 20px 16px 32px; } }
 
+  .db-dark {
+    --ant-color-bg-container: transparent;
+    --ant-color-fill-alter: transparent;
+    --ant-table-header-bg: rgba(255,255,255,0.04);
+    --ant-table-body-bg: transparent;
+    --ant-table-row-bg: transparent;
+    --ant-table-row-hover-bg: rgba(255,255,255,0.04);
+    --ant-table-body-sort-bg: transparent;
+    --ant-table-header-sort-bg: rgba(255,255,255,0.06);
+    --ant-table-header-sort-hover-bg: rgba(255,255,255,0.08);
+    --ant-table-selected-row-bg: rgba(37,99,235,0.12);
+    --ant-table-selected-row-hover-bg: rgba(37,99,235,0.16);
+    --ant-table-expanded-row-bg: transparent;
+    --ant-table-fixed-header-sort-active-bg: transparent;
+    --ant-table-footer-bg: transparent;
+  }
   .db-dark .ant-table-wrapper,.db-dark .ant-spin-nested-loading,.db-dark .ant-spin-container,.db-dark .ant-table,.db-dark .ant-table-container,.db-dark .ant-table-content,.db-dark .ant-table-body { background: transparent !important; }
   .db-dark .ant-table-thead > tr > th,.db-dark .ant-table-thead > tr > td {
     background: rgba(255,255,255,.04) !important; color: rgba(255,255,255,.38) !important;
