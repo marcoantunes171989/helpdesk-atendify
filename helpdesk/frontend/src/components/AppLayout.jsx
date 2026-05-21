@@ -215,6 +215,7 @@ export default function AppLayout() {
         <Content style={{
           padding: isMobile ? 16 : 24,
           minHeight: 'calc(100vh - 64px)',
+          background: 'var(--cl-page-bg)',
         }}>
           <Outlet />
         </Content>

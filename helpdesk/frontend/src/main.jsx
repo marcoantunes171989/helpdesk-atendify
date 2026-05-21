@@ -93,7 +93,7 @@ const LIGHT_THEME = {
     colorPrimaryActive: '#1e40af',
     borderRadius: 8,
     colorBgContainer: '#ffffff',
-    colorBgLayout: '#f0f2f5',
+    colorBgLayout: '#f4f5f7',
     colorBgElevated: '#ffffff',
     colorBorderSecondary: 'rgba(0,0,0,0.06)',
     colorText: '#1f2937',
