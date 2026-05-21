@@ -140,7 +140,7 @@ export default function Employees() {
         <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'rgba(255,255,255,0.45)' }} onClick={() => openEdit(record)} />
+              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Button type="text" icon={<DeleteOutlined />} size="small" danger
             onClick={() => setDeleteModal({ id: record.id, name: record.name })} />
@@ -158,7 +158,7 @@ export default function Employees() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Funcionários</h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, margin: '4px 0 0' }}>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredEmployees.length} funcionário{filteredEmployees.length !== 1 ? 's' : ''} cadastrado{filteredEmployees.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -265,7 +265,7 @@ export default function Employees() {
               <Col xs={24} sm={12}>
                 <Form.Item name="phone" label="Telefone">
                   <Input
-                    prefix={<PhoneOutlined style={{ color: 'rgba(255,255,255,0.3)' }} />}
+                    prefix={<PhoneOutlined style={{ color: 'var(--cl-text-faint)' }} />}
                     placeholder="(11) 99999-9999"
                     size="large"
                   />

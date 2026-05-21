@@ -441,7 +441,7 @@ export default function Tickets() {
                     <div style={{ lineHeight: 1.3 }}>
                       <div>{c.name}</div>
                       {c.fantasia && (
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>{c.fantasia}</div>
+                        <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', marginTop: 1 }}>{c.fantasia}</div>
                       )}
                     </div>
                   </Option>
@@ -501,7 +501,7 @@ export default function Tickets() {
                     <PaperClipOutlined style={{ fontSize: 15 }} />
                   </Badge>
                   <span>Anexos</span>
-                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: 400 }}>
+                  <span style={{ color: 'var(--cl-text-muted)', fontSize: 12, fontWeight: 400 }}>
                     opcional · máx. {MAX_FILE_SIZE_MB}MB por arquivo
                   </span>
                 </div>

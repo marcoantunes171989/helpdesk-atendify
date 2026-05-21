@@ -37,17 +37,17 @@
   --cl-text-muted: #6b7280;
   --cl-text-faint: #9ca3af;
   --cl-text-dim:   #d1d5db;
-  --cl-bg:         rgba(0,0,0,0.02);
-  --cl-bg-soft:    rgba(0,0,0,0.04);
-  --cl-bg-input:   #f8fafc;
-  --cl-border-subtle: rgba(0,0,0,0.04);
-  --cl-border:     rgba(0,0,0,0.08);
-  --cl-border-input: rgba(0,0,0,0.13);
+  --cl-bg:         #ffffff;
+  --cl-bg-soft:    #f8fafc;
+  --cl-bg-input:   #f1f5f9;
+  --cl-border-subtle: rgba(0,0,0,0.05);
+  --cl-border:     rgba(0,0,0,0.10);
+  --cl-border-input: rgba(0,0,0,0.15);
   --cl-page-bg:    #f0f2f5;
   --cl-sidebar:    #ffffff;
   --cl-header:     rgba(255,255,255,0.97);
   --cl-page-grad:  linear-gradient(160deg,#f0f2f5 0%,#e8edf5 55%,#ecf0f5 100%);
-  --cl-shadow:     0 2px 12px rgba(0,0,0,0.09);
+  --cl-shadow:     0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
   --cl-title-grad: linear-gradient(135deg,#111827 0%,rgba(55,65,81,0.82) 100%);
   --cl-sidebar-text: #1f2937;
   --cl-sidebar-logo: #1f2937;
@@ -127,7 +127,7 @@ h1, h2, h3, h4, h5 {
   box-shadow: var(--cl-shadow);
   --ant-color-bg-container: transparent;
   --ant-color-fill-alter: transparent;
-  --ant-table-header-bg: var(--cl-bg);
+  --ant-table-header-bg: var(--cl-bg-soft);
   --ant-table-body-bg: transparent;
   --ant-table-row-bg: transparent;
   --ant-table-row-hover-bg: var(--cl-bg-soft);
@@ -225,7 +225,7 @@ h1, h2, h3, h4, h5 {
 .page-table-wrap .ant-table-thead > tr > td,
 .db-dark .ant-table-thead > tr > th,
 .db-dark .ant-table-thead > tr > td {
-  background: var(--cl-bg) !important;
+  background: var(--cl-bg-soft) !important;
   color: var(--cl-text-muted) !important;
   border-bottom: 1px solid var(--cl-border-subtle) !important;
   font-size: 10px !important;

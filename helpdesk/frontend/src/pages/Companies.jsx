@@ -317,7 +317,7 @@ export default function Companies() {
               </Col>
             </Row>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
             <div className="form-section-label">Contato</div>
             <Row gutter={12}>
@@ -338,7 +338,7 @@ export default function Companies() {
               <Input placeholder="https://www.empresa.com.br" />
             </Form.Item>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
             <div className="form-section-label">Endereço</div>
             <Row gutter={12}>
@@ -385,7 +385,7 @@ export default function Companies() {
               </Col>
             </Row>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
+            <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
             <div className="form-section-label">Observações</div>
             <Form.Item name="notes" style={{ marginBottom: 12 }}>
@@ -394,7 +394,7 @@ export default function Companies() {
 
             {editing && (
               <>
-                <Divider style={{ margin: '4px 0 20px', borderColor: 'rgba(255,255,255,0.08)' }} />
+                <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
                 <Form.Item name="active" label="Status da empresa" valuePropName="checked" style={{ marginBottom: 0 }}>
                   <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
                 </Form.Item>
