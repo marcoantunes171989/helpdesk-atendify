@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Drawer, Modal, Form, Input, Space, Tag, Switch,
   message, Tooltip,
@@ -11,6 +12,8 @@ import dayjs from 'dayjs';
 import { categoryService } from '../services/api';
 
 export default function Categories() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -97,7 +100,7 @@ export default function Categories() {
       title: 'Situação', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
-        <Tag color={v !== false ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
+        <Tag color={v !== false ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined }}>
           {v !== false ? 'Ativa' : 'Inativa'}
         </Tag>
       ),

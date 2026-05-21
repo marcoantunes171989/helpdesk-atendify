@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Tag, Button, Select, Space, Typography, Divider, Input, Modal, Drawer,
   Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload, Popconfirm,
@@ -43,6 +44,8 @@ const LABEL_STYLE = {
 };
 
 export default function TicketDetail() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -477,7 +480,7 @@ export default function TicketDetail() {
                 {ticket.ticketStatus ? (
                   <Tag style={{
                     borderRadius: 6, fontWeight: 600,
-                    background: ticket.ticketStatus.color + '22',
+                    background: isLight ? 'transparent' : ticket.ticketStatus.color + '22',
                     color: ticket.ticketStatus.color,
                     borderColor: ticket.ticketStatus.color + '55',
                   }}>
@@ -485,15 +488,15 @@ export default function TicketDetail() {
                     {ticket.ticketStatus.name}
                   </Tag>
                 ) : (
-                  <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6 }}>
+                  <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>
                     {TICKET_STATUS[ticket.status]?.label}
                   </Tag>
                 )}
-                <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6 }}>
+                <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>
                   {PRIORITY[ticket.priority]?.label}
                 </Tag>
                 {isExpired && (
-                  <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6 }}>
+                  <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>
                     SLA Vencido
                   </Tag>
                 )}
@@ -964,7 +967,7 @@ export default function TicketDetail() {
                   }}>
                     <ClockCircleOutlined />
                     {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
-                    {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11 }}>Vencido</Tag>}
+                    {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11, background: isLight ? 'transparent' : undefined }}>Vencido</Tag>}
                   </div>
                 </div>
               )}

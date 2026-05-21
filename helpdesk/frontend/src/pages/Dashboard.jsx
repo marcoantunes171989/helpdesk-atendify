@@ -340,7 +340,7 @@ export default function Dashboard() {
     },
     {
       title: 'Status', dataIndex: 'status_atual', key: 'status', width: 90,
-      render: v => <Tag color="success" style={{ borderRadius: 6, fontSize: 11 }}>{v}</Tag>,
+      render: v => <Tag color="success" style={{ borderRadius: 6, fontSize: 11, background: resolvedTheme === 'light' ? 'transparent' : undefined }}>{v}</Tag>,
     },
   ];
 

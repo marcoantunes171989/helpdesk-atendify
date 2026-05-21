@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Drawer, Form, Input, Tag, Space, Select,
   Modal, message, Switch, Tooltip, Row, Col, Divider, Avatar,
@@ -55,6 +56,8 @@ function validateCNPJ(cnpj) {
 }
 
 export default function Companies() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -191,7 +194,7 @@ export default function Companies() {
       title: 'Status', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
-        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 20, fontWeight: 600, fontSize: 11 }}>
+        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 20, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined }}>
           {v ? 'Ativa' : 'Inativa'}
         </Tag>
       ),

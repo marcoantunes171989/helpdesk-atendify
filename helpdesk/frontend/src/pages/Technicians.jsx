@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Drawer, Modal, Form, Input, Space, Tag,
   message, Tooltip, Switch,
@@ -13,6 +14,8 @@ import { technicianService } from '../services/api';
 const { TextArea } = Input;
 
 export default function Technicians() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -118,7 +121,7 @@ export default function Technicians() {
       title: 'Situação', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
-        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
+        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined }}>
           {v ? 'Ativo' : 'Inativo'}
         </Tag>
       ),

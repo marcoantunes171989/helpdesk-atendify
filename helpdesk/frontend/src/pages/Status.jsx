@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Drawer, Modal, Form, Input, Space, Tag, Select,
   message, Tooltip, Switch, Row, Col,
@@ -54,6 +55,8 @@ function ColorPicker({ value, onChange }) {
 }
 
 export default function Status() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -172,7 +175,7 @@ export default function Status() {
       title: 'Situação', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
-        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
+        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined }}>
           {v ? 'Ativo' : 'Inativo'}
         </Tag>
       ),

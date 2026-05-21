@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Drawer, Modal, Form, Input, Select, Tag, Space,
   message, Switch, Tooltip, Avatar,
@@ -22,6 +23,8 @@ const roleColors = {
 };
 
 export default function Users() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -143,7 +146,7 @@ export default function Users() {
     {
       title: 'Status', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
-      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6 }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
+      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
