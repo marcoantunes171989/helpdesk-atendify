@@ -143,12 +143,11 @@ export default function Categories() {
       </div>
 
       <div className="filter-bar">
-        <Input.Search
+        <Input
           placeholder="Buscar por nome ou descrição..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          onSearch={v => setSearch(v)}
           style={{ width: '100%' }}
         />
       </div>
