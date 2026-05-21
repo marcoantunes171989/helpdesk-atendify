@@ -368,6 +368,22 @@ h1, h2, h3, h4, h5 {
 /* ============================================================
    Ant Design dark overrides — Layout / Nav
    ============================================================ */
+
+/* Light: força fundo branco em todos os contêineres de layout */
+[data-theme="light"] .ant-layout,
+[data-theme="light"] .ant-layout-content,
+[data-theme="light"] .ant-layout-sider,
+[data-theme="light"] .ant-layout-sider-children {
+  background: #ffffff !important;
+}
+
+/* Light: sem backdrop-filter — fundo sólido não precisa blur */
+[data-theme="light"] .page-table-wrap,
+[data-theme="light"] .filter-bar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .ant-layout-sider {
   box-shadow: 1px 0 0 var(--cl-border) !important;
 }

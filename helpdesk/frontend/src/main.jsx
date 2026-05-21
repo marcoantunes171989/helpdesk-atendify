@@ -99,9 +99,9 @@ const LIGHT_THEME = {
     colorText: '#1f2937',
     colorTextSecondary: '#4b5563',
     colorBorder: 'rgba(0,0,0,0.13)',
-    colorFillAlter: '#fafafa',
-    colorFillContent: '#f5f5f5',
-    colorFillSecondary: '#f0f0f0',
+    colorFillAlter: '#f8fafc',
+    colorFillContent: '#f1f5f9',
+    colorFillSecondary: '#f1f5f9',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
   components: {
