@@ -404,8 +404,8 @@ export default function Tickets() {
         }
         open={drawerOpen}
         onClose={closeDrawer}
-        width="100%"
-        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
+        width={Math.min(680, window.innerWidth)}
+        styles={{ body: { padding: '32px 40px', overflowY: 'auto' } }}
         extra={
           <Space>
             <Button onClick={closeDrawer}>Cancelar</Button>
@@ -416,7 +416,7 @@ export default function Tickets() {
           </Space>
         }
       >
-        <div className="drawer-form-body" style={{ maxWidth: 640, margin: '0 auto' }}>
+        <div className="drawer-form-body">
           <Form form={form} layout="vertical" onFinish={handleCreate}>
             <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Informe o título' }]}>
               <Input placeholder="Descreva o problema brevemente" size="large" />
