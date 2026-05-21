@@ -146,7 +146,7 @@ export default function Users() {
     {
       title: 'Status', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
-      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
+      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',

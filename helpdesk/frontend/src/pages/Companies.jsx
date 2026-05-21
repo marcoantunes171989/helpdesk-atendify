@@ -194,7 +194,7 @@ export default function Companies() {
       title: 'Status', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
-        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 20, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined }}>
+        <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 20, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
           {v ? 'Ativa' : 'Inativa'}
         </Tag>
       ),

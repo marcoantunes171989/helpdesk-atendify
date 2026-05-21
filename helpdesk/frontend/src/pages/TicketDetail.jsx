@@ -482,21 +482,21 @@ export default function TicketDetail() {
                     borderRadius: 6, fontWeight: 600,
                     background: isLight ? 'transparent' : ticket.ticketStatus.color + '22',
                     color: ticket.ticketStatus.color,
-                    borderColor: ticket.ticketStatus.color + '55',
+                    borderColor: isLight ? 'transparent' : ticket.ticketStatus.color + '55',
                   }}>
                     <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: ticket.ticketStatus.color, marginRight: 5, verticalAlign: 'middle' }} />
                     {ticket.ticketStatus.name}
                   </Tag>
                 ) : (
-                  <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>
+                  <Tag color={TICKET_STATUS[ticket.status]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
                     {TICKET_STATUS[ticket.status]?.label}
                   </Tag>
                 )}
-                <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>
+                <Tag color={PRIORITY[ticket.priority]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
                   {PRIORITY[ticket.priority]?.label}
                 </Tag>
                 {isExpired && (
-                  <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>
+                  <Tag color="red" icon={<ExclamationCircleOutlined />} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
                     SLA Vencido
                   </Tag>
                 )}
@@ -967,7 +967,7 @@ export default function TicketDetail() {
                   }}>
                     <ClockCircleOutlined />
                     {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
-                    {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11, background: isLight ? 'transparent' : undefined }}>Vencido</Tag>}
+                    {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>Vencido</Tag>}
                   </div>
                 </div>
               )}

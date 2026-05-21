@@ -100,7 +100,7 @@ export default function Categories() {
       title: 'Situação', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
-        <Tag color={v !== false ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined }}>
+        <Tag color={v !== false ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
           {v !== false ? 'Ativa' : 'Inativa'}
         </Tag>
       ),

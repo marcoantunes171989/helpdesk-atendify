@@ -157,7 +157,7 @@ export default function CompanyDetail() {
     { title: 'Telefone', dataIndex: 'phone', key: 'phone', render: v => <span style={{ color: 'var(--cl-text-muted)', fontSize: 13 }}>{v || '—'}</span> },
     {
       title: 'Status', dataIndex: 'active', key: 'active',
-      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
+      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
     },
     {
       title: '', key: 'actions', width: 80,
@@ -182,8 +182,8 @@ export default function CompanyDetail() {
       ),
     },
     { title: 'Categoria', dataIndex: ['category', 'name'], key: 'category', render: v => v ? <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
-    { title: 'Status', dataIndex: 'status', key: 'status', render: v => <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>{TICKET_STATUS[v]?.label}</Tag> },
-    { title: 'Prioridade', dataIndex: 'priority', key: 'priority', render: v => <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>{PRIORITY[v]?.label}</Tag> },
+    { title: 'Status', dataIndex: 'status', key: 'status', render: v => <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{TICKET_STATUS[v]?.label}</Tag> },
+    { title: 'Prioridade', dataIndex: 'priority', key: 'priority', render: v => <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{PRIORITY[v]?.label}</Tag> },
     { title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span> },
     { title: '', key: 'action', width: 60, render: (_, r) => <Button type="link" size="small" onClick={() => navigate(`/app/tickets/${r.id}`)}>Ver</Button> },
   ];
@@ -205,7 +205,7 @@ export default function CompanyDetail() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--cl-text-hi)', margin: 0 }}>{company?.name}</h1>
-              <Tag color={company?.active ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined }}>{company?.active ? 'Ativa' : 'Inativa'}</Tag>
+              <Tag color={company?.active ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{company?.active ? 'Ativa' : 'Inativa'}</Tag>
             </div>
             <div style={{ fontSize: 13, color: 'var(--cl-text-muted)', marginTop: 2 }}>
               CNPJ: {company?.cnpj} {company?.email && `· ${company.email}`}
