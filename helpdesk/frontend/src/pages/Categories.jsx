@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { categoryService } from '../services/api';
+import { normalize } from '../utils/constants';
 
 export default function Categories() {
   const { resolvedTheme } = useTheme();
@@ -128,7 +129,7 @@ export default function Categories() {
   ];
 
   const filteredCategories = search
-    ? (() => { const q = search.toLowerCase(); return categories.filter(c => [c.name, c.description].some(f => (f || '').toLowerCase().includes(q))); })()
+    ? (() => { const q = normalize(search); return categories.filter(c => [c.name, c.description].some(f => normalize(f).includes(q))); })()
     : categories;
 
   return (

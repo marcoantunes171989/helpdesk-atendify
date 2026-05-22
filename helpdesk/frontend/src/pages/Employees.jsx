@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { employeeService, companyService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { normalize } from '../utils/constants';
 
 const { Option } = Select;
 
@@ -150,7 +151,7 @@ export default function Employees() {
   ];
 
   const filteredEmployees = search
-    ? (() => { const q = search.toLowerCase(); return employees.filter(e => [e.name, e.position, e.phone, e.company?.name, e.company?.fantasia].some(f => (f || '').toLowerCase().includes(q))); })()
+    ? (() => { const q = normalize(search); return employees.filter(e => [e.name, e.position, e.phone, e.company?.name, e.company?.fantasia].some(f => normalize(f).includes(q))); })()
     : employees;
 
   return (

@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { technicianService } from '../services/api';
+import { normalize } from '../utils/constants';
 
 const { TextArea } = Input;
 
@@ -149,7 +150,7 @@ export default function Technicians() {
   ];
 
   const filteredTechnicians = search
-    ? (() => { const q = search.toLowerCase(); return technicians.filter(t => [t.name, t.description, t.observation].some(f => (f || '').toLowerCase().includes(q))); })()
+    ? (() => { const q = normalize(search); return technicians.filter(t => [t.name, t.description, t.observation].some(f => normalize(f).includes(q))); })()
     : technicians;
 
   return (

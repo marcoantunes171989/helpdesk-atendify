@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { ticketService, categoryService, companyService, employeeService, statusService, technicianService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { TICKET_STATUS, PRIORITY } from '../utils/constants';
+import { TICKET_STATUS, PRIORITY, normalize } from '../utils/constants';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { Option } = Select;
@@ -163,14 +163,14 @@ export default function Tickets() {
 
   const filteredTickets = search
     ? (() => {
-        const q = search.toLowerCase();
+        const q = normalize(search);
         return tickets.filter(r => [
           r.id, r.title, r.description,
           r.company?.name, r.company?.fantasia, r.employee?.name, r.employee?.position,
           r.technician?.name, r.category?.name,
           r.ticketStatus?.name, TICKET_STATUS[r.status]?.label,
           PRIORITY[r.priority]?.label,
-        ].some(f => (f || '').toLowerCase().includes(q)));
+        ].some(f => normalize(f).includes(q)));
       })()
     : tickets;
 
@@ -433,10 +433,10 @@ export default function Tickets() {
                 onChange={handleCompanyChange}
                 filterOption={(input, option) => {
                   const c = companies.find(co => co.id === option.value);
-                  const q = input.toLowerCase();
+                  const q = normalize(input);
                   return (
-                    c?.name?.toLowerCase().includes(q) ||
-                    (c?.fantasia || '').toLowerCase().includes(q)
+                    normalize(c?.name).includes(q) ||
+                    normalize(c?.fantasia).includes(q)
                   );
                 }}
               >

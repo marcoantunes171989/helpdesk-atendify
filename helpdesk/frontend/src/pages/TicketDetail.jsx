@@ -18,8 +18,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus,
-} from '../utils/constants';
+  TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus,, normalize } from '../utils/constants';
 
 const { Paragraph } = Typography;
 const { TextArea } = Input;
@@ -563,10 +562,10 @@ export default function TicketDetail() {
                       placeholder="Selecione a empresa"
                       filterOption={(input, option) => {
                         const c = companies.find(co => co.id === option.value);
-                        const q = input.toLowerCase();
+                        const q = normalize(input);
                         return (
-                          c?.name?.toLowerCase().includes(q) ||
-                          (c?.fantasia || '').toLowerCase().includes(q)
+                          normalize(c?.name).includes(q) ||
+                          normalize(c?.fantasia).includes(q)
                         );
                       }}
                     >

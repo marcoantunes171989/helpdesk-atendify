@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { stateService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { canManageCategories } from '../utils/constants';
+import { canManageCategories, normalize } from '../utils/constants';
 
 export default function States() {
   const { resolvedTheme } = useTheme();
@@ -38,8 +38,8 @@ export default function States() {
 
   const filtered = search
     ? states.filter(s => {
-        const q = search.toLowerCase();
-        return s.name.toLowerCase().includes(q) || s.sigla.toLowerCase().includes(q);
+        const q = normalize(search);
+        return normalize(s.name).includes(q) || normalize(s.sigla).includes(q);
       })
     : states;
 

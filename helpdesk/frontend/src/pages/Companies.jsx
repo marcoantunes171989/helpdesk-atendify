@@ -11,6 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { companyService } from '../services/api';
+import { normalize } from '../utils/constants';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -228,7 +229,7 @@ export default function Companies() {
   const hasLinks = deleteModal && (deleteModal.employees > 0 || deleteModal.tickets > 0 || deleteModal.categories > 0);
 
   const filteredCompanies = search
-    ? (() => { const q = search.toLowerCase(); return companies.filter(c => [c.name, c.cnpj, c.email, c.phone, c.city, c.state].some(f => (f || '').toLowerCase().includes(q))); })()
+    ? (() => { const q = normalize(search); return companies.filter(c => [c.name, c.cnpj, c.email, c.phone, c.city, c.state].some(f => normalize(f).includes(q))); })()
     : companies;
 
   return (

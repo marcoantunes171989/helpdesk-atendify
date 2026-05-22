@@ -20,6 +20,7 @@ const BUILTIN_STATUS_OPTIONS = [
 ];
 import dayjs from 'dayjs';
 import { statusService } from '../services/api';
+import { normalize } from '../utils/constants';
 
 const { TextArea } = Input;
 
@@ -203,7 +204,7 @@ export default function Status() {
   ];
 
   const filteredStatuses = search
-    ? (() => { const q = search.toLowerCase(); return statuses.filter(s => [s.name, s.description, s.observation].some(f => (f || '').toLowerCase().includes(q))); })()
+    ? (() => { const q = normalize(search); return statuses.filter(s => [s.name, s.description, s.observation].some(f => normalize(f).includes(q))); })()
     : statuses;
 
   return (

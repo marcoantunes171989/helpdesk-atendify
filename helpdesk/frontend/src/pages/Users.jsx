@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import { userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { ROLES } from '../utils/constants';
+import { ROLES, normalize } from '../utils/constants';
 
 const { Option } = Select;
 
@@ -98,8 +98,8 @@ export default function Users() {
   const filteredUsers = (() => {
     let result = users;
     if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(u => [u.name, u.email, ROLES[u.role]?.label].some(f => (f || '').toLowerCase().includes(q)));
+      const q = normalize(search);
+      result = result.filter(u => [u.name, u.email, ROLES[u.role]?.label].some(f => normalize(f).includes(q)));
     }
     if (roleFilter) result = result.filter(u => u.role === roleFilter);
     return result;
