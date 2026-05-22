@@ -35,6 +35,8 @@ model Company {
   crmContacts       CrmContact[]
   crmOpportunities  CrmOpportunity[]
   crmActivities     CrmActivity[]
+  implantacoes      Implantacao[]
+  treinamentos      Treinamento[]
 
   @@map("companies")
 }
@@ -55,6 +57,8 @@ model User {
   comments         TicketComment[]
   crmOpportunities CrmOpportunity[] @relation("CrmOppOwner")
   crmActivities    CrmActivity[]    @relation("CrmActUser")
+  implantacoes     Implantacao[]    @relation("ImplantacaoResponsavel")
+  treinamentos     Treinamento[]    @relation("TreinamentoTrainer")
 
   @@map("users")
 }
@@ -184,15 +188,16 @@ model TicketAttachment {
 }
 
 model Technician {
-  id          String    @id @default(cuid())
-  code        Int?      @unique
-  name        String
-  description String?
-  observation String?
-  active      Boolean   @default(true)
-  tickets     Ticket[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String        @id @default(cuid())
+  code         Int?          @unique
+  name         String
+  description  String?
+  observation  String?
+  active       Boolean       @default(true)
+  tickets      Ticket[]
+  implantacoes Implantacao[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@map("technicians")
 }
@@ -212,6 +217,7 @@ model Employee {
   companyId    String
   company      Company   @relation(fields: [companyId], references: [id])
   tickets      Ticket[]
+  treinamentoParticipacoes TreinamentoParticipante[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -382,4 +388,111 @@ model CrmActivity {
   updatedAt      DateTime          @updatedAt
 
   @@map("crm_activities")
+}
+
+// ─── IMPLANTAÇÕES ────────────────────────────────────────────────────────────
+
+enum ImplantacaoStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  PAUSADO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum ImplantacaoFaseStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+}
+
+model Implantacao {
+  id              String              @id @default(cuid())
+  code            Int?                @unique
+  title           String
+  description     String?             @db.Text
+  status          ImplantacaoStatus   @default(PENDENTE)
+  companyId       String
+  company         Company             @relation(fields: [companyId], references: [id])
+  responsibleId   String?
+  responsible     User?               @relation("ImplantacaoResponsavel", fields: [responsibleId], references: [id])
+  technicianId    String?
+  technician      Technician?         @relation(fields: [technicianId], references: [id])
+  startDate       DateTime?
+  expectedEnd     DateTime?
+  completedAt     DateTime?
+  notes           String?             @db.Text
+  fases           ImplantacaoFase[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("implantacoes")
+}
+
+model ImplantacaoFase {
+  id             String                @id @default(cuid())
+  implantacaoId  String
+  implantacao    Implantacao           @relation(fields: [implantacaoId], references: [id], onDelete: Cascade)
+  order          Int
+  title          String
+  description    String?               @db.Text
+  status         ImplantacaoFaseStatus @default(PENDENTE)
+  completedAt    DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@map("implantacao_fases")
+}
+
+// ─── TREINAMENTOS ─────────────────────────────────────────────────────────────
+
+enum TreinamentoTipo {
+  PRESENCIAL
+  REMOTO
+  HIBRIDO
+}
+
+enum TreinamentoStatus {
+  AGENDADO
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Treinamento {
+  id           String                    @id @default(cuid())
+  code         Int?                      @unique
+  title        String
+  description  String?                   @db.Text
+  tipo         TreinamentoTipo           @default(PRESENCIAL)
+  status       TreinamentoStatus         @default(AGENDADO)
+  companyId    String?
+  company      Company?                  @relation(fields: [companyId], references: [id])
+  trainerId    String?
+  trainer      User?                     @relation("TreinamentoTrainer", fields: [trainerId], references: [id])
+  scheduledAt  DateTime?
+  duration     Int?
+  location     String?
+  meetingLink  String?
+  notes        String?                   @db.Text
+  completedAt  DateTime?
+  participantes TreinamentoParticipante[]
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@map("treinamentos")
+}
+
+model TreinamentoParticipante {
+  id             String      @id @default(cuid())
+  treinamentoId  String
+  treinamento    Treinamento @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
+  employeeId     String?
+  employee       Employee?   @relation(fields: [employeeId], references: [id])
+  name           String?
+  email          String?
+  attended       Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  @@map("treinamento_participantes")
 }

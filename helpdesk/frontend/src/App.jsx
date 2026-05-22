@@ -20,6 +20,8 @@ import Cities from './pages/Cities';
 import KnowledgeBase from './pages/KnowledgeBase';
 import Reports from './pages/Reports';
 import CRM from './pages/CRM';
+import Implantacoes from './pages/Implantacoes';
+import Treinamentos from './pages/Treinamentos';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -54,6 +56,8 @@ function AppRoutes() {
         <Route path="knowledge" element={<KnowledgeBase />} />
         <Route path="reports" element={<Reports />} />
         <Route path="crm" element={<CRM />} />
+        <Route path="implantacoes" element={<Implantacoes />} />
+        <Route path="treinamentos" element={<Treinamentos />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

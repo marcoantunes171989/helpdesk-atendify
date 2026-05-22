@@ -146,6 +146,24 @@ export const reportService = {
   tickets: (params) => api.get('/reports/tickets', { params }).then(r => r.data),
 };
 
+export const implantacaoService = {
+  list: (params) => api.get('/implantacoes', { params }).then(r => r.data),
+  get: (id) => api.get(`/implantacoes/${id}`).then(r => r.data),
+  create: (data) => api.post('/implantacoes', data).then(r => r.data),
+  update: (id, data) => api.put(`/implantacoes/${id}`, data).then(r => r.data),
+  updateFase: (id, faseId, data) => api.put(`/implantacoes/${id}/fases/${faseId}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/implantacoes/${id}`).then(r => r.data),
+};
+
+export const treinamentoService = {
+  list: (params) => api.get('/treinamentos', { params }).then(r => r.data),
+  get: (id) => api.get(`/treinamentos/${id}`).then(r => r.data),
+  create: (data) => api.post('/treinamentos', data).then(r => r.data),
+  update: (id, data) => api.put(`/treinamentos/${id}`, data).then(r => r.data),
+  updateParticipante: (id, participanteId, data) => api.put(`/treinamentos/${id}/participantes/${participanteId}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/treinamentos/${id}`).then(r => r.data),
+};
+
 export const knowledgeService = {
   list: (params) => api.get('/knowledge', { params }).then(r => r.data),
   get: (id) => api.get(`/knowledge/${id}`).then(r => r.data),
