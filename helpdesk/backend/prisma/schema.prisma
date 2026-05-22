@@ -223,6 +223,21 @@ model State {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  cities    City[]
 
   @@map("states")
+}
+
+model City {
+  id        String   @id @default(cuid())
+  code      Int?     @unique
+  name      String
+  ibgeCode  Int?     @unique
+  stateId   String
+  state     State    @relation(fields: [stateId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cities")
 }

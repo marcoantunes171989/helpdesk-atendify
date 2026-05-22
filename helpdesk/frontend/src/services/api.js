@@ -90,6 +90,16 @@ export const stateService = {
   importFromIbge: (data) => api.post('/states/import-ibge', data).then(r => r.data),
 };
 
+export const cityService = {
+  list: (params) => api.get('/cities', { params }).then(r => r.data),
+  get: (id) => api.get(`/cities/${id}`).then(r => r.data),
+  create: (data) => api.post('/cities', data).then(r => r.data),
+  update: (id, data) => api.put(`/cities/${id}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/cities/${id}`).then(r => r.data),
+  removeAll: () => api.delete('/cities/all').then(r => r.data),
+  importFromIbge: (data) => api.post('/cities/import-ibge', data).then(r => r.data),
+};
+
 export const dashboardService = {
   stats:         ()           => api.get('/dashboard/stats').then(r => r.data),
   kpis:          (period)     => api.get('/dashboard/kpis',            { params: { period } }).then(r => r.data),
