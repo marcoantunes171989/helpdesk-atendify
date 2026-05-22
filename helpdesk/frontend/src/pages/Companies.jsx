@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  Table, Button, Drawer, Form, Input, Tag, Space, Select,
+  Table, Button, Form, Input, Tag, Space, Select,
   Modal, message, Switch, Tooltip, Row, Col, Divider, Avatar,
 } from 'antd';
 import {
@@ -265,7 +265,7 @@ export default function Companies() {
       </div>
 
       {/* Drawer — Cadastro / Edição */}
-      <Drawer
+      <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -277,10 +277,11 @@ export default function Companies() {
           </div>
         }
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width="100%"
-        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
-        extra={
+        onCancel={() => setDrawerOpen(false)}
+        centered
+        width={780}
+        styles={{ body: { padding: '24px 0 8px', maxHeight: '75vh', overflowY: 'auto' } }}
+        footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
@@ -290,7 +291,7 @@ export default function Companies() {
           </Space>
         }
       >
-        <div className="drawer-form-body">
+        <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle">
             <div className="form-section-label">Identificação</div>
             <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
@@ -405,7 +406,7 @@ export default function Companies() {
             )}
           </Form>
         </div>
-      </Drawer>
+      </Modal>
 
       {/* Modal — Confirmar exclusão */}
       <Modal
