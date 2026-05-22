@@ -423,7 +423,7 @@ export default function Tickets() {
               <Input placeholder="Descreva o problema brevemente" size="large" />
             </Form.Item>
             <Form.Item name="description" label="Descrição" rules={[{ required: true, message: 'Descreva o problema' }]}>
-              <TextArea rows={5} maxLength={250} showCount placeholder="Detalhe o problema com o máximo de informações possível..." />
+              <TextArea rows={5} maxLength={250} showCount placeholder="Detalhe o problema com o máximo de informações possível..." style={{ resize: 'none' }} />
             </Form.Item>
             <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
               <Select
