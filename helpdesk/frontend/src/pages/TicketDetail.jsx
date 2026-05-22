@@ -813,7 +813,7 @@ export default function TicketDetail() {
               </h3>
             </div>
 
-            <div style={{ overflowY: 'auto', overflowX: 'hidden', paddingRight: 4, maxHeight: 600, minHeight: 120 }}>
+            <div style={{ overflowY: 'auto', paddingRight: 4, maxHeight: 600, minHeight: 200 }}>
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--cl-text-faint)', fontSize: 14 }}>
                 Nenhum trâmite ainda. Seja o primeiro a responder.
@@ -870,7 +870,7 @@ export default function TicketDetail() {
                 const canEditComment = c.user.id === user?.id || ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
                 const isEditingThis = editingCommentId === c.id;
                 return (
-                  <div key={c.id} style={{ display: 'flex', gap: 12, flexDirection: isAgent ? 'row' : 'row-reverse' }}>
+                  <div key={c.id} style={{ display: 'flex', gap: 12, flexDirection: isAgent ? 'row' : 'row-reverse', alignItems: 'flex-start' }}>
                     <Avatar
                       size={36}
                       style={{
@@ -882,10 +882,10 @@ export default function TicketDetail() {
                     >
                       {c.user.name?.charAt(0).toUpperCase()}
                     </Avatar>
-                    <div style={{ flex: 1, maxWidth: '80%' }}>
+                    <div style={{ flex: '1 1 0', minWidth: 0 }}>
                       <div style={{
-                        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4,
-                        flexDirection: isAgent ? 'row' : 'row-reverse',
+                        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
+                        flexDirection: isAgent ? 'row' : 'row-reverse', flexWrap: 'wrap',
                       }}>
                         <span style={{
                           fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
@@ -1014,10 +1014,11 @@ export default function TicketDetail() {
                         <>
                           <div style={{
                             padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
-                            background: isAgent ? 'rgba(37,99,235,0.10)' : 'var(--cl-bg)',
+                            background: isAgent ? 'var(--cl-bg-soft)' : 'var(--cl-bg)',
                             color: 'var(--cl-text)', whiteSpace: 'pre-wrap',
                             wordBreak: 'break-word', overflowWrap: 'break-word',
-                            border: `1px solid ${isAgent ? 'rgba(96,165,250,0.18)' : 'var(--cl-border)'}`,
+                            border: `1px solid ${isAgent ? 'rgba(96,165,250,0.25)' : 'var(--cl-border)'}`,
+                            minHeight: 40, display: 'block',
                           }}>
                             {c.message}
                           </div>
