@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Drawer, Modal, Form, Input, Select, Tag, Space,
-  message, Tooltip, Badge, Upload,
+  message, Tooltip, Badge, Upload, Row, Col,
 } from 'antd';
 import {
   PlusOutlined, EyeOutlined, DeleteOutlined, ExclamationCircleOutlined,
@@ -404,8 +404,8 @@ export default function Tickets() {
         }
         open={drawerOpen}
         onClose={closeDrawer}
-        width={Math.min(680, window.innerWidth)}
-        styles={{ body: { padding: '32px 40px', overflowY: 'auto' } }}
+        width={Math.min(760, window.innerWidth)}
+        styles={{ body: { padding: '20px 32px', overflowY: 'hidden', display: 'flex', flexDirection: 'column' } }}
         extra={
           <Space>
             <Button onClick={closeDrawer}>Cancelar</Button>
@@ -416,112 +416,141 @@ export default function Tickets() {
           </Space>
         }
       >
-        <div className="drawer-form-body">
-          <Form form={form} layout="vertical" onFinish={handleCreate}>
-            <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Informe o título' }]}>
-              <Input placeholder="Descreva o problema brevemente" size="large" />
-            </Form.Item>
-            <Form.Item name="description" label="Descrição" rules={[{ required: true, message: 'Descreva o problema' }]}>
-              <TextArea rows={5} placeholder="Detalhe o problema com o máximo de informações possível..." />
-            </Form.Item>
-            <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
-              <Select
-                placeholder="Selecione a empresa"
-                showSearch
-                size="large"
-                onChange={handleCompanyChange}
-                filterOption={(input, option) => {
-                  const c = companies.find(co => co.id === option.value);
-                  const q = input.toLowerCase();
-                  return (
-                    c?.name?.toLowerCase().includes(q) ||
-                    (c?.fantasia || '').toLowerCase().includes(q)
-                  );
-                }}
-              >
-                {companies.map(c => (
-                  <Option key={c.id} value={c.id}>
-                    <div style={{ lineHeight: 1.3 }}>
-                      <div>{c.name}</div>
-                      {c.fantasia && (
-                        <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', marginTop: 1 }}>{c.fantasia}</div>
-                      )}
+        <div className="drawer-form-body" style={{ flex: 1 }}>
+          <Form form={form} layout="vertical" onFinish={handleCreate} style={{ height: '100%' }}>
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item name="title" label="Título" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Informe o título' }]}>
+                  <Input placeholder="Descreva o problema brevemente" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item name="description" label="Descrição" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Descreva o problema' }]}>
+                  <TextArea rows={3} maxLength={250} showCount placeholder="Detalhe o problema com o máximo de informações possível..." />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="companyId" label="Empresa" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Selecione a empresa' }]}>
+                  <Select
+                    placeholder="Selecione a empresa"
+                    showSearch
+                    onChange={handleCompanyChange}
+                    filterOption={(input, option) => {
+                      const c = companies.find(co => co.id === option.value);
+                      const q = input.toLowerCase();
+                      return (
+                        c?.name?.toLowerCase().includes(q) ||
+                        (c?.fantasia || '').toLowerCase().includes(q)
+                      );
+                    }}
+                  >
+                    {companies.map(c => (
+                      <Option key={c.id} value={c.id}>
+                        <div style={{ lineHeight: 1.3 }}>
+                          <div>{c.name}</div>
+                          {c.fantasia && (
+                            <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', marginTop: 1 }}>{c.fantasia}</div>
+                          )}
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="employeeId" label="Funcionário" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Selecione o funcionário' }]}>
+                  <Select
+                    placeholder={companyEmployees.length === 0 && !loadingEmployees ? 'Selecione uma empresa' : 'Selecione o funcionário'}
+                    showSearch optionFilterProp="children"
+                    loading={loadingEmployees}
+                    disabled={companyEmployees.length === 0 && !loadingEmployees}
+                    notFoundContent={loadingEmployees ? 'Carregando...' : 'Nenhum funcionário ativo'}
+                  >
+                    {companyEmployees.map(e => (
+                      <Option key={e.id} value={e.id}>{e.name}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="technicianId" label="Técnico" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Selecione o técnico' }]}>
+                  <Select placeholder="Selecione o técnico" showSearch optionFilterProp="children"
+                    notFoundContent="Nenhum técnico ativo">
+                    {technicians.map(t => (
+                      <Option key={t.id} value={t.id}>{t.name}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="categoryId" label="Categoria" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Selecione a categoria' }]}>
+                  <Select placeholder="Selecione a categoria" showSearch optionFilterProp="children">
+                    {categories.map(c => (
+                      <Option key={c.id} value={c.id}>{c.name}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="statusId" label="Status" style={{ marginBottom: 12 }} rules={[{ required: true, message: 'Selecione o status' }]}>
+                  <Select placeholder="Selecione o status">
+                    {statuses.map(s => (
+                      <Option key={s.id} value={s.id}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
+                          {s.name}
+                        </span>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="priority" label="Prioridade" style={{ marginBottom: 12 }} initialValue="MEDIUM" rules={[{ required: true, message: 'Selecione a prioridade' }]}>
+                  <Select>
+                    {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item
+                  style={{ marginBottom: 0 }}
+                  label={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Badge count={fileList.length} size="small" color="#2563eb" offset={[4, -2]}>
+                        <PaperClipOutlined style={{ fontSize: 15 }} />
+                      </Badge>
+                      <span>Anexos</span>
+                      <span style={{ color: 'var(--cl-text-muted)', fontSize: 12, fontWeight: 400 }}>
+                        opcional · máx. {MAX_FILE_SIZE_MB}MB por arquivo
+                      </span>
                     </div>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="employeeId" label="Funcionário" rules={[{ required: true, message: 'Selecione o funcionário responsável pelo chamado' }]}>
-              <Select
-                placeholder={companyEmployees.length === 0 && !loadingEmployees ? 'Selecione uma empresa primeiro' : 'Selecione o funcionário'}
-                showSearch optionFilterProp="children" size="large"
-                loading={loadingEmployees}
-                disabled={companyEmployees.length === 0 && !loadingEmployees}
-                notFoundContent={loadingEmployees ? 'Carregando...' : 'Nenhum funcionário ativo para esta empresa'}
-              >
-                {companyEmployees.map(e => (
-                  <Option key={e.id} value={e.id}>{e.name}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="technicianId" label="Técnico" rules={[{ required: true, message: 'Selecione o técnico responsável' }]}>
-              <Select placeholder="Selecione o técnico" showSearch optionFilterProp="children" size="large"
-                notFoundContent="Nenhum técnico ativo cadastrado">
-                {technicians.map(t => (
-                  <Option key={t.id} value={t.id}>{t.name}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="categoryId" label="Categoria" rules={[{ required: true, message: 'Selecione a categoria do chamado' }]}>
-              <Select placeholder="Selecione a categoria" size="large" showSearch optionFilterProp="children">
-                {categories.map(c => (
-                  <Option key={c.id} value={c.id}>{c.name}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="statusId" label="Status" rules={[{ required: true, message: 'Selecione o status inicial do chamado' }]}>
-              <Select placeholder="Selecione o status" size="large">
-                {statuses.map(s => (
-                  <Option key={s.id} value={s.id}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: s.color, display: 'inline-block', flexShrink: 0 }} />
-                      {s.name}
-                    </span>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="priority" label="Prioridade" initialValue="MEDIUM" rules={[{ required: true, message: 'Selecione a prioridade' }]}>
-              <Select size="large">
-                {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Badge count={fileList.length} size="small" color="#2563eb" offset={[4, -2]}>
-                    <PaperClipOutlined style={{ fontSize: 15 }} />
-                  </Badge>
-                  <span>Anexos</span>
-                  <span style={{ color: 'var(--cl-text-muted)', fontSize: 12, fontWeight: 400 }}>
-                    opcional · máx. {MAX_FILE_SIZE_MB}MB por arquivo
-                  </span>
-                </div>
-              }
-            >
-              <Upload
-                multiple
-                beforeUpload={beforeUpload}
-                fileList={fileList}
-                onChange={({ fileList: newList }) => setFileList(newList)}
-                showUploadList={{ showRemoveIcon: true }}
-              >
-                <Button icon={<PaperClipOutlined />} style={{ borderRadius: 8 }}>
-                  Adicionar arquivo
-                </Button>
-              </Upload>
-            </Form.Item>
+                  }
+                >
+                  <Upload
+                    multiple
+                    beforeUpload={beforeUpload}
+                    fileList={fileList}
+                    onChange={({ fileList: newList }) => setFileList(newList)}
+                    showUploadList={{ showRemoveIcon: true }}
+                  >
+                    <Button icon={<PaperClipOutlined />} style={{ borderRadius: 8 }}>
+                      Adicionar arquivo
+                    </Button>
+                  </Upload>
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </div>
       </Drawer>
