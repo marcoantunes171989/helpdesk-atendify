@@ -338,9 +338,7 @@ export default function Companies() {
                 </Form.Item>
               </Col>
             </Row>
-            <Form.Item name="website" label="Website" style={{ marginBottom: 12 }}>
-              <Input placeholder="https://www.empresa.com.br" />
-            </Form.Item>
+
 
             <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
