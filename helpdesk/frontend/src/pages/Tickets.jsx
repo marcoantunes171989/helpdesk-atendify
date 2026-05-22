@@ -282,7 +282,7 @@ export default function Tickets() {
     {
       title: '', key: 'actions', width: 60,
       render: (_, r) => (
-        <Space size={4}>
+        <Space size={4} onClick={e => e.stopPropagation()}>
           <Tooltip title="Ver detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#60a5fa' }}
               onClick={() => navigate(`/app/tickets/${r.id}`)} />
@@ -358,6 +358,7 @@ export default function Tickets() {
           dataSource={filteredTickets} columns={columns} rowKey="id" loading={loading}
           scroll={{ x: 1300 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} chamados` }}
+          onRow={r => ({ onClick: () => navigate(`/app/tickets/${r.id}`), style: { cursor: 'pointer' } })}
         />
       </div>
 
