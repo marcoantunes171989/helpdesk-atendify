@@ -963,8 +963,8 @@ export default function TicketDetail() {
 
         {/* Sidebar direita */}
         <Col xs={24} lg={8} style={!isMobile ? { overflowY: 'auto', height: '100%' } : {}}>
-          <div style={{ ...CARD, padding: 20 }}>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 16px' }}>Informações</h3>
+          <div style={{ ...CARD, padding: '16px 14px' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 14px' }}>Informações</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
@@ -999,18 +999,6 @@ export default function TicketDetail() {
               )}
             </div>
 
-            {!isClosed && canEdit && (
-              <>
-                <Divider style={{ margin: '16px 0', borderColor: 'var(--cl-border)' }} />
-                <Button
-                  danger block icon={<DeleteOutlined />}
-                  onClick={() => setDeleteModal(true)}
-                  style={{ borderRadius: 8, fontWeight: 600 }}
-                >
-                  Excluir chamado
-                </Button>
-              </>
-            )}
           </div>
         </Col>
       </Row>
