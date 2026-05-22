@@ -1058,10 +1058,25 @@ export default function TicketDetail() {
 
         {/* Sidebar direita */}
         <Col xs={24} lg={6} style={!isMobile ? { position: 'sticky', top: 80, alignSelf: 'flex-start' } : {}}>
-          <div style={{ padding: '4px 0 0 0' }}>
-            <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 14px' }}>Informações</h3>
+          <div style={{ ...CARD, overflow: 'hidden' }}>
+            {/* Header do card */}
+            <div style={{
+              padding: '14px 18px',
+              borderBottom: '1px solid var(--cl-border)',
+              background: 'var(--cl-bg-soft)',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: '50%',
+                background: '#3b82f6', flexShrink: 0,
+              }} />
+              <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)', letterSpacing: '0.02em' }}>
+                Informações
+              </span>
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Itens */}
+            <div style={{ padding: '4px 0' }}>
               {[
                 { label: 'Empresa', value: ticket.company?.name },
                 ticket.employee && { label: 'Funcionário', value: `${ticket.employee.name}${ticket.employee.position ? ` — ${ticket.employee.position}` : ''}` },
@@ -1071,29 +1086,31 @@ export default function TicketDetail() {
                 { label: 'Status', value: ticket.ticketStatus?.name || TICKET_STATUS[ticket.status]?.label },
                 { label: 'Prioridade', value: PRIORITY[ticket.priority]?.label },
                 ticket.category && { label: 'Categoria', value: ticket.category.name },
-              ].filter(Boolean).map(item => (
-                <div key={item.label}>
+              ].filter(Boolean).map((item, idx, arr) => (
+                <div key={item.label} style={{
+                  padding: '10px 18px',
+                  borderBottom: idx < arr.length - 1 ? '1px solid var(--cl-border)' : 'none',
+                }}>
                   <div style={LABEL_STYLE}>{item.label}</div>
-                  <div style={{ fontSize: 13, color: 'var(--cl-text)', fontWeight: 500, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.value}</div>
+                  <div style={{ fontSize: 13, color: 'var(--cl-text)', fontWeight: 500, wordBreak: 'break-word', overflowWrap: 'break-word', marginTop: 2 }}>{item.value}</div>
                 </div>
               ))}
 
               {ticket.slaDeadline && (
-                <div>
+                <div style={{ padding: '10px 18px' }}>
                   <div style={LABEL_STYLE}>Prazo SLA</div>
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    display: 'flex', alignItems: 'center', gap: 6, marginTop: 2,
                     fontSize: 13, fontWeight: 600,
                     color: isExpired ? '#f87171' : '#60a5fa',
                   }}>
-                    <ClockCircleOutlined />
+                    <ClockCircleOutlined style={{ fontSize: 12 }} />
                     {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
                     {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>Vencido</Tag>}
                   </div>
                 </div>
               )}
             </div>
-
           </div>
         </Col>
       </Row>
