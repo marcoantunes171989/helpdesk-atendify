@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Drawer, Modal, Form, Input, Select, Tag, Space,
+  Table, Button, Modal, Form, Input, Select, Tag, Space,
   message, Tooltip, Badge, Upload,
 } from 'antd';
 import {
@@ -392,8 +392,8 @@ export default function Tickets() {
         )}
       </Modal>
 
-      {/* Drawer — Abrir Chamado */}
-      <Drawer
+      {/* Modal — Abrir Chamado */}
+      <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -403,10 +403,11 @@ export default function Tickets() {
           </div>
         }
         open={drawerOpen}
-        onClose={closeDrawer}
-        width={Math.min(680, window.innerWidth)}
-        styles={{ body: { padding: '32px 40px', overflowY: 'auto' } }}
-        extra={
+        onCancel={closeDrawer}
+        centered
+        width={660}
+        styles={{ body: { padding: '24px 0 8px', maxHeight: '72vh', overflowY: 'auto' } }}
+        footer={
           <Space>
             <Button onClick={closeDrawer}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
@@ -416,7 +417,7 @@ export default function Tickets() {
           </Space>
         }
       >
-        <div className="drawer-form-body">
+        <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleCreate}>
             <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Informe o título' }]}>
               <Input placeholder="Descreva o problema brevemente" size="large" />
@@ -524,7 +525,7 @@ export default function Tickets() {
             </Form.Item>
           </Form>
         </div>
-      </Drawer>
+      </Modal>
     </div>
   );
 }
