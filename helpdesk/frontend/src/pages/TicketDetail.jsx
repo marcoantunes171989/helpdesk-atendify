@@ -507,7 +507,10 @@ export default function TicketDetail() {
     );
   };
 
-  const desktopPage = {};
+  const desktopPage = !isMobile ? {
+    display: 'flex', flexDirection: 'column',
+    height: 'calc(100vh - 112px)', overflow: 'hidden',
+  } : {};
 
   return (
     <div className="page-wrap" style={desktopPage}>
@@ -520,12 +523,12 @@ export default function TicketDetail() {
         Voltar para Chamados
       </Button>
 
-      <Row gutter={[20, 20]}>
+      <Row gutter={[20, 20]} style={!isMobile ? { flex: 1, minHeight: 0 } : {}}>
         {/* Coluna principal */}
-        <Col xs={24} lg={18}>
+        <Col xs={24} lg={18} style={!isMobile ? { display: 'flex', flexDirection: 'column', height: '100%' } : {}}>
 
           {/* Cabeçalho */}
-          <div style={{ ...CARD, padding: 24, marginBottom: 16 }}>
+          <div style={{ ...CARD, padding: 24, marginBottom: 16, flexShrink: 0, maxHeight: 260, overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <Space wrap>
                 {ticket.ticketStatus ? (
@@ -732,7 +735,7 @@ export default function TicketDetail() {
 
           {/* Anexos do chamado */}
           {ticket.attachments?.length > 0 && (
-            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16 }}>
+            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16, flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <PaperClipOutlined style={{ fontSize: 14, color: 'var(--cl-text-soft)' }} />
                 <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)' }}>
@@ -803,7 +806,7 @@ export default function TicketDetail() {
           )}
 
           {/* Trâmites */}
-          <div style={{ ...CARD, padding: 24 }}>
+          <div style={{ ...CARD, padding: 24, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexShrink: 0 }}>
               <Badge count={ticket.comments.length} color="#2563eb" size="small">
                 <MessageOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
@@ -813,7 +816,7 @@ export default function TicketDetail() {
               </h3>
             </div>
 
-            <div style={{ overflowY: 'auto', paddingRight: 4, maxHeight: 600, minHeight: 200 }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: 4 }}>
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--cl-text-faint)', fontSize: 14 }}>
                 Nenhum trâmite ainda. Seja o primeiro a responder.
@@ -1057,7 +1060,7 @@ export default function TicketDetail() {
         </Col>
 
         {/* Sidebar direita */}
-        <Col xs={24} lg={6} style={!isMobile ? { position: 'sticky', top: 80, alignSelf: 'flex-start' } : {}}>
+        <Col xs={24} lg={6} style={!isMobile ? { height: '100%', overflowY: 'auto' } : {}}>
           <div style={{ ...CARD, overflow: 'hidden' }}>
             {/* Header do card */}
             <div style={{
