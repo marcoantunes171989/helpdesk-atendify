@@ -726,9 +726,12 @@ export default function TicketDetail() {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {ticket.comments.map(c => {
+              {(() => {
+                let seq = 0;
+                return ticket.comments.map(c => {
                 const isSysResolved = c.message.startsWith('::SYS_RESOLVED::');
                 const isSysReopened = c.message.startsWith('::SYS_REOPENED::');
+                if (!isSysResolved && !isSysReopened) seq++;
                 if (isSysResolved || isSysReopened) {
                   const prefix = isSysResolved ? '::SYS_RESOLVED::' : '::SYS_REOPENED::';
                   const sysMsg = c.message.slice(prefix.length).trim();
@@ -786,6 +789,13 @@ export default function TicketDetail() {
                         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4,
                         flexDirection: isAgent ? 'row' : 'row-reverse',
                       }}>
+                        <span style={{
+                          fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
+                          color: '#60a5fa', background: 'rgba(37,99,235,0.14)',
+                          padding: '1px 6px', borderRadius: 4, flexShrink: 0,
+                        }}>
+                          #{String(seq).padStart(2, '0')}
+                        </span>
                         <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--cl-text-hi)' }}>{c.user.name}</span>
                         <span style={{
                           fontSize: 11, padding: '1px 8px', borderRadius: 4,
@@ -928,7 +938,8 @@ export default function TicketDetail() {
                     </div>
                   </div>
                 );
-              })}
+              });
+              })()}
             </div>
             </div>{/* fim scroll */}
 
