@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  Tag, Button, Select, Space, Typography, Divider, Input, Modal, Drawer,
+  Tag, Button, Select, Space, Typography, Divider, Input, Modal,
   Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload, Popconfirm,
   DatePicker,
 } from 'antd';
@@ -1018,8 +1018,8 @@ export default function TicketDetail() {
         </div>
       </Modal>
 
-      {/* Drawer — Novo trâmite */}
-      <Drawer
+      {/* Modal — Novo trâmite */}
+      <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1029,10 +1029,11 @@ export default function TicketDetail() {
           </div>
         }
         open={tramiteModal}
-        onClose={() => setTramiteModal(false)}
-        width="100%"
-        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
-        extra={
+        onCancel={() => setTramiteModal(false)}
+        centered
+        width={660}
+        styles={{ body: { padding: '24px 0 8px', maxHeight: '72vh', overflowY: 'auto' } }}
+        footer={
           <Space>
             <Button onClick={() => setTramiteModal(false)}>Cancelar</Button>
             <Button
@@ -1048,7 +1049,7 @@ export default function TicketDetail() {
           </Space>
         }
       >
-        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+        <div style={{ padding: '0 24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
@@ -1135,7 +1136,7 @@ export default function TicketDetail() {
             </div>
           </div>
         </div>
-      </Drawer>
+      </Modal>
 
       {/* Modal — Mudança de status com trâmite obrigatório */}
       <Modal
