@@ -397,13 +397,13 @@ export default function Companies() {
                 </Form.Item>
               </Col>
               <Col xs={8} sm={5}>
-                <Form.Item name="state" label="UF" style={{ marginBottom: 12 }}>
+                <Form.Item
+                  name="state" label="UF" style={{ marginBottom: 12 }}
+                  rules={[{ required: true, message: 'Selecione o estado' }]}
+                >
                   <Select
-                    placeholder="UF"
-                    showSearch
-                    allowClear
+                    placeholder="Selecione"
                     options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
-                    filterOption={(input, opt) => normalize(opt.label).includes(normalize(input))}
                     onChange={(val) => {
                       form.setFieldValue('city', undefined);
                       loadCitiesByStateSigla(val);
@@ -412,11 +412,13 @@ export default function Companies() {
                 </Form.Item>
               </Col>
               <Col xs={16} sm={9}>
-                <Form.Item name="city" label="Cidade" style={{ marginBottom: 12 }}>
+                <Form.Item
+                  name="city" label="Cidade" style={{ marginBottom: 12 }}
+                  rules={[{ required: true, message: 'Selecione a cidade' }]}
+                >
                   <Select
                     placeholder={selectedStateSigla ? 'Selecione a cidade' : 'Selecione o estado primeiro'}
                     showSearch
-                    allowClear
                     loading={loadingCities}
                     disabled={!selectedStateSigla}
                     options={citiesOptions.map(c => ({ value: c.name, label: c.name }))}
