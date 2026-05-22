@@ -482,7 +482,7 @@ export default function TicketDetail() {
 
       <Row gutter={[20, 20]} style={!isMobile ? { flex: 1, minHeight: 0, overflow: 'hidden', flexWrap: 'nowrap' } : {}}>
         {/* Coluna principal */}
-        <Col xs={24} lg={16} style={!isMobile ? { display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' } : {}}>
+        <Col xs={24} lg={18} style={!isMobile ? { display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' } : {}}>
 
           {/* Cabeçalho */}
           <div style={{ ...CARD, padding: 24, marginBottom: 16, flexShrink: 0 }}>
@@ -962,8 +962,8 @@ export default function TicketDetail() {
         </Col>
 
         {/* Sidebar direita */}
-        <Col xs={24} lg={8} style={!isMobile ? { overflowY: 'auto', height: '100%' } : {}}>
-          <div style={{ ...CARD, padding: '16px 14px' }}>
+        <Col xs={24} lg={6} style={!isMobile ? { overflowY: 'auto', height: '100%' } : {}}>
+          <div style={{ ...CARD, padding: '14px 12px' }}>
             <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 14px' }}>Informações</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
