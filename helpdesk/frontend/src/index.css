@@ -566,3 +566,6 @@ h1, h2, h3, h4, h5 {
 [data-theme="light"] .ant-menu-item-selected::after {
   border-right-color: #2563eb !important;
 }
+
+/* Prevent Chrome autofill overlay on address-like fields */
+input:-webkit-autofill { animation-name: none !important; background-color: transparent !important; }

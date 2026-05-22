@@ -304,6 +304,12 @@ export default function Companies() {
         centered
         width={780}
         styles={{ body: { padding: '24px 0 8px', maxHeight: '75vh', overflowY: 'auto' } }}
+        afterOpenChange={(open) => {
+          if (!open) return;
+          document.querySelectorAll('.ant-select-selection-search-input').forEach(el => {
+            el.setAttribute('autocomplete', 'nope');
+          });
+        }}
         footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
@@ -315,7 +321,7 @@ export default function Companies() {
         }
       >
         <div style={{ padding: '0 24px' }}>
-          <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle">
+          <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle" autoComplete="off">
             <div className="form-section-label">Identificação</div>
             <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
               <Input placeholder="Nome oficial da empresa" />
