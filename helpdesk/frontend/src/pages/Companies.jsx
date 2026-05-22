@@ -304,12 +304,6 @@ export default function Companies() {
         centered
         width={780}
         styles={{ body: { padding: '24px 0 8px', maxHeight: '75vh', overflowY: 'auto' } }}
-        afterOpenChange={(open) => {
-          if (!open) return;
-          document.querySelectorAll('.ant-select-selection-search-input').forEach(el => {
-            el.setAttribute('autocomplete', 'nope');
-          });
-        }}
         footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>

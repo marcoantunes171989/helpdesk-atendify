@@ -10,6 +10,18 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 dayjs.locale('pt-br');
 
+// Disable browser autofill/autocomplete popups globally on all inputs
+const patchAutocomplete = (root = document) => {
+  root.querySelectorAll('input:not([autocomplete="nope"])').forEach(el => {
+    el.setAttribute('autocomplete', 'nope');
+  });
+};
+const autofillObserver = new MutationObserver(() => patchAutocomplete());
+document.addEventListener('DOMContentLoaded', () => {
+  patchAutocomplete();
+  autofillObserver.observe(document.body, { childList: true, subtree: true });
+});
+
 const DARK_THEME = {
   token: {
     colorPrimary: '#2563eb',
