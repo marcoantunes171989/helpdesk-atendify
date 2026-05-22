@@ -97,6 +97,7 @@ h1, h2, h3, h4, h5 {
   padding: 28px 28px 48px;
   background: var(--cl-page-grad);
   min-height: calc(100vh - 64px);
+  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
