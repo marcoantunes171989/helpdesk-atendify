@@ -10,17 +10,10 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { companyService } from '../services/api';
+import { companyService, stateService, cityService } from '../services/api';
 import { normalize } from '../utils/constants';
 
 const { TextArea } = Input;
-const { Option } = Select;
-
-const BR_STATES = [
-  'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA',
-  'MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN',
-  'RO','RR','RS','SC','SE','SP','TO',
-];
 
 const avatarColors = [
   ['rgba(37,99,235,0.25)', '#60a5fa'],
@@ -69,6 +62,10 @@ export default function Companies() {
   const [deletingId, setDeletingId] = useState(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState('');
+  const [allStates, setAllStates] = useState([]);
+  const [citiesOptions, setCitiesOptions] = useState([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [selectedStateSigla, setSelectedStateSigla] = useState(null);
   const navigate = useNavigate();
 
   const load = () => {
@@ -76,9 +73,32 @@ export default function Companies() {
     companyService.list().then(setCompanies).finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    stateService.list().then(setAllStates);
+  }, []);
 
-  const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
+  const loadCitiesByStateSigla = async (sigla, states = allStates) => {
+    if (!sigla) { setCitiesOptions([]); setSelectedStateSigla(null); return; }
+    setSelectedStateSigla(sigla);
+    const state = states.find(s => s.sigla === sigla);
+    if (!state) return;
+    setLoadingCities(true);
+    try {
+      const data = await cityService.list({ stateId: state.id });
+      setCitiesOptions(data);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    form.resetFields();
+    setCitiesOptions([]);
+    setSelectedStateSigla(null);
+    setDrawerOpen(true);
+  };
   const openEdit = (record) => {
     setEditing(record);
     form.setFieldsValue({
@@ -87,6 +107,8 @@ export default function Companies() {
       phone: maskPhone(record.phone || ''),
       zipCode: maskCEP(record.zipCode || ''),
     });
+    if (record.state) loadCitiesByStateSigla(record.state);
+    else { setCitiesOptions([]); setSelectedStateSigla(null); }
     setDrawerOpen(true);
   };
 
@@ -374,16 +396,32 @@ export default function Companies() {
                   <Input placeholder="Nome do bairro" />
                 </Form.Item>
               </Col>
-              <Col xs={16} sm={10}>
-                <Form.Item name="city" label="Cidade" style={{ marginBottom: 12 }}>
-                  <Input placeholder="Nome da cidade" />
+              <Col xs={8} sm={5}>
+                <Form.Item name="state" label="UF" style={{ marginBottom: 12 }}>
+                  <Select
+                    placeholder="UF"
+                    showSearch
+                    allowClear
+                    options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
+                    filterOption={(input, opt) => normalize(opt.label).includes(normalize(input))}
+                    onChange={(val) => {
+                      form.setFieldValue('city', undefined);
+                      loadCitiesByStateSigla(val);
+                    }}
+                  />
                 </Form.Item>
               </Col>
-              <Col xs={8} sm={4}>
-                <Form.Item name="state" label="UF" style={{ marginBottom: 12 }}>
-                  <Select placeholder="UF" showSearch>
-                    {BR_STATES.map(s => <Option key={s} value={s}>{s}</Option>)}
-                  </Select>
+              <Col xs={16} sm={9}>
+                <Form.Item name="city" label="Cidade" style={{ marginBottom: 12 }}>
+                  <Select
+                    placeholder={selectedStateSigla ? 'Selecione a cidade' : 'Selecione o estado primeiro'}
+                    showSearch
+                    allowClear
+                    loading={loadingCities}
+                    disabled={!selectedStateSigla}
+                    options={citiesOptions.map(c => ({ value: c.name, label: c.name }))}
+                    filterOption={(input, opt) => normalize(opt.label).includes(normalize(input))}
+                  />
                 </Form.Item>
               </Col>
             </Row>
