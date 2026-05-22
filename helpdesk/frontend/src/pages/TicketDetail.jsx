@@ -42,6 +42,67 @@ const LABEL_STYLE = {
   textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4,
 };
 
+function DateTimeInput({ value, onChange, disabledDate, size }) {
+  const [timeText, setTimeText] = useState(value ? value.format('HH:mm') : '');
+
+  useEffect(() => {
+    setTimeText(value ? value.format('HH:mm') : '');
+  }, [value ? value.format('YYYY-MM-DDHH:mm') : null]);
+
+  const applyTime = (base, tStr) => {
+    const match = tStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return base;
+    const h = Number(match[1]);
+    const m = Number(match[2]);
+    if (h > 23 || m > 59) return base;
+    return base.clone().hour(h).minute(m).second(0);
+  };
+
+  const handleDateChange = (date) => {
+    if (!date) return;
+    onChange(applyTime(date, timeText));
+  };
+
+  const handleTimeChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    const formatted = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
+    setTimeText(formatted);
+    if (/^\d{2}:\d{2}$/.test(formatted) && value) {
+      onChange(applyTime(value, formatted));
+    }
+  };
+
+  const handleTimeBlur = () => {
+    if (!/^\d{2}:\d{2}$/.test(timeText)) {
+      setTimeText(value ? value.format('HH:mm') : '00:00');
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <DatePicker
+        value={value}
+        onChange={handleDateChange}
+        format="DD/MM/YYYY"
+        disabledDate={disabledDate}
+        allowClear={false}
+        size={size}
+        style={{ flex: 1, borderRadius: 8 }}
+      />
+      <Input
+        value={timeText}
+        onChange={handleTimeChange}
+        onBlur={handleTimeBlur}
+        placeholder="HH:mm"
+        size={size}
+        style={{ width: 96, borderRadius: 8, textAlign: 'center', fontVariantNumeric: 'tabular-nums', letterSpacing: 1 }}
+        maxLength={5}
+        prefix={<ClockCircleOutlined style={{ color: 'var(--cl-text-faint)', fontSize: 12 }} />}
+      />
+    </div>
+  );
+}
+
 export default function TicketDetail() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -101,24 +162,6 @@ export default function TicketDetail() {
   const [commentStatusId, setCommentStatusId] = useState(null);
 
   const disabledDate = (current) => current && current.isAfter(dayjs(), 'day');
-  const disabledTime = (current) => {
-    if (!current || !current.isSame(dayjs(), 'day')) return {};
-    const now = dayjs();
-    const h = now.hour();
-    const m = now.minute();
-    return {
-      disabledHours: () => Array.from({ length: 23 - h }, (_, i) => h + 1 + i),
-      disabledMinutes: (hour) => hour === h
-        ? Array.from({ length: 59 - m }, (_, i) => m + 1 + i)
-        : [],
-    };
-  };
-  const datePickerFooter = () => (
-    <div style={{ padding: '4px 2px', fontSize: 12, color: '#f87171', display: 'flex', alignItems: 'center', gap: 5 }}>
-      <ExclamationCircleOutlined style={{ fontSize: 11 }} />
-      Datas e horários futuros não são permitidos
-    </div>
-  );
 
   const load = () => {
     ticketService.get(id)
@@ -933,14 +976,10 @@ export default function TicketDetail() {
                           )}
                           <div style={{ marginBottom: 8 }}>
                             <div style={LABEL_STYLE}>Data / Hora do Trâmite</div>
-                            <DatePicker
-                              showTime={{ format: 'HH:mm' }}
-                              format="DD/MM/YYYY HH:mm"
+                            <DateTimeInput
                               value={editingCommentDate}
                               onChange={setEditingCommentDate}
-                              allowClear={false}
-                              style={{ width: '100%', borderRadius: 8 }}
-                              placeholder="Selecione a data e hora"
+                              disabledDate={disabledDate}
                             />
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1164,17 +1203,11 @@ export default function TicketDetail() {
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
                 Data / Hora do Lançamento <span style={{ color: '#f87171' }}>*</span>
               </div>
-              <DatePicker
-                showTime={{ format: 'HH:mm' }}
-                format="DD/MM/YYYY HH:mm"
+              <DateTimeInput
                 value={commentDate}
                 onChange={setCommentDate}
-                allowClear={false}
-                size="large"
-                style={{ width: '100%', borderRadius: 8 }}
                 disabledDate={disabledDate}
-                disabledTime={disabledTime}
-                renderExtraFooter={datePickerFooter}
+                size="large"
               />
             </div>
 
@@ -1252,16 +1285,10 @@ export default function TicketDetail() {
           />
           <div>
             <div style={LABEL_STYLE}>Data / Hora</div>
-            <DatePicker
-              showTime={{ format: 'HH:mm' }}
-              format="DD/MM/YYYY HH:mm"
+            <DateTimeInput
               value={statusChangeDate}
               onChange={setStatusChangeDate}
-              allowClear={false}
-              style={{ width: '100%', borderRadius: 8 }}
               disabledDate={disabledDate}
-              disabledTime={disabledTime}
-              renderExtraFooter={datePickerFooter}
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
