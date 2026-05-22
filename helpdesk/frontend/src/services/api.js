@@ -81,6 +81,14 @@ export const statusService = {
   remove: (id) => api.delete(`/statuses/${id}`).then(r => r.data),
 };
 
+export const stateService = {
+  list: (params) => api.get('/states', { params }).then(r => r.data),
+  create: (data) => api.post('/states', data).then(r => r.data),
+  update: (id, data) => api.put(`/states/${id}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/states/${id}`).then(r => r.data),
+  importFromIbge: (data) => api.post('/states/import-ibge', data).then(r => r.data),
+};
+
 export const dashboardService = {
   stats:         ()           => api.get('/dashboard/stats').then(r => r.data),
   kpis:          (period)     => api.get('/dashboard/kpis',            { params: { period } }).then(r => r.data),

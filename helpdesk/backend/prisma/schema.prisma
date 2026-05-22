@@ -212,3 +212,17 @@ model Employee {
 
   @@map("employees")
 }
+
+model State {
+  id        String   @id @default(cuid())
+  code      Int?     @unique
+  name      String
+  sigla     String   @unique
+  ibgeCode  Int?     @unique
+  region    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("states")
+}
