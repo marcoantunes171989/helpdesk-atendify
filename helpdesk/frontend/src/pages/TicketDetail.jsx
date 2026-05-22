@@ -49,6 +49,11 @@ export default function TicketDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const [ticket, setTicket] = useState(null);
   const [agents, setAgents] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -706,7 +711,7 @@ export default function TicketDetail() {
               </h3>
             </div>
 
-            <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)', paddingRight: 4, flex: 1 }}>
+            <div style={{ overflowY: 'auto', overflowX: 'hidden', maxHeight: 'calc(100vh - 340px)', paddingRight: 4, flex: 1 }}>
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--cl-text-faint)', fontSize: 14 }}>
                 Nenhum trâmite ainda. Seja o primeiro a responder.
@@ -901,6 +906,7 @@ export default function TicketDetail() {
                             padding: '10px 14px', borderRadius: 8, fontSize: 14, lineHeight: 1.6,
                             background: isAgent ? 'rgba(37,99,235,0.10)' : 'var(--cl-bg)',
                             color: 'var(--cl-text)', whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word', overflowWrap: 'break-word',
                             border: `1px solid ${isAgent ? 'rgba(96,165,250,0.18)' : 'var(--cl-border)'}`,
                           }}>
                             {c.message}
