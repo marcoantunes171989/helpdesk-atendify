@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/implantacaoController');
-const { auth } = require('../middleware/auth');
+const auth = require('../middleware/auth');
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 router.get('/',              auth, wrap(ctrl.list));
