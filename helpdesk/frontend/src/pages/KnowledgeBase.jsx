@@ -76,6 +76,7 @@ function fileIcon(mimeType = '') {
   if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
   if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
   if (mimeType.includes('image')) return '🖼️';
+  if (mimeType.includes('rar') || mimeType.includes('zip') || mimeType.includes('compressed') || mimeType.includes('x-rar')) return '🗜️';
   return '📎';
 }
 
@@ -523,12 +524,12 @@ export default function KnowledgeBase() {
                 beforeUpload={beforeUpload}
                 onRemove={file => setFileList(prev => prev.filter(f => f.uid !== file.uid))}
                 multiple
-                accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip"
+                accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip,.rar"
                 showUploadList={{ showRemoveIcon: true, showDownloadIcon: false }}
               >
                 <Button icon={<PaperClipOutlined />}>Adicionar Arquivo</Button>
                 <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--cl-text-faint)' }}>
-                  PDF, TXT, Word, Excel, imagens — máx. 10 MB cada
+                  PDF, TXT, Word, Excel, imagens, ZIP, RAR — máx. 10 MB cada
                 </span>
               </Upload>
             </Form.Item>
