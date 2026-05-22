@@ -17,6 +17,7 @@ import Technicians from './pages/Technicians';
 import Settings from './pages/Settings';
 import States from './pages/States';
 import Cities from './pages/Cities';
+import KnowledgeBase from './pages/KnowledgeBase';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -48,6 +49,7 @@ function AppRoutes() {
         <Route path="technicians" element={<Technicians />} />
         <Route path="states" element={<States />} />
         <Route path="cities" element={<Cities />} />
+        <Route path="knowledge" element={<KnowledgeBase />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

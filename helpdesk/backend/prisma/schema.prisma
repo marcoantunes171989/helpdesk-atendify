@@ -241,3 +241,47 @@ model City {
 
   @@map("cities")
 }
+
+enum KbCategory {
+  DUVIDA
+  ERRO
+  CONFIGURACAO
+}
+
+model KbArticle {
+  id          String        @id @default(cuid())
+  code        Int?          @unique
+  title       String
+  content     String        @db.Text
+  category    KbCategory
+  tags        String?
+  active      Boolean       @default(true)
+  attachments KbAttachment[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("kb_articles")
+}
+
+model KbAttachment {
+  id        String    @id @default(cuid())
+  articleId String
+  article   KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String    @db.Text
+  createdAt DateTime  @default(now())
+
+  @@map("kb_attachments")
+}
+
+model KbQuery {
+  id        String   @id @default(cuid())
+  question  String   @db.Text
+  aiAnswer  String?  @db.Text
+  helpful   Boolean?
+  createdAt DateTime @default(now())
+
+  @@map("kb_queries")
+}
