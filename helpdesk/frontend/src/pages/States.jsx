@@ -17,6 +17,12 @@ import { canManageCategories, normalize } from '../utils/constants';
 export default function States() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const [states, setStates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -243,8 +249,8 @@ export default function States() {
           columns={columns}
           rowKey="id"
           loading={loading}
-          scroll={{ y: 'calc(100vh - 360px)', x: false }}
-          pagination={{ pageSize: 50, showSizeChanger: true, pageSizeOptions: ['20', '50', '100'], showTotal: (t, r) => `${r[0]}–${r[1]} de ${t}` }}
+          scroll={{ y: 'calc(100vh - 400px)', x: false }}
+          pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (t, r) => `${r[0]}–${r[1]} de ${t}` }}
           size="middle"
         />
       </div>
