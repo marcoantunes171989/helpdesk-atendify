@@ -6,7 +6,7 @@ import {
   CustomerServiceOutlined, LogoutOutlined, BankOutlined,
   MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined, IdcardOutlined,
   TagsOutlined, ToolOutlined, SettingOutlined, GlobalOutlined, EnvironmentOutlined,
-  BookOutlined, BarChartOutlined,
+  BookOutlined, BarChartOutlined, ContactsOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { canManageCompanies, canManageUsers, canManageCategories, ROLES } from '../utils/constants';
@@ -43,6 +43,7 @@ export default function AppLayout() {
     canManageCategories(user?.role) && { key: '/app/cities', icon: <EnvironmentOutlined />, label: 'Cidades' },
     { key: '/app/knowledge', icon: <BookOutlined />, label: 'Base de Conhecimento' },
     canManageCategories(user?.role) && { key: '/app/reports', icon: <BarChartOutlined />, label: 'Relatórios' },
+    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/crm', icon: <ContactsOutlined />, label: 'CRM' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/employees', icon: <IdcardOutlined />, label: 'Funcionários' },
     canManageUsers(user?.role) && { key: '/app/users', icon: <TeamOutlined />, label: 'Usuários' },
     canManageCompanies(user?.role) && { key: '/app/companies', icon: <BankOutlined />, label: 'Empresas' },

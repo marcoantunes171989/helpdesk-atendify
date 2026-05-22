@@ -32,6 +32,9 @@ model Company {
   tickets           Ticket[]
   categories        Category[]
   employees         Employee[]
+  crmContacts       CrmContact[]
+  crmOpportunities  CrmOpportunity[]
+  crmActivities     CrmActivity[]
 
   @@map("companies")
 }
@@ -47,9 +50,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tickets  Ticket[]        @relation("CreatedTickets")
-  assigned Ticket[]        @relation("AssignedTickets")
-  comments TicketComment[]
+  tickets          Ticket[]         @relation("CreatedTickets")
+  assigned         Ticket[]         @relation("AssignedTickets")
+  comments         TicketComment[]
+  crmOpportunities CrmOpportunity[] @relation("CrmOppOwner")
+  crmActivities    CrmActivity[]    @relation("CrmActUser")
 
   @@map("users")
 }
@@ -284,4 +289,97 @@ model KbQuery {
   createdAt DateTime @default(now())
 
   @@map("kb_queries")
+}
+
+// ─── CRM ────────────────────────────────────────────────────────────────────
+
+enum CrmStage {
+  LEAD
+  PROSPECT
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum CrmActivityType {
+  CALL
+  EMAIL
+  MEETING
+  VISIT
+  TASK
+  NOTE
+}
+
+enum CrmActivityStatus {
+  PENDING
+  DONE
+  CANCELLED
+}
+
+model CrmContact {
+  id           String           @id @default(cuid())
+  code         Int?             @unique
+  name         String
+  email        String?
+  phone        String?
+  position     String?
+  department   String?
+  notes        String?          @db.Text
+  active       Boolean          @default(true)
+  companyId    String
+  company      Company          @relation(fields: [companyId], references: [id])
+  opportunities CrmOpportunity[]
+  activities    CrmActivity[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@map("crm_contacts")
+}
+
+model CrmOpportunity {
+  id            String       @id @default(cuid())
+  code          Int?         @unique
+  title         String
+  description   String?      @db.Text
+  stage         CrmStage     @default(LEAD)
+  value         Decimal?     @db.Decimal(12, 2)
+  probability   Int          @default(0)
+  companyId     String
+  company       Company      @relation(fields: [companyId], references: [id])
+  contactId     String?
+  contact       CrmContact?  @relation(fields: [contactId], references: [id])
+  ownerId       String?
+  owner         User?        @relation("CrmOppOwner", fields: [ownerId], references: [id])
+  expectedClose DateTime?
+  closedAt      DateTime?
+  notes         String?      @db.Text
+  activities    CrmActivity[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("crm_opportunities")
+}
+
+model CrmActivity {
+  id             String            @id @default(cuid())
+  code           Int?              @unique
+  type           CrmActivityType
+  title          String
+  description    String?           @db.Text
+  status         CrmActivityStatus @default(PENDING)
+  companyId      String?
+  company        Company?          @relation(fields: [companyId], references: [id])
+  contactId      String?
+  contact        CrmContact?       @relation(fields: [contactId], references: [id])
+  opportunityId  String?
+  opportunity    CrmOpportunity?   @relation(fields: [opportunityId], references: [id])
+  userId         String?
+  user           User?             @relation("CrmActUser", fields: [userId], references: [id])
+  scheduledAt    DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@map("crm_activities")
 }

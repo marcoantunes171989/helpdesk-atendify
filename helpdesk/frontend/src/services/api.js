@@ -125,6 +125,23 @@ export const employeeService = {
   departments: (params) => api.get('/employees/departments', { params }).then(r => r.data),
 };
 
+export const crmService = {
+  listContacts: (params) => api.get('/crm/contacts', { params }).then(r => r.data),
+  createContact: (data) => api.post('/crm/contacts', data).then(r => r.data),
+  updateContact: (id, data) => api.put(`/crm/contacts/${id}`, data).then(r => r.data),
+  removeContact: (id) => api.delete(`/crm/contacts/${id}`).then(r => r.data),
+
+  listOpportunities: (params) => api.get('/crm/opportunities', { params }).then(r => r.data),
+  createOpportunity: (data) => api.post('/crm/opportunities', data).then(r => r.data),
+  updateOpportunity: (id, data) => api.put(`/crm/opportunities/${id}`, data).then(r => r.data),
+  removeOpportunity: (id) => api.delete(`/crm/opportunities/${id}`).then(r => r.data),
+
+  listActivities: (params) => api.get('/crm/activities', { params }).then(r => r.data),
+  createActivity: (data) => api.post('/crm/activities', data).then(r => r.data),
+  updateActivity: (id, data) => api.put(`/crm/activities/${id}`, data).then(r => r.data),
+  removeActivity: (id) => api.delete(`/crm/activities/${id}`).then(r => r.data),
+};
+
 export const reportService = {
   tickets: (params) => api.get('/reports/tickets', { params }).then(r => r.data),
 };
