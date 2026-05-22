@@ -507,10 +507,7 @@ export default function TicketDetail() {
     );
   };
 
-  const desktopPage = !isMobile ? {
-    display: 'flex', flexDirection: 'column',
-    height: 'calc(100vh - 112px)', overflow: 'hidden',
-  } : {};
+  const desktopPage = {};
 
   return (
     <div className="page-wrap" style={desktopPage}>
@@ -523,12 +520,12 @@ export default function TicketDetail() {
         Voltar para Chamados
       </Button>
 
-      <Row gutter={[20, 20]} style={!isMobile ? { flex: 1, minHeight: 0, overflow: 'hidden', flexWrap: 'nowrap' } : {}}>
+      <Row gutter={[20, 20]}>
         {/* Coluna principal */}
-        <Col xs={24} lg={18} style={!isMobile ? { display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' } : {}}>
+        <Col xs={24} lg={18}>
 
           {/* Cabeçalho */}
-          <div style={{ ...CARD, padding: 24, marginBottom: 16, flexShrink: 0, ...(!isMobile && !editMode ? { maxHeight: 'calc(100vh - 540px)', minHeight: 100, overflowY: 'auto' } : {}) }}>
+          <div style={{ ...CARD, padding: 24, marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <Space wrap>
                 {ticket.ticketStatus ? (
@@ -735,7 +732,7 @@ export default function TicketDetail() {
 
           {/* Anexos do chamado */}
           {ticket.attachments?.length > 0 && (
-            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16, flexShrink: 0 }}>
+            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <PaperClipOutlined style={{ fontSize: 14, color: 'var(--cl-text-soft)' }} />
                 <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)' }}>
@@ -806,7 +803,7 @@ export default function TicketDetail() {
           )}
 
           {/* Trâmites */}
-          <div style={{ ...CARD, padding: 24, display: 'flex', flexDirection: 'column', ...(!isMobile ? { flex: 1, minHeight: 0, overflow: 'hidden' } : {}) }}>
+          <div style={{ ...CARD, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexShrink: 0 }}>
               <Badge count={ticket.comments.length} color="#2563eb" size="small">
                 <MessageOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
@@ -816,7 +813,7 @@ export default function TicketDetail() {
               </h3>
             </div>
 
-            <div style={{ overflowY: 'auto', overflowX: 'hidden', paddingRight: 4, flex: 1, minHeight: 0, ...(!isMobile ? {} : { maxHeight: 'calc(100vh - 420px)' }) }}>
+            <div style={{ overflowY: 'auto', overflowX: 'hidden', paddingRight: 4, maxHeight: 600, minHeight: 120 }}>
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--cl-text-faint)', fontSize: 14 }}>
                 Nenhum trâmite ainda. Seja o primeiro a responder.
@@ -833,32 +830,35 @@ export default function TicketDetail() {
                 if (isSysResolved || isSysReopened) {
                   const prefix = isSysResolved ? '::SYS_RESOLVED::' : '::SYS_REOPENED::';
                   const sysMsg = c.message.slice(prefix.length).trim();
+                  const sysColor = isSysResolved ? '#2563eb' : '#ea580c';
+                  const sysBg = isSysResolved ? 'rgba(37,99,235,0.08)' : 'rgba(234,88,12,0.08)';
+                  const sysBorder = isSysResolved ? 'rgba(96,165,250,0.30)' : 'rgba(251,146,60,0.30)';
+                  const sysTextColor = isSysResolved ? '#60a5fa' : '#fb923c';
                   return (
-                    <div key={c.id}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
-                        <div style={{ flex: 1, height: 1, background: isSysResolved ? 'rgba(37,99,235,0.3)' : 'rgba(234,88,12,0.3)' }} />
-                        <div style={{
-                          background: isSysResolved ? 'rgba(37,99,235,0.12)' : 'rgba(234,88,12,0.10)',
-                          border: `1px solid ${isSysResolved ? 'rgba(96,165,250,0.25)' : 'rgba(251,146,60,0.25)'}`,
-                          borderRadius: 20, padding: '3px 14px', fontSize: 12,
-                          color: isSysResolved ? '#60a5fa' : '#fb923c', fontWeight: 600,
-                          display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
-                        }}>
+                    <div key={c.id} style={{
+                      borderRadius: 10,
+                      border: `1px solid ${sysBorder}`,
+                      background: sysBg,
+                      padding: '14px 18px',
+                      borderLeft: `4px solid ${sysColor}`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: sysMsg ? 10 : 0 }}>
+                        <span style={{ fontSize: 16, color: sysTextColor }}>
                           {isSysResolved ? <CheckCircleOutlined /> : <UnlockOutlined />}
+                        </span>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: sysTextColor }}>
                           {isSysResolved ? 'Chamado Resolvido' : 'Chamado Reaberto'}
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--cl-text-faint)', marginLeft: 'auto' }}>
+                          {dayjs(c.createdAt).format('DD/MM/YYYY HH:mm')}
                           {' · '}
-                          {dayjs(c.createdAt).format('DD/MM HH:mm')}
-                          {' · '}
-                          {c.user.name}
-                        </div>
-                        <div style={{ flex: 1, height: 1, background: isSysResolved ? 'rgba(37,99,235,0.3)' : 'rgba(234,88,12,0.3)' }} />
+                          <strong style={{ color: 'var(--cl-text-soft)' }}>{c.user.name}</strong>
+                        </span>
                       </div>
                       {sysMsg && (
                         <div style={{
-                          margin: '4px 40px 8px', padding: '8px 14px', borderRadius: 8, fontSize: 13,
-                          background: isSysResolved ? 'rgba(37,99,235,0.08)' : 'rgba(234,88,12,0.08)',
-                          border: `1px solid ${isSysResolved ? 'rgba(96,165,250,0.15)' : 'rgba(251,146,60,0.15)'}`,
-                          color: 'var(--cl-text)', whiteSpace: 'pre-wrap', lineHeight: 1.6,
+                          fontSize: 13, color: 'var(--cl-text)', whiteSpace: 'pre-wrap',
+                          lineHeight: 1.6, paddingLeft: 26,
                         }}>
                           {sysMsg}
                         </div>
@@ -1056,7 +1056,7 @@ export default function TicketDetail() {
         </Col>
 
         {/* Sidebar direita */}
-        <Col xs={24} lg={6} style={!isMobile ? { overflowY: 'auto', height: '100%' } : {}}>
+        <Col xs={24} lg={6} style={!isMobile ? { position: 'sticky', top: 80, alignSelf: 'flex-start' } : {}}>
           <div style={{ padding: '4px 0 0 0' }}>
             <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 14px' }}>Informações</h3>
 
@@ -1073,7 +1073,7 @@ export default function TicketDetail() {
               ].filter(Boolean).map(item => (
                 <div key={item.label}>
                   <div style={LABEL_STYLE}>{item.label}</div>
-                  <div style={{ fontSize: 13, color: 'var(--cl-text)', fontWeight: 500 }}>{item.value}</div>
+                  <div style={{ fontSize: 13, color: 'var(--cl-text)', fontWeight: 500, wordBreak: 'break-word', overflowWrap: 'break-word' }}>{item.value}</div>
                 </div>
               ))}
 
