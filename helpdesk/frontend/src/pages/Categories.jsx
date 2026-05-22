@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  Table, Button, Modal, Form, Input, Space, Tag, Switch,
+  Table, Button, Modal, Form, Input, InputNumber, Space, Tag, Switch,
   message, Tooltip,
 } from 'antd';
 import {
@@ -35,7 +35,7 @@ export default function Categories() {
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => {
     setEditing(record);
-    form.setFieldsValue({ name: record.name, description: record.description, active: record.active });
+    form.setFieldsValue({ name: record.name, description: record.description, slaHours: record.slaHours ?? 24, active: record.active });
     setDrawerOpen(true);
   };
 
@@ -96,6 +96,15 @@ export default function Categories() {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>,
+    },
+    {
+      title: 'Prazo SLA', dataIndex: 'slaHours', key: 'slaHours', width: 110,
+      sorter: (a, b) => (a.slaHours ?? 24) - (b.slaHours ?? 24),
+      render: v => (
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text-soft)' }}>
+          {v ?? 24}h
+        </span>
+      ),
     },
     {
       title: 'Situação', dataIndex: 'active', key: 'active',
@@ -232,6 +241,16 @@ export default function Categories() {
             </Form.Item>
             <Form.Item name="description" label="Descrição">
               <Input.TextArea rows={3} placeholder="Descreva o tipo de atendimento..." style={{ resize: 'none' }} />
+            </Form.Item>
+            <Form.Item
+              name="slaHours"
+              label="Prazo SLA (horas)"
+              initialValue={24}
+              rules={[{ required: true, message: 'Informe o prazo' }]}
+              extra="Tempo máximo para resolver chamados desta categoria"
+            >
+              <InputNumber min={1} max={8760} size="large" style={{ width: '100%' }}
+                addonAfter="horas" placeholder="24" />
             </Form.Item>
             {editing && (
               <Form.Item name="active" label="Situação" valuePropName="checked">
