@@ -827,8 +827,10 @@ export default function TicketDetail() {
                         <div>
                           <TextArea
                             value={editingCommentText}
-                            onChange={e => setEditingCommentText(e.target.value)}
+                            onChange={e => setEditingCommentText(e.target.value.slice(0, 250))}
                             rows={3}
+                            maxLength={250}
+                            showCount
                             style={{ borderRadius: 8, resize: 'none', marginBottom: 8 }}
                             autoFocus
                           />
@@ -1058,7 +1060,7 @@ export default function TicketDetail() {
               </div>
               <TextArea
                 value={comment}
-                onChange={e => setComment(e.target.value)}
+                onChange={e => setComment(e.target.value.slice(0, 250))}
                 rows={6}
                 maxLength={250}
                 showCount
