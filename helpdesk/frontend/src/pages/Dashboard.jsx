@@ -283,11 +283,9 @@ export default function Dashboard() {
 
   const criticalQ = queue.find(q => q.priority === 'CRITICAL')?.count ?? 0;
   const p1Sla     = slaData.find(s => s.priority === 'CRITICAL')?.pct;
-  const tmaVal    = kpis?.tma_minutos?.value;
   const alerts    = [
     criticalQ > 0    && { type: 'error',   msg: `${criticalQ} ticket${criticalQ > 1 ? 's' : ''} crítico${criticalQ > 1 ? 's' : ''} na fila — redistribua imediatamente` },
     p1Sla !== null && p1Sla !== undefined && p1Sla < 80 && { type: 'error', msg: `SLA P1 em ${p1Sla}% (meta: 95%) — verifique os atrasos` },
-    tmaVal !== null && tmaVal > 60 && { type: 'warning', msg: `TMA elevado: ${fmtMin(tmaVal)} por chamado — considere reforçar a equipe` },
   ].filter(Boolean);
 
   // ─── Highest peak hours (top 3) ─────────────────────────────────────────────
