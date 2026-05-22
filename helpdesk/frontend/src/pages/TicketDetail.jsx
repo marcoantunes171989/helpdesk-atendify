@@ -791,8 +791,7 @@ export default function TicketDetail() {
                       }}>
                         <span style={{
                           fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
-                          color: '#60a5fa', background: 'rgba(37,99,235,0.14)',
-                          padding: '1px 6px', borderRadius: 4, flexShrink: 0,
+                          color: '#60a5fa', flexShrink: 0,
                         }}>
                           #{String(seq).padStart(2, '0')}
                         </span>
