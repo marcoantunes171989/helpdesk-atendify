@@ -7,7 +7,7 @@ import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined,
   ExclamationCircleOutlined, CheckCircleOutlined, ClockCircleOutlined,
   PauseCircleOutlined, CloseCircleOutlined, SyncOutlined,
-  CalendarOutlined, TeamOutlined, ToolOutlined, BuildOutlined,
+  CalendarOutlined, TeamOutlined, ToolOutlined, BuildOutlined, PrinterOutlined,
 } from '@ant-design/icons';
 import { implantacaoService, companyService, userService, technicianService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,6 +48,54 @@ function StatusBadge({ status }) {
 function faseProgress(fases = []) {
   if (!fases.length) return 0;
   return Math.round((fases.filter(f => f.status === 'CONCLUIDO').length / fases.length) * 100);
+}
+
+function gerarATAImplantacao(imp) {
+  const fmt = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+  const fasesRows = (imp.fases || []).map((f, i) => `
+    <tr>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${i + 1}. ${f.title}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${FASE_STATUS[f.status]?.label || f.status}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${f.description || '—'}</td>
+    </tr>`).join('');
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#111;max-width:800px;margin:0 auto;padding:40px">
+      <div style="text-align:center;margin-bottom:32px">
+        <h1 style="font-size:22px;margin:0">ATA DE IMPLANTAÇÃO</h1>
+        <p style="margin:4px 0;color:#555;font-size:14px">Documento gerado em ${new Date().toLocaleString('pt-BR')}</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÍTULO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${imp.title}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${imp.company?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">RESPONSÁVEL</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${imp.responsavel?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">TÉCNICO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${imp.technician?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">STATUS</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${STATUS_CONFIG[imp.status]?.label || imp.status}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">INÍCIO PREVISTO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmt(imp.startDate)}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">FIM PREVISTO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmt(imp.endDate)}</td></tr>
+        ${imp.completedAt ? `<tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">CONCLUÍDO EM</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmt(imp.completedAt)}</td></tr>` : ''}
+      </table>
+      ${imp.description ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">DESCRIÇÃO</h3><p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${imp.description}</p>` : ''}
+      ${fasesRows ? `
+      <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">FASES DA IMPLANTAÇÃO</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+        <thead><tr>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Fase</th>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left;width:140px">Status</th>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Descrição</th>
+        </tr></thead>
+        <tbody>${fasesRows}</tbody>
+      </table>` : ''}
+      ${imp.notes ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">OBSERVAÇÕES</h3><p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${imp.notes}</p>` : ''}
+      <div style="margin-top:60px;display:flex;gap:80px">
+        <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${imp.responsavel?.name || 'Responsável'}</b><br>Responsável pela Implantação</div></div>
+        <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${imp.company?.name || 'Empresa'}</b><br>Cliente</div></div>
+      </div>
+    </div>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>ATA - ${imp.title}</title><style>@media print{body{margin:0;padding:0}}</style></head><body>${html}<script>window.onload=function(){window.print()}<\/script></body></html>`);
+  win.document.close();
 }
 
 export default function Implantacoes() {
@@ -270,6 +318,9 @@ export default function Implantacoes() {
           <Tooltip title="Detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
+          <Tooltip title="Gerar ATA">
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATAImplantacao(record)} />
+          </Tooltip>
           {canEdit && (
             <>
               <Tooltip title="Editar">
@@ -458,15 +509,20 @@ export default function Implantacoes() {
               </>
             )}
 
-            {canEdit && (
-              <div style={{ marginTop: 24, display: 'flex', gap: 8 }}>
-                <Button icon={<EditOutlined />} onClick={() => openEdit(selected)}>Editar</Button>
-                <Button danger icon={<DeleteOutlined />}
-                  onClick={() => setDeleteModal({ id: selected.id, title: selected.title })}>
-                  Excluir
-                </Button>
-              </div>
-            )}
+            <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button icon={<PrinterOutlined />} onClick={() => gerarATAImplantacao(selected)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
+                Gerar ATA
+              </Button>
+              {canEdit && (
+                <>
+                  <Button icon={<EditOutlined />} onClick={() => openEdit(selected)}>Editar</Button>
+                  <Button danger icon={<DeleteOutlined />}
+                    onClick={() => setDeleteModal({ id: selected.id, title: selected.title })}>
+                    Excluir
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         )}
       </Drawer>

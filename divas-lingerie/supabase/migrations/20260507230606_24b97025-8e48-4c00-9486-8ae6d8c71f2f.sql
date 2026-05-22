@@ -1,0 +1,1 @@
+ALTER TABLE public.tab_vendas DROP CONSTRAINT IF EXISTS tab_vendas_ven_cliente_id_fkey;

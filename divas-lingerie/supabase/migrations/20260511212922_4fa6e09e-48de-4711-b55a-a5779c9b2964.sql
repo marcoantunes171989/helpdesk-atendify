@@ -1,0 +1,3 @@
+ALTER TABLE public.tab_finalizadoras ADD COLUMN IF NOT EXISTS fin_ordem integer NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_tab_finalizadoras_ordem ON public.tab_finalizadoras(fin_ordem);
+UPDATE public.tab_finalizadoras SET fin_ordem = sub.rn FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY fin_descricao) AS rn FROM public.tab_finalizadoras) sub WHERE public.tab_finalizadoras.id = sub.id AND public.tab_finalizadoras.fin_ordem = 0;

@@ -528,7 +528,7 @@ export default function TicketDetail() {
         <Col xs={24} lg={18} style={!isMobile ? { display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' } : {}}>
 
           {/* Cabeçalho */}
-          <div style={{ ...CARD, padding: 24, marginBottom: 16, flexShrink: 0 }}>
+          <div style={{ ...CARD, padding: 24, marginBottom: 16, flexShrink: 0, ...(!isMobile && !editMode ? { maxHeight: 'calc(100vh - 540px)', minHeight: 100, overflowY: 'auto' } : {}) }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <Space wrap>
                 {ticket.ticketStatus ? (
@@ -735,7 +735,7 @@ export default function TicketDetail() {
 
           {/* Anexos do chamado */}
           {ticket.attachments?.length > 0 && (
-            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16 }}>
+            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16, flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <PaperClipOutlined style={{ fontSize: 14, color: 'var(--cl-text-soft)' }} />
                 <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)' }}>

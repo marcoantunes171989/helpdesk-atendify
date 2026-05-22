@@ -1,0 +1,1 @@
+ALTER TABLE public.tab_itens_venda DROP CONSTRAINT IF EXISTS tab_itens_venda_itv_venda_id_fkey;

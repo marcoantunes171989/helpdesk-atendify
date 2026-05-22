@@ -18,6 +18,7 @@ const reportRoutes = require('./routes/reports');
 const crmRoutes = require('./routes/crm');
 const implantacaoRoutes = require('./routes/implantacoes');
 const treinamentoRoutes = require('./routes/treinamentos');
+const visitaRoutes      = require('./routes/visitas');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/crm', crmRoutes);
 app.use('/api/implantacoes', implantacaoRoutes);
 app.use('/api/treinamentos', treinamentoRoutes);
+app.use('/api/visitas',      visitaRoutes);
 
 // Captura erros de rotas síncronas e assíncronas
 app.use((err, req, res, next) => {

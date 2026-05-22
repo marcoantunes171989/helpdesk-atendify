@@ -8,7 +8,7 @@ import {
   ExclamationCircleOutlined, CheckCircleOutlined, ClockCircleOutlined,
   CloseCircleOutlined, SyncOutlined, LaptopOutlined, TeamOutlined,
   EnvironmentOutlined, LinkOutlined, UserAddOutlined, UserOutlined,
-  CalendarOutlined, FieldTimeOutlined,
+  CalendarOutlined, FieldTimeOutlined, PrinterOutlined,
 } from '@ant-design/icons';
 import { treinamentoService, companyService, userService, employeeService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -65,6 +65,57 @@ function fmtDuration(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m}min`;
+}
+
+function gerarATATreinamento(t) {
+  const fmt = d => d ? new Date(d).toLocaleString('pt-BR') : '—';
+  const participantesRows = (t.participantes || []).map(p => {
+    const nome = p.employee?.name || p.name || '—';
+    const cargo = p.employee?.position || p.email || '—';
+    return `<tr>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${nome}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${cargo}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">${p.attended ? '✓ Presente' : 'Ausente'}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;color:#111;max-width:800px;margin:0 auto;padding:40px">
+      <div style="text-align:center;margin-bottom:32px">
+        <h1 style="font-size:22px;margin:0">ATA DE TREINAMENTO</h1>
+        <p style="margin:4px 0;color:#555;font-size:14px">Documento gerado em ${new Date().toLocaleString('pt-BR')}</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÍTULO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.title}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.company?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">TIPO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${TIPO_CONFIG[t.tipo]?.label || t.tipo}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">INSTRUTOR</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.trainer?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DATA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmt(t.scheduledAt)}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DURAÇÃO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmtDuration(t.duration) || '—'}</td></tr>
+        ${t.location ? `<tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">LOCAL</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.location}</td></tr>` : ''}
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">STATUS</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${STATUS_CONFIG[t.status]?.label || t.status}</td></tr>
+      </table>
+      ${t.description ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">DESCRIÇÃO / CONTEÚDO</h3><p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${t.description}</p>` : ''}
+      ${participantesRows ? `
+      <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">PARTICIPANTES</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+        <thead><tr>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Nome</th>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Cargo / E-mail</th>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:center;width:120px">Presença</th>
+        </tr></thead>
+        <tbody>${participantesRows}</tbody>
+      </table>` : ''}
+      ${t.notes ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">OBSERVAÇÕES</h3><p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${t.notes}</p>` : ''}
+      <div style="margin-top:60px;display:flex;gap:80px">
+        <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${t.trainer?.name || 'Instrutor'}</b><br>Instrutor</div></div>
+        <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${t.company?.name || 'Empresa'}</b><br>Cliente</div></div>
+      </div>
+    </div>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>ATA - ${t.title}</title><style>@media print{body{margin:0;padding:0}}</style></head><body>${html}<script>window.onload=function(){window.print()}<\/script></body></html>`);
+  win.document.close();
 }
 
 export default function Treinamentos() {
@@ -305,6 +356,9 @@ export default function Treinamentos() {
           <Tooltip title="Detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
+          <Tooltip title="Gerar ATA">
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATATreinamento(record)} />
+          </Tooltip>
           {canEdit && (
             <>
               <Tooltip title="Editar">
@@ -512,15 +566,20 @@ export default function Treinamentos() {
               </>
             )}
 
-            {canEdit && (
-              <div style={{ marginTop: 24, display: 'flex', gap: 8 }}>
-                <Button icon={<EditOutlined />} onClick={() => openEdit(selected)}>Editar</Button>
-                <Button danger icon={<DeleteOutlined />}
-                  onClick={() => setDeleteModal({ id: selected.id, title: selected.title })}>
-                  Excluir
-                </Button>
-              </div>
-            )}
+            <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button icon={<PrinterOutlined />} onClick={() => gerarATATreinamento(selected)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
+                Gerar ATA
+              </Button>
+              {canEdit && (
+                <>
+                  <Button icon={<EditOutlined />} onClick={() => openEdit(selected)}>Editar</Button>
+                  <Button danger icon={<DeleteOutlined />}
+                    onClick={() => setDeleteModal({ id: selected.id, title: selected.title })}>
+                    Excluir
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         )}
       </Drawer>

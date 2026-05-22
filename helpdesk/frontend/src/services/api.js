@@ -164,6 +164,14 @@ export const treinamentoService = {
   remove: (id) => api.delete(`/treinamentos/${id}`).then(r => r.data),
 };
 
+export const visitaService = {
+  list:   (params)   => api.get('/visitas', { params }).then(r => r.data),
+  get:    (id)       => api.get(`/visitas/${id}`).then(r => r.data),
+  create: (data)     => api.post('/visitas', data).then(r => r.data),
+  update: (id, data) => api.put(`/visitas/${id}`, data).then(r => r.data),
+  remove: (id)       => api.delete(`/visitas/${id}`).then(r => r.data),
+};
+
 export const knowledgeService = {
   list: (params) => api.get('/knowledge', { params }).then(r => r.data),
   get: (id) => api.get(`/knowledge/${id}`).then(r => r.data),

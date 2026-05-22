@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"c:/Users/Intersolid.000/Documents/Projetos/divas-lingerie\" && git add -A && (git diff --cached --quiet || (git commit -m \"auto: $(date '+%Y-%m-%d %H:%M')\" && git push origin main)) || true",
+            "shell": "bash",
+            "timeout": 60,
+            "statusMessage": "Fazendo commit e deploy automatico..."
+          }
+        ]
+      }
+    ]
+  }
+}

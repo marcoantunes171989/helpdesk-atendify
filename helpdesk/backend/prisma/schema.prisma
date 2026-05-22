@@ -37,6 +37,7 @@ model Company {
   crmActivities     CrmActivity[]
   implantacoes      Implantacao[]
   treinamentos      Treinamento[]
+  visitas           Visita[]
 
   @@map("companies")
 }
@@ -59,6 +60,7 @@ model User {
   crmActivities    CrmActivity[]    @relation("CrmActUser")
   implantacoes     Implantacao[]    @relation("ImplantacaoResponsavel")
   treinamentos     Treinamento[]    @relation("TreinamentoTrainer")
+  visitas          Visita[]         @relation("VisitaCreatedBy")
 
   @@map("users")
 }
@@ -196,6 +198,7 @@ model Technician {
   active       Boolean       @default(true)
   tickets      Ticket[]
   implantacoes Implantacao[]
+  visitas      Visita[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -218,6 +221,7 @@ model Employee {
   company      Company   @relation(fields: [companyId], references: [id])
   tickets      Ticket[]
   treinamentoParticipacoes TreinamentoParticipante[]
+  visitaContatos   Visita[]     @relation("VisitaEmployee")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -495,4 +499,40 @@ model TreinamentoParticipante {
   createdAt      DateTime    @default(now())
 
   @@map("treinamento_participantes")
+}
+
+enum VisitaStatus {
+  AGENDADA
+  REALIZADA
+  CANCELADA
+}
+
+model Visita {
+  id              String       @id @default(cuid())
+  code            Int?         @unique @default(autoincrement())
+  title           String
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id])
+  technicianId    String?
+  technician      Technician?  @relation(fields: [technicianId], references: [id])
+  employeeId      String?
+  employee        Employee?    @relation("VisitaEmployee", fields: [employeeId], references: [id])
+  visitDate       DateTime
+  status          VisitaStatus @default(REALIZADA)
+  objectives      String?      @db.Text
+  topicConfig     Boolean      @default(false)
+  topicConfigDesc String?      @db.Text
+  topicTreino     Boolean      @default(false)
+  topicTreinoDesc String?      @db.Text
+  topicTreinoMods String?      @db.Text
+  topicOutros     Boolean      @default(false)
+  topicOutrosDesc String?      @db.Text
+  conclusions     String?      @db.Text
+  nextSteps       String?      @db.Text
+  createdById     String
+  createdBy       User         @relation("VisitaCreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("visitas")
 }

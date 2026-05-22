@@ -1,0 +1,1 @@
+ALTER TABLE public.tab_visitas ADD COLUMN vis_data_reagendada DATE;

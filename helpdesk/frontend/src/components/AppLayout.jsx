@@ -7,6 +7,7 @@ import {
   MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined, IdcardOutlined,
   TagsOutlined, ToolOutlined, SettingOutlined, GlobalOutlined, EnvironmentOutlined,
   BookOutlined, BarChartOutlined, ContactsOutlined, RocketOutlined, ReadOutlined,
+  CarOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { canManageCompanies, canManageUsers, canManageCategories, ROLES } from '../utils/constants';
@@ -46,6 +47,7 @@ export default function AppLayout() {
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/crm', icon: <ContactsOutlined />, label: 'CRM' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/implantacoes', icon: <RocketOutlined />, label: 'Implantações' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/treinamentos', icon: <ReadOutlined />, label: 'Treinamentos' },
+    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/visitas', icon: <CarOutlined />, label: 'Visitas Técnicas' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/employees', icon: <IdcardOutlined />, label: 'Funcionários' },
     canManageUsers(user?.role) && { key: '/app/users', icon: <TeamOutlined />, label: 'Usuários' },
     canManageCompanies(user?.role) && { key: '/app/companies', icon: <BankOutlined />, label: 'Empresas' },
