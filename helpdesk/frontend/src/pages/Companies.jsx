@@ -80,11 +80,11 @@ export default function Companies() {
     cityService.list().then(setAllCities).finally(() => setLoadingCities(false));
   }, []);
 
-  const cityOptions = selectedStateSigla
-    ? allCities
-        .filter(c => c.state?.sigla === selectedStateSigla)
-        .map(c => ({ value: c.name, label: c.name, data: c }))
-    : allCities.map(c => ({ value: c.name, label: `${c.name} – ${c.state?.sigla}`, data: c }));
+  const cityOptions = allCities.map(c => ({
+    value: c.name,
+    label: `${c.name} – ${c.state?.sigla}`,
+    data: c,
+  }));
 
   const openCreate = () => {
     setEditing(null);
@@ -422,12 +422,8 @@ export default function Companies() {
                   <Select
                     placeholder="UF"
                     options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
-                    onChange={(val) => {
-                      form.setFieldValue('city', undefined);
-                      setSelectedStateSigla(val || null);
-                    }}
+                    onChange={(val) => setSelectedStateSigla(val || null)}
                     allowClear
-                    onClear={() => { form.setFieldValue('city', undefined); setSelectedStateSigla(null); }}
                   />
                 </Form.Item>
               </Col>
