@@ -697,8 +697,8 @@ export default function TicketDetail() {
           )}
 
           {/* Trâmites */}
-          <div style={{ ...CARD, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <div style={{ ...CARD, padding: 24, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexShrink: 0 }}>
               <Badge count={ticket.comments.length} color="#2563eb" size="small">
                 <MessageOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
               </Badge>
@@ -707,6 +707,7 @@ export default function TicketDetail() {
               </h3>
             </div>
 
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)', paddingRight: 4, flex: 1 }}>
             {ticket.comments.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--cl-text-faint)', fontSize: 14 }}>
                 Nenhum trâmite ainda. Seja o primeiro a responder.
@@ -915,9 +916,10 @@ export default function TicketDetail() {
                 );
               })}
             </div>
+            </div>{/* fim scroll */}
 
             {!isClosed && (
-              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--cl-border-subtle)' }}>
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--cl-border-subtle)', flexShrink: 0 }}>
                 <div
                   onClick={() => { setComment(''); setCommentFiles([]); setCommentDate(dayjs()); setTramiteModal(true); }}
                   style={{
