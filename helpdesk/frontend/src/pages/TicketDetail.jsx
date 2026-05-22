@@ -963,7 +963,7 @@ export default function TicketDetail() {
 
         {/* Sidebar direita */}
         <Col xs={24} lg={6} style={!isMobile ? { overflowY: 'auto', height: '100%' } : {}}>
-          <div style={{ ...CARD, padding: '14px 12px' }}>
+          <div style={{ padding: '4px 0 0 0' }}>
             <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)', margin: '0 0 14px' }}>Informações</h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
