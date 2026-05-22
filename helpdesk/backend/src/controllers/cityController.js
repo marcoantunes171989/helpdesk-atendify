@@ -63,31 +63,32 @@ exports.importFromIbge = async (req, res) => {
   const { cities } = req.body;
   if (!cities?.length) return res.status(400).json({ error: 'Nenhuma cidade enviada' });
 
-  const states = await prisma.state.findMany({ select: { id: true, sigla: true } });
-  const stateMap = Object.fromEntries(states.map(s => [s.sigla, s.id]));
+  const [states, existing, last] = await Promise.all([
+    prisma.state.findMany({ select: { id: true, sigla: true } }),
+    prisma.city.findMany({ select: { ibgeCode: true } }),
+    prisma.city.findFirst({ orderBy: { code: 'desc' } }),
+  ]);
 
-  let created = 0, skipped = 0, noState = 0;
+  const stateMap = Object.fromEntries(states.map(s => [s.sigla, s.id]));
+  const existingCodes = new Set(existing.map(c => c.ibgeCode).filter(Boolean));
+  let nextCode = (last?.code ?? 0) + 1;
+
+  let skipped = 0, noState = 0;
+  const toCreate = [];
 
   for (const c of cities) {
     const stateId = stateMap[c.stateSigla];
     if (!stateId) { noState++; continue; }
 
-    if (c.ibgeCode) {
-      const exists = await prisma.city.findUnique({ where: { ibgeCode: parseInt(c.ibgeCode) } });
-      if (exists) { skipped++; continue; }
-    }
+    const ibgeCode = c.ibgeCode ? parseInt(c.ibgeCode) : null;
+    if (ibgeCode && existingCodes.has(ibgeCode)) { skipped++; continue; }
 
-    const last = await prisma.city.findFirst({ orderBy: { code: 'desc' } });
-    await prisma.city.create({
-      data: {
-        name: c.name,
-        ibgeCode: c.ibgeCode ? parseInt(c.ibgeCode) : null,
-        stateId,
-        code: (last?.code ?? 0) + 1,
-      },
-    });
-    created++;
+    toCreate.push({ name: c.name, ibgeCode, stateId, code: nextCode++ });
   }
+
+  const { count: created } = toCreate.length > 0
+    ? await prisma.city.createMany({ data: toCreate, skipDuplicates: true })
+    : { count: 0 };
 
   const msg = `${created} cidade(s) importada(s), ${skipped} já existia(m)${noState > 0 ? `, ${noState} sem estado correspondente` : ''}.`;
   res.json({ message: msg, created, skipped, noState });
