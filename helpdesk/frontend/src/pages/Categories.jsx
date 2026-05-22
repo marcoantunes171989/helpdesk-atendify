@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  Table, Button, Drawer, Modal, Form, Input, Space, Tag, Switch,
+  Table, Button, Modal, Form, Input, Space, Tag, Switch,
   message, Tooltip,
 } from 'antd';
 import {
@@ -200,7 +200,7 @@ export default function Categories() {
       </Modal>
 
       {/* Drawer — Cadastro / Edição */}
-      <Drawer
+      <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -210,10 +210,11 @@ export default function Categories() {
           </div>
         }
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width="100%"
-        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
-        extra={
+        onCancel={() => setDrawerOpen(false)}
+        centered
+        width={560}
+        styles={{ body: { padding: '24px 0 8px' } }}
+        footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
@@ -223,13 +224,13 @@ export default function Categories() {
           </Space>
         }
       >
-        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+        <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item name="name" label="Nome da Categoria" rules={[{ required: true, message: 'Informe o nome' }]}>
               <Input placeholder="Ex: Suporte Técnico, Financeiro..." size="large" />
             </Form.Item>
             <Form.Item name="description" label="Descrição">
-              <Input.TextArea rows={3} placeholder="Descreva o tipo de atendimento..." />
+              <Input.TextArea rows={3} placeholder="Descreva o tipo de atendimento..." style={{ resize: 'none' }} />
             </Form.Item>
             {editing && (
               <Form.Item name="active" label="Situação" valuePropName="checked">
@@ -238,7 +239,7 @@ export default function Categories() {
             )}
           </Form>
         </div>
-      </Drawer>
+      </Modal>
     </div>
   );
 }
