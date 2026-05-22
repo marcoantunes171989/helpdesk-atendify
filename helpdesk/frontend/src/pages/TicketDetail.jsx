@@ -67,7 +67,7 @@ export default function TicketDetail() {
   const [commentFiles, setCommentFiles] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null); // { src, name, mimeType, data }
 
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -408,7 +408,7 @@ export default function TicketDetail() {
           alt={att.name}
           title={att.name}
           style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--cl-border-input)', flexShrink: 0 }}
-          onClick={() => setPreviewImage({ src, name: att.name })}
+          onClick={() => setPreviewImage({ src, name: att.name, mimeType: att.mimeType, data: att.data })}
         />
       ) : (
         <Tooltip key={att.id} title={`${att.name} (${formatSize(att.size)})`}>
@@ -452,7 +452,7 @@ export default function TicketDetail() {
           {isImage && (
             <Tooltip title="Visualizar">
               <Button type="text" icon={<EyeOutlined />} size="small"
-                style={{ color: 'var(--cl-text-muted)' }} onClick={() => setPreviewImage({ src, name: att.name })} />
+                style={{ color: 'var(--cl-text-muted)' }} onClick={() => setPreviewImage({ src, name: att.name, mimeType: att.mimeType, data: att.data })} />
             </Tooltip>
           )}
           <Tooltip title="Baixar">
@@ -692,17 +692,72 @@ export default function TicketDetail() {
 
           {/* Anexos do chamado */}
           {ticket.attachments?.length > 0 && (
-            <div style={{ ...CARD, padding: 24, marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <Badge count={ticket.attachments.length} color="var(--cl-text-soft)" size="small">
-                  <PaperClipOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
-                </Badge>
-                <h3 style={{ fontWeight: 700, fontSize: 15, color: 'var(--cl-text-hi)', margin: 0 }}>
+            <div style={{ ...CARD, padding: '16px 20px', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <PaperClipOutlined style={{ fontSize: 14, color: 'var(--cl-text-soft)' }} />
+                <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)' }}>
                   Anexos ({ticket.attachments.length})
-                </h3>
+                </span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {ticket.attachments.map(att => renderAttachment(att))}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {ticket.attachments.map(att => {
+                  const isImage = att.mimeType?.startsWith('image/');
+                  const src = `data:${att.mimeType};base64,${att.data}`;
+                  if (isImage) {
+                    return (
+                      <Tooltip key={att.id} title={`${att.name} · ${formatSize(att.size)}`}>
+                        <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}
+                          className="att-thumb-wrap">
+                          <img
+                            src={src} alt={att.name}
+                            style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--cl-border)', display: 'block', cursor: 'pointer' }}
+                            onClick={() => setPreviewImage({ src, name: att.name, mimeType: att.mimeType, data: att.data })}
+                          />
+                          <div style={{
+                            position: 'absolute', inset: 0, borderRadius: 8,
+                            background: 'rgba(0,0,0,0.45)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            opacity: 0, transition: 'opacity 0.15s',
+                          }}
+                            className="att-thumb-overlay"
+                            onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                            onMouseLeave={e => e.currentTarget.style.opacity = 0}
+                          >
+                            <EyeOutlined
+                              style={{ color: '#fff', fontSize: 16, cursor: 'pointer' }}
+                              onClick={() => setPreviewImage({ src, name: att.name, mimeType: att.mimeType, data: att.data })}
+                            />
+                            <DownloadOutlined
+                              style={{ color: '#fff', fontSize: 16, cursor: 'pointer' }}
+                              onClick={e => { e.stopPropagation(); downloadAttachment(att); }}
+                            />
+                          </div>
+                        </div>
+                      </Tooltip>
+                    );
+                  }
+                  return (
+                    <Tooltip key={att.id} title={`${att.name} · ${formatSize(att.size)}`}>
+                      <div
+                        onClick={() => downloadAttachment(att)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+                          background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
+                          maxWidth: 200, transition: 'border-color 0.15s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--cl-border)'}
+                      >
+                        <FileOutlined style={{ color: '#60a5fa', fontSize: 14, flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, color: 'var(--cl-text-hi)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {att.name}
+                        </span>
+                        <DownloadOutlined style={{ color: 'var(--cl-text-faint)', fontSize: 12, flexShrink: 0 }} />
+                      </div>
+                    </Tooltip>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1243,17 +1298,60 @@ export default function TicketDetail() {
         open={!!previewImage}
         onCancel={() => setPreviewImage(null)}
         footer={null}
-        title={previewImage?.name}
+        title={null}
+        closable={false}
         centered
         width={860}
-        styles={{ body: { padding: 12, textAlign: 'center' } }}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+        style={{ background: 'transparent' }}
       >
         {previewImage && (
-          <img
-            src={previewImage.src}
-            alt={previewImage.name}
-            style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: 8, display: 'inline-block' }}
-          />
+          <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
+            {/* X button */}
+            <button
+              onClick={() => setPreviewImage(null)}
+              style={{
+                position: 'absolute', top: 10, right: 10, zIndex: 10,
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+                color: '#fff', fontSize: 18, lineHeight: 1, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              ×
+            </button>
+            {/* Nome do arquivo */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5,
+              padding: '10px 48px 10px 16px',
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)',
+              color: '#fff', fontSize: 13, fontWeight: 600,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {previewImage.name}
+            </div>
+            <img
+              src={previewImage.src}
+              alt={previewImage.name}
+              style={{ maxWidth: '100%', maxHeight: '80vh', display: 'block', margin: '0 auto' }}
+            />
+            {/* Download */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              padding: '10px 16px',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)',
+              display: 'flex', justifyContent: 'flex-end',
+            }}>
+              <Button
+                size="small" icon={<DownloadOutlined />}
+                onClick={() => downloadAttachment(previewImage)}
+                style={{ background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', color: '#fff' }}
+              >
+                Baixar
+              </Button>
+            </div>
+          </div>
         )}
       </Modal>
     </div>
