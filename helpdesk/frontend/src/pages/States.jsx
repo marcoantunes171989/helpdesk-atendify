@@ -214,7 +214,8 @@ export default function States() {
           columns={columns}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (t, r) => `${r[0]}–${r[1]} de ${t}` }}
+          scroll={{ y: 'calc(100vh - 360px)', x: false }}
+          pagination={{ pageSize: 50, showSizeChanger: true, pageSizeOptions: ['20', '50', '100'], showTotal: (t, r) => `${r[0]}–${r[1]} de ${t}` }}
           size="middle"
         />
       </div>
