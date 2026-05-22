@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined,
-  ExclamationCircleOutlined, GlobalOutlined, CloudDownloadOutlined,
+  ExclamationCircleOutlined, GlobalOutlined, CloudDownloadOutlined, SearchOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { stateService } from '../services/api';
@@ -198,12 +198,13 @@ export default function States() {
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
-        <Input.Search
+        <Input
+          prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
           placeholder="Buscar por nome ou sigla..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ maxWidth: 320 }}
+          style={{ width: '100%' }}
         />
       </div>
 
