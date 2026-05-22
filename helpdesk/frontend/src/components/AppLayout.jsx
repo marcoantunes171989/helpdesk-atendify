@@ -146,7 +146,7 @@ export default function AppLayout() {
       {!isMobile && (
         <Sider
           collapsible collapsed={collapsed} onCollapse={setCollapsed}
-          trigger={null} width={220}
+          trigger={null} width={248}
           style={{
             background: 'var(--cl-sidebar)',
             borderRight: '1px solid var(--cl-border)',
@@ -173,7 +173,7 @@ export default function AppLayout() {
         </Drawer>
       )}
 
-      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 220), transition: 'margin-left 0.2s', background: 'transparent' }}>
+      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 248), transition: 'margin-left 0.2s', background: 'transparent' }}>
         {/* Header */}
         <Header style={{
           background: 'var(--cl-header)',
