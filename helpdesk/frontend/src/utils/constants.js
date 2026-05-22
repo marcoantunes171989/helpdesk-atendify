@@ -22,7 +22,7 @@ export const PRIORITY = {
 
 // Removes diacritical marks so search works with or without accents
 export const normalize = (str) =>
-  (str ?? '').normalize('NFD').replace(/̀-ͯ/g, '').toLowerCase();
+  (str ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export const canManageUsers = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);
 export const canManageCompanies = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);
