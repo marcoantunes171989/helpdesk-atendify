@@ -1058,9 +1058,11 @@ export default function TicketDetail() {
               <TextArea
                 value={comment}
                 onChange={e => setComment(e.target.value)}
-                rows={8}
+                rows={6}
+                maxLength={250}
+                showCount
                 placeholder="Descreva o trâmite..."
-                style={{ borderRadius: 8, resize: 'vertical' }}
+                style={{ borderRadius: 8, resize: 'none' }}
                 autoFocus
                 onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleComment(); }}
               />
