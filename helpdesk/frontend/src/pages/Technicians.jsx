@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  Table, Button, Drawer, Modal, Form, Input, Space, Tag,
+  Table, Button, Modal, Form, Input, Space, Tag,
   message, Tooltip, Switch,
 } from 'antd';
 import {
@@ -223,8 +223,8 @@ export default function Technicians() {
         )}
       </Modal>
 
-      {/* Drawer — Cadastro / Edição */}
-      <Drawer
+      {/* Modal — Cadastro / Edição */}
+      <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -236,10 +236,11 @@ export default function Technicians() {
           </div>
         }
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width="100%"
-        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
-        extra={
+        onCancel={() => setDrawerOpen(false)}
+        centered
+        width={560}
+        styles={{ body: { padding: '24px 0 8px' } }}
+        footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
@@ -249,16 +250,13 @@ export default function Technicians() {
           </Space>
         }
       >
-        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+        <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item name="name" label="Nome do Técnico" rules={[{ required: true, message: 'Informe o nome do técnico' }]}>
               <Input placeholder="Ex: João Silva, Carlos Ramos..." size="large" />
             </Form.Item>
             <Form.Item name="description" label="Descrição">
-              <TextArea rows={3} placeholder="Área de atuação, especialidade..." />
-            </Form.Item>
-            <Form.Item name="observation" label="Observação">
-              <TextArea rows={3} placeholder="Informações adicionais..." />
+              <TextArea rows={3} placeholder="Área de atuação, especialidade..." style={{ resize: 'none' }} />
             </Form.Item>
             {editing && (
               <Form.Item name="active" label="Situação" valuePropName="checked">
@@ -267,7 +265,7 @@ export default function Technicians() {
             )}
           </Form>
         </div>
-      </Drawer>
+      </Modal>
     </div>
   );
 }
