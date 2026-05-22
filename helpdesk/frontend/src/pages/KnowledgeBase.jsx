@@ -193,9 +193,11 @@ export default function KnowledgeBase() {
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      await knowledgeService.remove(deleteModal.id);
+      const deletedId = deleteModal.id;
+      await knowledgeService.remove(deletedId);
       message.success('Artigo excluído com sucesso');
-      if (selectedArticle?.id === deleteModal.id) setSelectedArticle(null);
+      if (selectedArticle?.id === deletedId) setSelectedArticle(null);
+      setAiSources(prev => prev.filter(s => s.id !== deletedId));
       setDeleteModal(null);
       load();
     } catch (err) {
@@ -319,7 +321,6 @@ export default function KnowledgeBase() {
                 allowClear
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                size="small"
               />
             </div>
 
