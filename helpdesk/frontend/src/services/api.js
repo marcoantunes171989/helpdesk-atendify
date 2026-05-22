@@ -47,6 +47,7 @@ export const userService = {
   update: (id, data) => api.put(`/users/${id}`, data).then(r => r.data),
   resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data).then(r => r.data),
   remove: (id) => api.delete(`/users/${id}`).then(r => r.data),
+  checkLinks: (id) => api.get(`/users/${id}/links`).then(r => r.data),
 };
 
 export const categoryService = {
@@ -54,6 +55,7 @@ export const categoryService = {
   create: (data) => api.post('/categories', data).then(r => r.data),
   update: (id, data) => api.put(`/categories/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/categories/${id}`).then(r => r.data),
+  checkLinks: (id) => api.get(`/categories/${id}/links`).then(r => r.data),
 };
 
 export const ticketService = {
@@ -89,6 +91,7 @@ export const stateService = {
   remove: (id) => api.delete(`/states/${id}`).then(r => r.data),
   removeAll: () => api.delete('/states/all').then(r => r.data),
   importFromIbge: (data) => api.post('/states/import-ibge', data).then(r => r.data),
+  checkLinks: (id) => api.get(`/states/${id}/links`).then(r => r.data),
 };
 
 export const cityService = {
@@ -118,6 +121,7 @@ export const employeeService = {
   create: (data) => api.post('/employees', data).then(r => r.data),
   update: (id, data) => api.put(`/employees/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/employees/${id}`).then(r => r.data),
+  checkLinks: (id) => api.get(`/employees/${id}/links`).then(r => r.data),
   departments: (params) => api.get('/employees/departments', { params }).then(r => r.data),
 };
 

@@ -76,14 +76,24 @@ exports.update = async (req, res) => {
   res.json(employee);
 };
 
+exports.checkLinks = async (req, res) => {
+  const tickets = await prisma.ticket.count({ where: { employeeId: req.params.id } });
+  res.json({ tickets });
+};
+
 exports.remove = async (req, res) => {
   const { id } = req.params;
-
   const existing = await prisma.employee.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ error: 'Funcionário não encontrado' });
 
-  await prisma.employee.delete({ where: { id } });
-  res.json({ message: 'Funcionário excluído com sucesso' });
+  const ticketCount = await prisma.ticket.count({ where: { employeeId: id } });
+  await prisma.$transaction([
+    ...(ticketCount > 0
+      ? [prisma.ticket.updateMany({ where: { employeeId: id }, data: { employeeId: null } })]
+      : []),
+    prisma.employee.delete({ where: { id } }),
+  ]);
+  res.json({ message: 'Funcionário excluído com sucesso', unlinkedTickets: ticketCount });
 };
 
 exports.departments = async (req, res) => {

@@ -4,6 +4,7 @@ const wrap = require('../middleware/asyncHandler');
 const ctrl = require('../controllers/userController');
 
 router.get('/', auth, wrap(ctrl.list));
+router.get('/:id/links', auth, wrap(ctrl.checkLinks));
 router.get('/:id', auth, wrap(ctrl.get));
 router.post('/', auth, wrap(ctrl.create));
 router.put('/:id', auth, wrap(ctrl.update));

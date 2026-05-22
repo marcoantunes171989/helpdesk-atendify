@@ -33,6 +33,7 @@ export default function Employees() {
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');
   const [form] = Form.useForm();
   const { user } = useAuth();
@@ -71,6 +72,18 @@ export default function Employees() {
       message.error(err.response?.data?.error || 'Erro ao salvar funcionário');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openDelete = async (record) => {
+    setDeletingId(record.id);
+    try {
+      const links = await employeeService.checkLinks(record.id);
+      setDeleteModal({ id: record.id, name: record.name, ...links });
+    } catch {
+      message.error('Erro ao verificar vínculos');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -144,7 +157,7 @@ export default function Employees() {
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
           <Button type="text" icon={<DeleteOutlined />} size="small" danger
-            onClick={() => setDeleteModal({ id: record.id, name: record.name })} />
+            loading={deletingId === record.id} onClick={() => openDelete(record)} />
         </Space>
       ),
     },
@@ -210,9 +223,19 @@ export default function Employees() {
             <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
-              O funcionário será removido do sistema e não poderá ser recuperado.
-            </div>
+            {deleteModal.tickets > 0 ? (
+              <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span>Chamados vinculados (serão desvinculados)</span>
+                  <span style={{ fontWeight: 700, color: '#fbbf24' }}>{deleteModal.tickets}</span>
+                </div>
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+                Este funcionário não possui chamados vinculados.
+              </div>
+            )}
           </div>
         )}
       </Modal>

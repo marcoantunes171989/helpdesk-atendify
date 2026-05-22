@@ -31,6 +31,7 @@ export default function Users() {
   const [pwdModal, setPwdModal] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
@@ -65,6 +66,18 @@ export default function Users() {
       message.error(err.response?.data?.error || 'Erro ao salvar');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openDelete = async (record) => {
+    setDeletingId(record.id);
+    try {
+      const links = await userService.checkLinks(record.id);
+      setDeleteModal({ id: record.id, name: record.name, ...links });
+    } catch {
+      message.error('Erro ao verificar vínculos');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -166,7 +179,7 @@ export default function Users() {
           {record.id !== user?.id && (
             <Tooltip title="Excluir">
               <Button type="text" icon={<DeleteOutlined />} size="small" danger
-                onClick={() => setDeleteModal({ id: record.id, name: record.name })} />
+                loading={deletingId === record.id} onClick={() => openDelete(record)} />
             </Tooltip>
           )}
         </Space>
@@ -226,7 +239,9 @@ export default function Users() {
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
-            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+            <Button danger type="primary" loading={deleteLoading}
+              disabled={deleteModal?.createdTickets > 0 || deleteModal?.comments > 0}
+              onClick={handleDelete}>
               Excluir permanentemente
             </Button>
           </div>
@@ -237,9 +252,42 @@ export default function Users() {
             <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
-              O usuário será removido do sistema e não poderá ser recuperado.
-            </div>
+            {(deleteModal.createdTickets > 0 || deleteModal.comments > 0) ? (
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
+                  Exclusão bloqueada — vínculos existentes:
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {deleteModal.createdTickets > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                      <span>Chamados criados pelo usuário</span>
+                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.createdTickets}</span>
+                    </div>
+                  )}
+                  {deleteModal.comments > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                      <span>Comentários em chamados</span>
+                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.comments}</span>
+                    </div>
+                  )}
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--cl-text-muted)', marginTop: 10, marginBottom: 0 }}>
+                  Exclua ou transfira os chamados antes de remover este usuário.
+                </p>
+              </div>
+            ) : deleteModal.assignedTickets > 0 ? (
+              <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span>Chamados atribuídos (serão desvinculados)</span>
+                  <span style={{ fontWeight: 700, color: '#fbbf24' }}>{deleteModal.assignedTickets}</span>
+                </div>
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+                Este usuário não possui vínculos com chamados.
+              </div>
+            )}
           </div>
         )}
       </Modal>

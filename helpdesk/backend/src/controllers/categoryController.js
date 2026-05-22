@@ -57,7 +57,19 @@ exports.update = async (req, res) => {
   res.json(category);
 };
 
+exports.checkLinks = async (req, res) => {
+  const tickets = await prisma.ticket.count({ where: { categoryId: req.params.id } });
+  res.json({ tickets });
+};
+
 exports.remove = async (req, res) => {
-  await prisma.category.delete({ where: { id: req.params.id } });
-  res.json({ message: 'Categoria removida com sucesso' });
+  const { id } = req.params;
+  const ticketCount = await prisma.ticket.count({ where: { categoryId: id } });
+  await prisma.$transaction([
+    ...(ticketCount > 0
+      ? [prisma.ticket.updateMany({ where: { categoryId: id }, data: { categoryId: null } })]
+      : []),
+    prisma.category.delete({ where: { id } }),
+  ]);
+  res.json({ message: 'Categoria removida com sucesso', unlinkedTickets: ticketCount });
 };

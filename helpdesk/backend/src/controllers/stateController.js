@@ -58,14 +58,25 @@ exports.update = async (req, res) => {
   res.json(state);
 };
 
+exports.checkLinks = async (req, res) => {
+  const cities = await prisma.city.count({ where: { stateId: req.params.id } });
+  res.json({ cities });
+};
+
 exports.remove = async (req, res) => {
-  await prisma.state.delete({ where: { id: req.params.id } });
-  res.json({ message: 'Estado removido com sucesso' });
+  const { id } = req.params;
+  const cityCount = await prisma.city.count({ where: { stateId: id } });
+  await prisma.$transaction([
+    prisma.city.deleteMany({ where: { stateId: id } }),
+    prisma.state.delete({ where: { id } }),
+  ]);
+  res.json({ message: 'Estado removido com sucesso', deletedCities: cityCount });
 };
 
 exports.removeAll = async (req, res) => {
+  await prisma.city.deleteMany({});
   const { count } = await prisma.state.deleteMany({});
-  res.json({ message: `${count} estado(s) removido(s) com sucesso`, count });
+  res.json({ message: `${count} estado(s) e todas as cidades removidos com sucesso`, count });
 };
 
 exports.importFromIbge = async (req, res) => {

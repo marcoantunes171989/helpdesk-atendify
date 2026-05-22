@@ -4,6 +4,7 @@ const wrap = require('../middleware/asyncHandler');
 const ctrl = require('../controllers/stateController');
 
 router.get('/', auth, wrap(ctrl.list));
+router.get('/:id/links', auth, wrap(ctrl.checkLinks));
 router.post('/import-ibge', auth, wrap(ctrl.importFromIbge));
 router.delete('/all', auth, wrap(ctrl.removeAll));
 router.get('/:id', auth, wrap(ctrl.get));

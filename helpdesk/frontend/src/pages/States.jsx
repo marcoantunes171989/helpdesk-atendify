@@ -30,6 +30,7 @@ export default function States() {
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [deleteAllModal, setDeleteAllModal] = useState(false);
   const [deleteAllLoading, setDeleteAllLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
@@ -89,11 +90,23 @@ export default function States() {
     }
   };
 
+  const openDelete = async (record) => {
+    setDeletingId(record.id);
+    try {
+      const links = await stateService.checkLinks(record.id);
+      setDeleteModal({ ...record, ...links });
+    } catch {
+      message.error('Erro ao verificar vínculos');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      await stateService.remove(deleteModal.id);
-      message.success('Estado excluído com sucesso');
+      const result = await stateService.remove(deleteModal.id);
+      message.success(result.message || 'Estado excluído com sucesso');
       setDeleteModal(null);
       load();
     } catch (err) {
@@ -185,7 +198,7 @@ export default function States() {
             <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(r)} />
           </Tooltip>
           <Tooltip title="Excluir">
-            <Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={() => setDeleteModal(r)} />
+            <Button type="text" icon={<DeleteOutlined />} size="small" danger loading={deletingId === r.id} onClick={() => openDelete(r)} />
           </Tooltip>
         </Space>
       ),
@@ -327,9 +340,26 @@ export default function States() {
         }
       >
         {deleteModal && (
-          <p style={{ padding: '8px 0' }}>
-            Deseja excluir o estado <strong>{deleteModal.name} ({deleteModal.sigla})</strong>? Esta ação não pode ser desfeita.
-          </p>
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ marginBottom: 16 }}>
+              Deseja excluir o estado <strong>{deleteModal.name} ({deleteModal.sigla})</strong>? Esta ação não pode ser desfeita.
+            </p>
+            {deleteModal.cities > 0 ? (
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
+                  Os seguintes registros vinculados também serão excluídos em cascata:
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span>Cidades vinculadas a este estado</span>
+                  <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.cities}</span>
+                </div>
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+                Este estado não possui cidades vinculadas.
+              </div>
+            )}
+          </div>
         )}
       </Modal>
 

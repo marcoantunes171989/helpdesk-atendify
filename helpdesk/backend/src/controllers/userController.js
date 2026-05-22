@@ -81,6 +81,16 @@ exports.update = async (req, res) => {
   res.json(user);
 };
 
+exports.checkLinks = async (req, res) => {
+  const { id } = req.params;
+  const [createdTickets, assignedTickets, comments] = await Promise.all([
+    prisma.ticket.count({ where: { userId: id } }),
+    prisma.ticket.count({ where: { assignedTo: id } }),
+    prisma.ticketComment.count({ where: { userId: id } }),
+  ]);
+  res.json({ createdTickets, assignedTickets, comments });
+};
+
 exports.remove = async (req, res) => {
   const { id } = req.params;
 
@@ -91,7 +101,29 @@ exports.remove = async (req, res) => {
   const target = await prisma.user.findUnique({ where: { id } });
   if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
 
-  await prisma.user.delete({ where: { id } });
+  const [createdTickets, comments] = await Promise.all([
+    prisma.ticket.count({ where: { userId: id } }),
+    prisma.ticketComment.count({ where: { userId: id } }),
+  ]);
+
+  if (createdTickets > 0) {
+    return res.status(409).json({
+      error: `Usuário possui ${createdTickets} chamado(s) criado(s) e não pode ser excluído. Exclua ou transfira os chamados primeiro.`,
+      createdTickets,
+    });
+  }
+
+  if (comments > 0) {
+    return res.status(409).json({
+      error: `Usuário possui ${comments} comentário(s) em chamados e não pode ser excluído.`,
+      comments,
+    });
+  }
+
+  await prisma.$transaction([
+    prisma.ticket.updateMany({ where: { assignedTo: id }, data: { assignedTo: null } }),
+    prisma.user.delete({ where: { id } }),
+  ]);
   res.json({ message: 'Usuário excluído com sucesso' });
 };
 
