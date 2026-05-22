@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Table, Button, Drawer, Modal, Form, Input, Select, Space,
+  Table, Button, Modal, Form, Input, Select, Space,
   message, Tooltip, Avatar, Row, Col,
 } from 'antd';
 import {
@@ -217,7 +217,7 @@ export default function Employees() {
       </Modal>
 
       {/* Drawer — Cadastro / Edição */}
-      <Drawer
+      <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -229,10 +229,11 @@ export default function Employees() {
           </div>
         }
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width="100%"
-        styles={{ body: { padding: '24px', overflowY: 'auto' } }}
-        extra={
+        onCancel={() => setDrawerOpen(false)}
+        centered
+        width={560}
+        styles={{ body: { padding: '24px 0 8px' } }}
+        footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
@@ -242,7 +243,7 @@ export default function Employees() {
           </Space>
         }
       >
-        <div className="drawer-form-body" style={{ maxWidth: 560 }}>
+        <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item
               name="name"
@@ -286,7 +287,7 @@ export default function Employees() {
             )}
           </Form>
         </div>
-      </Drawer>
+      </Modal>
     </div>
   );
 }
