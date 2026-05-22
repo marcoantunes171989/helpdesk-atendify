@@ -18,7 +18,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus,, normalize } from '../utils/constants';
+  TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus, normalize } from '../utils/constants';
 
 const { Paragraph } = Typography;
 const { TextArea } = Input;
