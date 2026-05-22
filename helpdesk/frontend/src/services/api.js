@@ -125,6 +125,10 @@ export const employeeService = {
   departments: (params) => api.get('/employees/departments', { params }).then(r => r.data),
 };
 
+export const reportService = {
+  tickets: (params) => api.get('/reports/tickets', { params }).then(r => r.data),
+};
+
 export const knowledgeService = {
   list: (params) => api.get('/knowledge', { params }).then(r => r.data),
   get: (id) => api.get(`/knowledge/${id}`).then(r => r.data),

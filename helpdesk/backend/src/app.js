@@ -14,6 +14,7 @@ const technicianRoutes = require('./routes/technicians');
 const stateRoutes = require('./routes/states');
 const cityRoutes = require('./routes/cities');
 const knowledgeRoutes = require('./routes/knowledge');
+const reportRoutes = require('./routes/reports');
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/technicians', technicianRoutes);
 app.use('/api/states', stateRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Captura erros de rotas síncronas e assíncronas
 app.use((err, req, res, next) => {
