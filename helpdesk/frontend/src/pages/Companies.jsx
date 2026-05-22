@@ -63,7 +63,7 @@ export default function Companies() {
   const [form] = Form.useForm();
   const [search, setSearch] = useState('');
   const [allStates, setAllStates] = useState([]);
-  const [citiesOptions, setCitiesOptions] = useState([]);
+  const [allCities, setAllCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [selectedStateSigla, setSelectedStateSigla] = useState(null);
   const navigate = useNavigate();
@@ -76,26 +76,19 @@ export default function Companies() {
   useEffect(() => {
     load();
     stateService.list().then(setAllStates);
+    setLoadingCities(true);
+    cityService.list().then(setAllCities).finally(() => setLoadingCities(false));
   }, []);
 
-  const loadCitiesByStateSigla = async (sigla, states = allStates) => {
-    if (!sigla) { setCitiesOptions([]); setSelectedStateSigla(null); return; }
-    setSelectedStateSigla(sigla);
-    const state = states.find(s => s.sigla === sigla);
-    if (!state) return;
-    setLoadingCities(true);
-    try {
-      const data = await cityService.list({ stateId: state.id });
-      setCitiesOptions(data);
-    } finally {
-      setLoadingCities(false);
-    }
-  };
+  const cityOptions = selectedStateSigla
+    ? allCities
+        .filter(c => c.state?.sigla === selectedStateSigla)
+        .map(c => ({ value: c.name, label: c.name, data: c }))
+    : allCities.map(c => ({ value: c.name, label: `${c.name} – ${c.state?.sigla}`, data: c }));
 
   const openCreate = () => {
     setEditing(null);
     form.resetFields();
-    setCitiesOptions([]);
     setSelectedStateSigla(null);
     setDrawerOpen(true);
   };
@@ -107,8 +100,7 @@ export default function Companies() {
       phone: maskPhone(record.phone || ''),
       zipCode: maskCEP(record.zipCode || ''),
     });
-    if (record.state) loadCitiesByStateSigla(record.state);
-    else { setCitiesOptions([]); setSelectedStateSigla(null); }
+    setSelectedStateSigla(record.state || null);
     setDrawerOpen(true);
   };
 
@@ -396,33 +388,46 @@ export default function Companies() {
                   <Input placeholder="Nome do bairro" />
                 </Form.Item>
               </Col>
-              <Col xs={8} sm={5}>
-                <Form.Item
-                  name="state" label="UF" style={{ marginBottom: 12 }}
-                  rules={[{ required: true, message: 'Selecione o estado' }]}
-                >
-                  <Select
-                    placeholder="Selecione"
-                    options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
-                    onChange={(val) => {
-                      form.setFieldValue('city', undefined);
-                      loadCitiesByStateSigla(val);
-                    }}
-                  />
-                </Form.Item>
-              </Col>
               <Col xs={16} sm={9}>
                 <Form.Item
                   name="city" label="Cidade" style={{ marginBottom: 12 }}
                   rules={[{ required: true, message: 'Selecione a cidade' }]}
                 >
                   <Select
-                    placeholder={selectedStateSigla ? 'Selecione a cidade' : 'Selecione o estado primeiro'}
+                    placeholder="Buscar cidade..."
                     showSearch
                     loading={loadingCities}
-                    disabled={!selectedStateSigla}
-                    options={citiesOptions.map(c => ({ value: c.name, label: c.name }))}
+                    options={cityOptions}
                     filterOption={(input, opt) => normalize(opt.label).includes(normalize(input))}
+                    onSelect={(val, option) => {
+                      const sigla = option.data?.state?.sigla;
+                      if (sigla) {
+                        form.setFieldValue('state', sigla);
+                        setSelectedStateSigla(sigla);
+                      }
+                    }}
+                    onClear={() => {
+                      form.setFieldValue('state', undefined);
+                      setSelectedStateSigla(null);
+                    }}
+                    allowClear
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={8} sm={5}>
+                <Form.Item
+                  name="state" label="UF" style={{ marginBottom: 12 }}
+                  rules={[{ required: true, message: 'Selecione o estado' }]}
+                >
+                  <Select
+                    placeholder="UF"
+                    options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
+                    onChange={(val) => {
+                      form.setFieldValue('city', undefined);
+                      setSelectedStateSigla(val || null);
+                    }}
+                    allowClear
+                    onClear={() => { form.setFieldValue('city', undefined); setSelectedStateSigla(null); }}
                   />
                 </Form.Item>
               </Col>
