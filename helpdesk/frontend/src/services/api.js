@@ -86,6 +86,7 @@ export const stateService = {
   create: (data) => api.post('/states', data).then(r => r.data),
   update: (id, data) => api.put(`/states/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/states/${id}`).then(r => r.data),
+  removeAll: () => api.delete('/states/all').then(r => r.data),
   importFromIbge: (data) => api.post('/states/import-ibge', data).then(r => r.data),
 };
 

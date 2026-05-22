@@ -7,6 +7,7 @@ import {
 import {
   PlusOutlined, EditOutlined, DeleteOutlined,
   ExclamationCircleOutlined, GlobalOutlined, CloudDownloadOutlined, SearchOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { stateService } from '../services/api';
@@ -23,6 +24,8 @@ export default function States() {
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteAllModal, setDeleteAllModal] = useState(false);
+  const [deleteAllLoading, setDeleteAllLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [form] = Form.useForm();
@@ -91,6 +94,20 @@ export default function States() {
       message.error(err.response?.data?.error || 'Erro ao excluir estado');
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    setDeleteAllLoading(true);
+    try {
+      const result = await stateService.removeAll();
+      message.success(result.message);
+      setDeleteAllModal(false);
+      load();
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao remover todos os estados');
+    } finally {
+      setDeleteAllLoading(false);
     }
   };
 
@@ -190,6 +207,18 @@ export default function States() {
                 Importar IBGE
               </Button>
             </Tooltip>
+            {states.length > 0 && (
+              <Tooltip title="Remover todos os estados cadastrados">
+                <Button
+                  danger
+                  icon={<ClearOutlined />}
+                  onClick={() => setDeleteAllModal(true)}
+                  style={{ borderRadius: 8 }}
+                >
+                  Remover Todos
+                </Button>
+              </Tooltip>
+            )}
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
               Novo Estado
             </Button>
@@ -296,6 +325,32 @@ export default function States() {
             Deseja excluir o estado <strong>{deleteModal.name} ({deleteModal.sigla})</strong>? Esta ação não pode ser desfeita.
           </p>
         )}
+      </Modal>
+
+      {/* Modal — Remover todos */}
+      <Modal
+        open={deleteAllModal}
+        onCancel={() => setDeleteAllModal(false)}
+        centered
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Remover todos os estados</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setDeleteAllModal(false)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteAllLoading} onClick={handleDeleteAll}>
+              Remover Todos
+            </Button>
+          </div>
+        }
+      >
+        <p style={{ padding: '8px 0' }}>
+          Deseja remover <strong>todos os {states.length} estado{states.length !== 1 ? 's' : ''}</strong> cadastrados?
+          Esta ação não pode ser desfeita.
+        </p>
       </Modal>
     </div>
   );

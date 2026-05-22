@@ -5,6 +5,7 @@ const ctrl = require('../controllers/stateController');
 
 router.get('/', auth, wrap(ctrl.list));
 router.post('/import-ibge', auth, wrap(ctrl.importFromIbge));
+router.delete('/all', auth, wrap(ctrl.removeAll));
 router.get('/:id', auth, wrap(ctrl.get));
 router.post('/', auth, wrap(ctrl.create));
 router.put('/:id', auth, wrap(ctrl.update));

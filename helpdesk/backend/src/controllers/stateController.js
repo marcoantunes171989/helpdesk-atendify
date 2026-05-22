@@ -63,6 +63,11 @@ exports.remove = async (req, res) => {
   res.json({ message: 'Estado removido com sucesso' });
 };
 
+exports.removeAll = async (req, res) => {
+  const { count } = await prisma.state.deleteMany({});
+  res.json({ message: `${count} estado(s) removido(s) com sucesso`, count });
+};
+
 exports.importFromIbge = async (req, res) => {
   const { states } = req.body;
   if (!states?.length) return res.status(400).json({ error: 'Nenhum estado enviado' });
