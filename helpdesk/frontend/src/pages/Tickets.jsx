@@ -193,17 +193,17 @@ export default function Tickets() {
       ),
     },
     {
-      title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,
+      title: 'Título', dataIndex: 'title', key: 'title',
       sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
       render: (v, r) => (
-        <Space size={6}>
+        <Space size={6} align="start">
           {isSlaExpired(r) && (
             <Tooltip title="SLA Vencido">
-              <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 13 }} />
+              <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 13, marginTop: 2 }} />
             </Tooltip>
           )}
           <div>
-            <div style={{ fontWeight: 500, color: 'var(--cl-text-hi)', fontSize: 13 }}>{v}</div>
+            <div style={{ fontWeight: 500, color: 'var(--cl-text-hi)', fontSize: 13, whiteSpace: 'normal', wordBreak: 'break-word' }}>{v}</div>
             {r._count?.comments > 0 && (
               <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>
                 {r._count.comments} msg{r._count.comments !== 1 ? 's' : ''}
