@@ -67,48 +67,84 @@ const SECAO_MARKERS = [
   'ATENDIMENTO EXTERNO','IMPLANTAÇÕES','CARRO EM USO','SUPORTE INTERNO',
 ];
 
-function inferTipo(clienteLabel, secao) {
+function inferTipo(clienteLabel) {
   const c = normalizeKey(clienteLabel || '');
   if (c.startsWith('sm ')) return capitalize(clienteLabel.trim());
   if (c.includes('carro')) return 'Carro em uso';
   if (c.includes('intersolid')) return 'Intersolid';
   if (c.includes('comercial')) return 'Comercial';
   if (c.includes('implantac')) return 'Implantação';
-  if (secao && secao.includes('CARRO')) return 'Carro em uso';
   return 'Atendimento externo';
 }
 
+// Converte "jan/26", "fev/26", "Agosto/27" → { month, year }
+function parseMonthYear(label) {
+  const norm = normalizeKey(label);
+  const m = norm.match(/^([a-z]{3,})[\s\/]+(\d+)/);
+  if (!m) return null;
+  const pfx = m[1].substring(0, 3);
+  let yRaw = parseInt(m[2], 10);
+  let year = yRaw < 100 ? 2000 + yRaw : (yRaw >= 2000 && yRaw < 2100 ? yRaw : null);
+  if (!year) return null;
+  const mMap = { jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12 };
+  const month = mMap[pfx];
+  if (!month) return null;
+  return { month, year };
+}
+
+const SKIP_TECH = ['CARRO EM USO','IMPLANTAÇ','IMPLANTAC','SUPORTE INTERNO','DEMAIS'];
+
 function parseAgendaTecnica(raw) {
   const visitas = [];
-  let secao = 'TECNICO';
 
-  raw.slice(0, 87).forEach((row, idx) => {
-    const col1 = String(row[0] || '').trim();
-    const col2 = String(row[1] || '').trim();
-    if (!col1 && !col2) return;
+  // Linha 9 (idx 8) = cabeçalhos de mês a partir da col 1513 (idx 1512)
+  // Linha 10 (idx 9) = números dos dias
+  const monthRow = raw[8] || [];
+  const dayRow   = raw[9] || [];
+  const CAL = 1512; // 0-indexed
 
-    const up1 = col1.toUpperCase();
-    if (SECAO_MARKERS.some(m => up1.startsWith(m))) { secao = up1; return; }
-
-    const rowNum = idx + 1;
-
-    if (rowNum <= 9 && col1) {
-      // linhas 1-9: técnico (col1) → cliente/destino (col2)
-      const skipStatus = ['DAY OFF','FERIADO','FÉRIAS','LICENÇA','FOLGA',''];
-      if (col2 && !skipStatus.includes(col2.toUpperCase())) {
-        visitas.push({ id: makeId(), tecnico: capitalize(col1), cliente: capitalize(col2), tipo: 'Atendimento externo', tipoRegistro: 'visita' });
-      }
-    } else if (rowNum >= 34 && rowNum <= 57 && col1) {
-      // Atendimento externo + SM: col1=cliente, col2=técnico
-      if (col2 && !['DEFINIR','A DEFINIR',''].includes(col2.toUpperCase())) {
-        visitas.push({ id: makeId(), cliente: capitalize(col1), tecnico: capitalize(col2), tipo: inferTipo(col1, secao), tipoRegistro: 'visita' });
-      } else if (!col2) {
-        visitas.push({ id: makeId(), cliente: capitalize(col1), tecnico: 'A DEFINIR', tipo: inferTipo(col1, secao), tipoRegistro: 'visita' });
-      }
-    } else if ((secao.includes('CARRO') || col1.toUpperCase().includes('CARRO')) && col2) {
-      visitas.push({ id: makeId(), cliente: capitalize(col2), tecnico: '', tipo: 'Carro em uso', tipoRegistro: 'visita' });
+  // Monta mapa: índice de coluna → "YYYY-MM-DD"
+  const colToDate = {};
+  let curMonth = null;
+  for (let c = CAL; c < monthRow.length; c++) {
+    const label = String(monthRow[c] || '').trim();
+    if (label) {
+      const parsed = parseMonthYear(label);
+      if (parsed) curMonth = parsed;
     }
-  });
+    if (!curMonth) continue;
+    const day = parseInt(String(dayRow[c] || '').trim(), 10);
+    if (day >= 1 && day <= 31) {
+      const { month, year } = curMonth;
+      colToDate[c] = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+  }
+
+  // Linhas 59-87 (idx 58-86): col0 = nome técnico, cols 1512+ = cliente por dia
+  for (let ri = 58; ri <= 86; ri++) {
+    const row = raw[ri] || [];
+    const techName = String(row[0] || '').trim();
+    if (!techName) continue;
+    const techUp = techName.toUpperCase();
+    if (SKIP_TECH.some(s => techUp.includes(s))) continue;
+    if (SECAO_MARKERS.some(m => techUp.startsWith(m))) continue;
+
+    for (let c = CAL; c < row.length; c++) {
+      const v = String(row[c] || '').trim();
+      if (!v) continue;
+      const dateStr = colToDate[c];
+      if (!dateStr) continue;
+      visitas.push({
+        id: makeId(),
+        tecnico: capitalize(techName),
+        cliente: capitalize(v),
+        tipo: inferTipo(v),
+        data: dateStr,
+        mes: dateStr.substring(0, 7), // "YYYY-MM"
+        tipoRegistro: 'visita',
+      });
+    }
+  }
   return visitas;
 }
 
@@ -306,6 +342,7 @@ export default function AgendaTecnica() {
   // Filtros por aba
   const [fVTec, setFVTec] = useState('');
   const [fVTipo, setFVTipo] = useState('');
+  const [fVMes, setFVMes] = useState('');
   const [fPAba, setFPAba] = useState('');
   const [fPTec, setFPTec] = useState('');
   const [fFColaborador, setFFColaborador] = useState('');
@@ -339,14 +376,24 @@ export default function AgendaTecnica() {
 
   const vTecOpts  = useMemo(() => uniq(visitas.map(v => v.tecnico)),  [visitas]);
   const vTipoOpts = useMemo(() => uniq(visitas.map(v => v.tipo)),     [visitas]);
+  const vMesOpts  = useMemo(() => {
+    const raw = uniq(visitas.map(v => v.mes).filter(Boolean)).sort();
+    const mNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return raw.map(m => {
+      const [y, mo] = m.split('-');
+      return { value: m, label: `${mNames[parseInt(mo,10)-1]}/${y}` };
+    });
+  }, [visitas]);
   const pAbaOpts  = useMemo(() => uniq(plantoes.map(p => p.aba)),     [plantoes]);
   const pTecOpts  = useMemo(() => uniq(plantoes.map(p => p.tecnico)), [plantoes]);
   const fTipoOpts = useMemo(() => uniq(ferias.map(f => f.tipo)),      [ferias]);
 
   // ─── Dados filtrados ──────────────────────────────────────────────────────────
   const visitasFilt = useMemo(() => visitas.filter(v =>
-    (!fVTec  || v.tecnico === fVTec) && (!fVTipo || v.tipo === fVTipo)
-  ), [visitas, fVTec, fVTipo]);
+    (!fVTec  || v.tecnico === fVTec) &&
+    (!fVTipo || v.tipo    === fVTipo) &&
+    (!fVMes  || v.mes     === fVMes)
+  ), [visitas, fVTec, fVTipo, fVMes]);
 
   const plantoessFilt = useMemo(() => plantoes.filter(p =>
     (!fPAba || p.aba === fPAba) && (!fPTec || p.tecnico === fPTec)
@@ -462,11 +509,29 @@ export default function AgendaTecnica() {
   }
 
   // ─── Colunas ──────────────────────────────────────────────────────────────────
+  const mNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const fmtData = v => {
+    if (!v) return '—';
+    const d = dayjs(v);
+    return d.isValid() ? d.format('DD/MM/YYYY') : v;
+  };
+  const fmtMes = mes => {
+    if (!mes) return '';
+    const [y, mo] = mes.split('-');
+    return `${mNames[parseInt(mo,10)-1]}/${y}`;
+  };
+
   const colsVisitas = [
-    { title:'Cliente / Local', dataIndex:'cliente', render: v => <span style={{ fontWeight:500, color:'var(--cl-text-hi)' }}>{v}</span> },
+    { title:'Data', dataIndex:'data', width:110, sorter: (a,b) => (a.data||'').localeCompare(b.data||''),
+      render: (v, r) => (
+        <div>
+          <div style={{ fontWeight:600, fontSize:13, color:'var(--cl-text-hi)' }}>{fmtData(v)}</div>
+          {r.mes && <div style={{ fontSize:11, color:'var(--cl-text-soft)' }}>{fmtMes(r.mes)}</div>}
+        </div>
+      )},
     { title:'Técnico', dataIndex:'tecnico', render: v => <TecnicoCell nome={v} /> },
+    { title:'Cliente / Local', dataIndex:'cliente', render: v => <span style={{ fontWeight:500, color:'var(--cl-text-hi)' }}>{v}</span> },
     { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={tipoColor} /> },
-    { title:'Data', dataIndex:'data', width:100, render: v => v ? <span style={{ color:'var(--cl-text-soft)', fontSize:12 }}>{dayjs(v).isValid() ? dayjs(v).format('DD/MM/YYYY') : v}</span> : '—' },
     { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'visita' }, 'visita')} onDelete={() => handleDelete(r.id, setVisitas)} /> },
   ];
 
@@ -497,6 +562,9 @@ export default function AgendaTecnica() {
       children: (
         <div>
           <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:16 }}>
+            <Select allowClear placeholder="Mês" style={{ minWidth:130 }} value={fVMes || undefined} onChange={v => setFVMes(v || '')} disabled={!vMesOpts.length}>
+              {vMesOpts.map(m => <Option key={m.value} value={m.value}>{m.label}</Option>)}
+            </Select>
             <Select allowClear placeholder="Técnico" style={{ minWidth:160 }} value={fVTec || undefined} onChange={v => setFVTec(v || '')} showSearch disabled={!vTecOpts.length}>
               {vTecOpts.map(t => <Option key={t} value={t}>{t}</Option>)}
             </Select>
@@ -678,9 +746,9 @@ export default function AgendaTecnica() {
               <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
                 {searchResults.visitas.map(v => (
                   <div key={v.id} style={{ display:'flex', alignItems:'center', gap:8, background:'var(--cl-bg-input)', border:'1px solid var(--cl-border)', borderRadius:8, padding:'6px 12px' }}>
+                    {v.data && <span style={{ fontSize:12, fontWeight:600, color:'var(--cl-text-soft)', whiteSpace:'nowrap' }}>{fmtData(v.data)}</span>}
                     <span style={{ fontWeight:600, fontSize:13, color:'var(--cl-text-hi)' }}>{v.cliente}</span>
                     <TipoBadge tipo={v.tipo} colorFn={tipoColor} />
-                    {v.data && <span style={{ fontSize:11, color:'var(--cl-text-soft)' }}>{dayjs(v.data).isValid() ? dayjs(v.data).format('DD/MM/YYYY') : v.data}</span>}
                   </div>
                 ))}
               </div>
