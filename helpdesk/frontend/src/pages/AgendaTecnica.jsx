@@ -475,14 +475,14 @@ export default function AgendaTecnica() {
     setImportFile(file);
     setImportPreview(null);
     try {
-      const xlsx = (await import('xlsx')).default;
+      const XLSX = await import('xlsx');
       const buffer = await file.arrayBuffer();
-      const wb = xlsx.read(buffer, { type: 'array' });
+      const wb = XLSX.read(buffer, { type: 'array' });
       const preview = { sheets: wb.SheetNames, visitas: [], plantoes: [], ferias: [] };
 
       wb.SheetNames.forEach(sheetName => {
         const ws = wb.Sheets[sheetName];
-        const raw = xlsx.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
         if (raw.length < 2) return;
         const headers = raw[0].map(String);
         const mapped = mapHeaders(headers);
