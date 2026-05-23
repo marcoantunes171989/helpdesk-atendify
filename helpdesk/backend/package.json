@@ -4,7 +4,7 @@
   "description": "Helpdesk API - Backend",
   "main": "src/app.js",
   "scripts": {
-    "build": "prisma generate",
+    "build": "prisma migrate deploy && prisma generate",
     "postinstall": "prisma generate",
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
