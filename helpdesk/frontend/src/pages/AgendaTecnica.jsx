@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Button, Tabs, Table, Modal, Form, Input, Select, DatePicker,
   Space, Tag, Avatar, Tooltip, Upload, message, Row, Col, Divider, Radio, Empty, AutoComplete,
@@ -7,8 +7,10 @@ import {
   ScheduleOutlined, PlusOutlined, UploadOutlined, EditOutlined, DeleteOutlined,
   InboxOutlined, CalendarOutlined, TeamOutlined, ClockCircleOutlined,
   CarOutlined, LaptopOutlined, HomeOutlined, SearchOutlined, CloseCircleOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { agendaTecnicaService } from '../services/api';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -331,12 +333,13 @@ function RegistroForm({ tipoRegistro, onTipoChange, tecNomes }) {
   );
 }
 
-// ─── Componente principal ──────────────────────────────────────────────────────
+// ─── Componente principal ───────────────────────────────────────────────��──────
 export default function AgendaTecnica() {
   const [visitas, setVisitas] = useState([]);
   const [plantoes, setPlantoes] = useState([]);
   const [ferias, setFerias] = useState([]);
   const [tecnicos, setTecnicos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('visitas');
 
   // Filtros por aba
@@ -365,6 +368,27 @@ export default function AgendaTecnica() {
   const [importPreview, setImportPreview] = useState(null);
   const [importMode, setImportMode] = useState('replace');
   const [importing, setImporting] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
+
+  // ─── Carregamento inicial ─────────────────────────────────────────────────────
+  const loadAll = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [v, p, f, t] = await Promise.all([
+        agendaTecnicaService.listVisitas(),
+        agendaTecnicaService.listPlantoes(),
+        agendaTecnicaService.listFerias(),
+        agendaTecnicaService.listTecnicos(),
+      ]);
+      setVisitas(v); setPlantoes(p); setFerias(f); setTecnicos(t);
+    } catch {
+      message.error('Erro ao carregar dados da agenda.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
 
   // ─── Opções derivadas dos dados ──────────────────────────────────────────────
   const allTecNomes = useMemo(() => uniq([
@@ -439,22 +463,64 @@ export default function AgendaTecnica() {
     setFormOpen(true);
   }
 
-  function handleDelete(id, setter) {
-    Modal.confirm({ title:'Excluir registro', content:'Confirma exclusão?', okText:'Excluir', okType:'danger', cancelText:'Cancelar',
-      onOk: () => setter(prev => prev.filter(r => r.id !== id)) });
+  function handleDelete(id, tipo) {
+    Modal.confirm({
+      title: 'Excluir registro', content: 'Confirma exclusão?',
+      okText: 'Excluir', okType: 'danger', cancelText: 'Cancelar',
+      onOk: async () => {
+        try {
+          if (tipo === 'visita')  await agendaTecnicaService.removeVisita(id);
+          if (tipo === 'plantao') await agendaTecnicaService.removePlantao(id);
+          if (tipo === 'ferias')  await agendaTecnicaService.removeFerias(id);
+          if (tipo === 'tecnico') await agendaTecnicaService.removeTecnico(id);
+          await loadAll();
+          message.success('Registro excluído.');
+        } catch { message.error('Erro ao excluir.'); }
+      },
+    });
+  }
+
+  function handleClearAll() {
+    Modal.confirm({
+      title: 'Excluir todos os registros',
+      icon: <ExclamationCircleOutlined style={{ color: '#ef4444' }} />,
+      content: 'Isso irá remover TODOS os registros de visitas, plantões, férias e técnicos. Esta ação não pode ser desfeita.',
+      okText: 'Excluir tudo', okType: 'danger', cancelText: 'Cancelar',
+      onOk: async () => {
+        setClearingAll(true);
+        try {
+          await agendaTecnicaService.clearAll();
+          setVisitas([]); setPlantoes([]); setFerias([]); setTecnicos([]);
+          message.success('Todos os registros foram excluídos.');
+        } catch { message.error('Erro ao excluir registros.'); }
+        finally { setClearingAll(false); }
+      },
+    });
   }
 
   async function handleSave() {
     let values; try { values = await form.validateFields(); } catch { return; }
     setSaving(true);
     const tr = values.tipoRegistro;
-    const base = { ...values, tipoRegistro: tr };
-    if (base.data) base.data = base.data.format('YYYY-MM-DD');
-    const setter = tr === 'visita' ? setVisitas : tr === 'plantao' ? setPlantoes : setFerias;
-    if (editing) setter(p => p.map(r => r.id === editing.id ? { ...base, id: editing.id } : r));
-    else setter(p => [...p, { ...base, id: makeId() }]);
-    setSaving(false); setFormOpen(false);
-    message.success(editing ? 'Registro atualizado.' : 'Registro adicionado.');
+    const base = { ...values };
+    if (base.data && base.data?.format) base.data = base.data.format('YYYY-MM-DD');
+    if (base.mes === undefined && base.data) base.mes = base.data.substring(0, 7);
+    try {
+      if (editing) {
+        if (tr === 'visita')  await agendaTecnicaService.updateVisita(editing.id,  base);
+        if (tr === 'plantao') await agendaTecnicaService.updatePlantao(editing.id, base);
+        if (tr === 'ferias')  await agendaTecnicaService.updateFerias(editing.id,  base);
+        message.success('Registro atualizado.');
+      } else {
+        if (tr === 'visita')  await agendaTecnicaService.createVisita(base);
+        if (tr === 'plantao') await agendaTecnicaService.createPlantao(base);
+        if (tr === 'ferias')  await agendaTecnicaService.createFerias(base);
+        message.success('Registro adicionado.');
+      }
+      await loadAll();
+      setFormOpen(false);
+    } catch { message.error('Erro ao salvar.'); }
+    setSaving(false);
   }
 
   // ─── Import xlsx ─────────────────────────────────────────────────────────────
@@ -492,20 +558,20 @@ export default function AgendaTecnica() {
     return false;
   }
 
-  function confirmImport() {
+  async function confirmImport() {
     if (!importPreview) return;
     setImporting(true);
     const { visitas: v, plantoes: p, ferias: f, tecnicos: t } = importPreview;
     const total = v.length + p.length + f.length + t.length;
-    if (importMode === 'replace') { setVisitas(v); setPlantoes(p); setFerias(f); setTecnicos(t); }
-    else {
-      if (v.length) setVisitas(prev => [...prev, ...v]);
-      if (p.length) setPlantoes(prev => [...prev, ...p]);
-      if (f.length) setFerias(prev => [...prev, ...f]);
-      if (t.length) setTecnicos(prev => [...prev, ...t]);
-    }
-    setImporting(false); setImportOpen(false); setImportPreview(null); setImportFile(null);
-    message.success(`${total} registro${total !== 1 ? 's' : ''} importado${total !== 1 ? 's' : ''} com sucesso.`);
+    try {
+      await agendaTecnicaService.bulk({
+        visitas: v, plantoes: p, ferias: f, tecnicos: t, mode: importMode,
+      });
+      await loadAll();
+      setImportOpen(false); setImportPreview(null); setImportFile(null);
+      message.success(`${total} registro${total !== 1 ? 's' : ''} importado${total !== 1 ? 's' : ''} com sucesso.`);
+    } catch { message.error('Erro ao salvar dados no servidor.'); }
+    setImporting(false);
   }
 
   // ─── Colunas ──────────────────────────────────────────────────────────────────
@@ -532,7 +598,7 @@ export default function AgendaTecnica() {
     { title:'Técnico', dataIndex:'tecnico', render: v => <TecnicoCell nome={v} /> },
     { title:'Cliente / Local', dataIndex:'cliente', render: v => <span style={{ fontWeight:500, color:'var(--cl-text-hi)' }}>{v}</span> },
     { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={tipoColor} /> },
-    { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'visita' }, 'visita')} onDelete={() => handleDelete(r.id, setVisitas)} /> },
+    { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'visita' }, 'visita')} onDelete={() => handleDelete(r.id, 'visita')} /> },
   ];
 
   const colsPlantoes = [
@@ -540,7 +606,7 @@ export default function AgendaTecnica() {
     { title:'Técnico', dataIndex:'tecnico', render: v => <TecnicoCell nome={v} /> },
     { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={t => PLANTAO_TIPO_COLORS[t] || '#6b7280'} /> },
     { title:'Aba', dataIndex:'aba', render: v => <Tag style={{ borderRadius:20, fontSize:11, color:'var(--cl-text-soft)', borderColor:'var(--cl-border)' }}>{v}</Tag> },
-    { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'plantao' }, 'plantao')} onDelete={() => handleDelete(r.id, setPlantoes)} /> },
+    { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'plantao' }, 'plantao')} onDelete={() => handleDelete(r.id, 'plantao')} /> },
   ];
 
   const colsFerias = [
@@ -551,7 +617,7 @@ export default function AgendaTecnica() {
     )},
     { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={t => FERIAS_TIPO_COLORS[t] || '#6b7280'} /> },
     { title:'Equipe', dataIndex:'equipe', render: v => { const color = EQUIPE_COLORS[v] || '#6b7280'; return <Tag style={{ background:color+'22', color, border:`1px solid ${color}44`, borderRadius:20, fontSize:11 }}>{v || '—'}</Tag>; } },
-    { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'ferias' }, 'ferias')} onDelete={() => handleDelete(r.id, setFerias)} /> },
+    { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'ferias' }, 'ferias')} onDelete={() => handleDelete(r.id, 'ferias')} /> },
   ];
 
   // ─── Tabs ────────────────────────────────────────────────────────────────────
@@ -579,7 +645,7 @@ export default function AgendaTecnica() {
             >Exportar CSV</Button>
           </div>
           <div className="page-table-wrap">
-            <Table dataSource={visitasFilt} columns={colsVisitas} rowKey="id" size="small"
+            <Table dataSource={visitasFilt} columns={colsVisitas} rowKey="id" size="small" loading={loading}
               pagination={{ pageSize:20, showSizeChanger:false }}
               locale={{ emptyText: <EmptyImport text="Nenhuma visita. Importe uma planilha para começar." /> }}
               footer={() => <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{visitasFilt.length} registro{visitasFilt.length !== 1 ? 's' : ''}</span>}
@@ -602,7 +668,7 @@ export default function AgendaTecnica() {
             </Select>
           </div>
           <div className="page-table-wrap">
-            <Table dataSource={plantoessFilt} columns={colsPlantoes} rowKey="id" size="small"
+            <Table dataSource={plantoessFilt} columns={colsPlantoes} rowKey="id" size="small" loading={loading}
               pagination={{ pageSize:20, showSizeChanger:false }}
               locale={{ emptyText: <EmptyImport text="Nenhum plantão. Importe uma planilha para começar." /> }}
               footer={() => <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{plantoessFilt.length} registro{plantoessFilt.length !== 1 ? 's' : ''}</span>}
@@ -623,7 +689,7 @@ export default function AgendaTecnica() {
             </Select>
           </div>
           <div className="page-table-wrap">
-            <Table dataSource={feriasFilt} columns={colsFerias} rowKey="id" size="small"
+            <Table dataSource={feriasFilt} columns={colsFerias} rowKey="id" size="small" loading={loading}
               pagination={{ pageSize:20, showSizeChanger:false }}
               locale={{ emptyText: <EmptyImport text="Nenhum registro de férias ou licença." /> }}
               footer={() => <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{feriasFilt.length} registro{feriasFilt.length !== 1 ? 's' : ''}</span>}
@@ -701,6 +767,15 @@ export default function AgendaTecnica() {
           </div>
         </div>
         <Space wrap>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            loading={clearingAll}
+            disabled={visitas.length === 0 && plantoes.length === 0 && ferias.length === 0 && tecnicos.length === 0}
+            onClick={handleClearAll}
+          >
+            Excluir todos
+          </Button>
           <Button icon={<UploadOutlined />} onClick={() => { setImportPreview(null); setImportFile(null); setImportOpen(true); }}>Importar planilha</Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm(null, activeTab === 'plantoes' ? 'plantao' : activeTab === 'ferias' ? 'ferias' : 'visita')}>Novo registro</Button>
         </Space>

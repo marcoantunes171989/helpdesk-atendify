@@ -507,6 +507,59 @@ enum VisitaStatus {
   CANCELADA
 }
 
+// ─── AGENDA TÉCNICA ──────────────────────────────────────────────────────────
+
+model AgendaVisita {
+  id        String   @id @default(cuid())
+  tecnico   String
+  cliente   String
+  tipo      String?
+  data      String?
+  mes       String?
+  obs       String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agenda_visitas")
+}
+
+model AgendaPlantao {
+  id        String   @id @default(cuid())
+  data      String?
+  tecnico   String
+  tipo      String?
+  aba       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agenda_plantoes")
+}
+
+model AgendaFerias {
+  id          String   @id @default(cuid())
+  colaborador String
+  mes         String?
+  periodo     String?
+  tipo        String?
+  equipe      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("agenda_ferias")
+}
+
+model AgendaTecnico {
+  id         String   @id @default(cuid())
+  nome       String
+  equipe     String?
+  modalidade String?
+  horario    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("agenda_tecnicos")
+}
+
 model Visita {
   id              String       @id @default(cuid())
   code            Int?         @unique @default(autoincrement())

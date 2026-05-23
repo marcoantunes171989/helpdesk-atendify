@@ -172,6 +172,32 @@ export const visitaService = {
   remove: (id)       => api.delete(`/visitas/${id}`).then(r => r.data),
 };
 
+export const agendaTecnicaService = {
+  stats:    ()           => api.get('/agenda-tecnica/stats').then(r => r.data),
+  clearAll: ()           => api.delete('/agenda-tecnica/all').then(r => r.data),
+  bulk:     (data)       => api.post('/agenda-tecnica/bulk', data).then(r => r.data),
+
+  listVisitas:    (p)    => api.get('/agenda-tecnica/visitas',     { params: p }).then(r => r.data),
+  createVisita:   (d)    => api.post('/agenda-tecnica/visitas',    d).then(r => r.data),
+  updateVisita:   (id,d) => api.put(`/agenda-tecnica/visitas/${id}`, d).then(r => r.data),
+  removeVisita:   (id)   => api.delete(`/agenda-tecnica/visitas/${id}`).then(r => r.data),
+
+  listPlantoes:   (p)    => api.get('/agenda-tecnica/plantoes',    { params: p }).then(r => r.data),
+  createPlantao:  (d)    => api.post('/agenda-tecnica/plantoes',   d).then(r => r.data),
+  updatePlantao:  (id,d) => api.put(`/agenda-tecnica/plantoes/${id}`, d).then(r => r.data),
+  removePlantao:  (id)   => api.delete(`/agenda-tecnica/plantoes/${id}`).then(r => r.data),
+
+  listFerias:     (p)    => api.get('/agenda-tecnica/ferias',      { params: p }).then(r => r.data),
+  createFerias:   (d)    => api.post('/agenda-tecnica/ferias',     d).then(r => r.data),
+  updateFerias:   (id,d) => api.put(`/agenda-tecnica/ferias/${id}`, d).then(r => r.data),
+  removeFerias:   (id)   => api.delete(`/agenda-tecnica/ferias/${id}`).then(r => r.data),
+
+  listTecnicos:   ()     => api.get('/agenda-tecnica/tecnicos').then(r => r.data),
+  createTecnico:  (d)    => api.post('/agenda-tecnica/tecnicos',   d).then(r => r.data),
+  updateTecnico:  (id,d) => api.put(`/agenda-tecnica/tecnicos/${id}`, d).then(r => r.data),
+  removeTecnico:  (id)   => api.delete(`/agenda-tecnica/tecnicos/${id}`).then(r => r.data),
+};
+
 export const knowledgeService = {
   list: (params) => api.get('/knowledge', { params }).then(r => r.data),
   get: (id) => api.get(`/knowledge/${id}`).then(r => r.data),
