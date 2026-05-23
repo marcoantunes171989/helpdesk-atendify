@@ -7,7 +7,7 @@ import {
   PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined,
   PaperClipOutlined, DownloadOutlined, SendOutlined, RobotOutlined,
   QuestionCircleOutlined, WarningOutlined, SettingOutlined, BookOutlined,
-  SearchOutlined, InboxOutlined,
+  SearchOutlined, InboxOutlined, CopyOutlined, CheckOutlined,
 } from '@ant-design/icons';
 import { knowledgeService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -570,6 +570,17 @@ export default function KnowledgeBase() {
 }
 
 function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    const tags = article.tags ? `\nTags: ${article.tags}\n` : '';
+    const text = `${article.title}\n${tags}\n${article.content ?? ''}`.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
@@ -582,17 +593,28 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
             <Tag color="default" style={{ fontSize: 11 }}>Inativo</Tag>
           )}
         </div>
-        {canEdit && (
-          <Space size={4}>
-            <Tooltip title="Editar">
-              <Button type="text" icon={<EditOutlined />} size="small"
-                style={{ color: 'var(--cl-text-soft)' }} onClick={onEdit} />
-            </Tooltip>
-            <Tooltip title="Excluir">
-              <Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={onDelete} />
-            </Tooltip>
-          </Space>
-        )}
+        <Space size={4}>
+          <Tooltip title={copied ? 'Copiado!' : 'Copiar conteúdo'}>
+            <Button
+              type="text"
+              icon={copied ? <CheckOutlined style={{ color: '#4ade80' }} /> : <CopyOutlined />}
+              size="small"
+              style={{ color: copied ? '#4ade80' : 'var(--cl-text-soft)' }}
+              onClick={handleCopy}
+            />
+          </Tooltip>
+          {canEdit && (
+            <>
+              <Tooltip title="Editar">
+                <Button type="text" icon={<EditOutlined />} size="small"
+                  style={{ color: 'var(--cl-text-soft)' }} onClick={onEdit} />
+              </Tooltip>
+              <Tooltip title="Excluir">
+                <Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={onDelete} />
+              </Tooltip>
+            </>
+          )}
+        </Space>
       </div>
 
       <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--cl-text-hi)', marginBottom: 8 }}>
