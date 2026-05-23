@@ -193,7 +193,7 @@ export default function Tickets() {
       ),
     },
     {
-      title: 'Título', dataIndex: 'title', key: 'title', minWidth: 180,
+      title: 'Título', dataIndex: 'title', key: 'title', ellipsis: true,
       sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
       render: (v, r) => (
         <Space size={6}>
@@ -215,7 +215,7 @@ export default function Tickets() {
       ),
     },
     {
-      title: 'Empresa', key: 'company',
+      title: 'Empresa', key: 'company', ellipsis: true,
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
@@ -227,7 +227,7 @@ export default function Tickets() {
       ),
     },
     {
-      title: 'Funcionário', key: 'employee',
+      title: 'Funcionário', key: 'employee', ellipsis: true, width: 130,
       sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee ? (
         <div>
@@ -237,12 +237,12 @@ export default function Tickets() {
       ) : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
-      title: 'Técnico', key: 'technician',
+      title: 'Técnico', key: 'technician', ellipsis: true, width: 110,
       sorter: (a, b) => (a.technician?.name || '').localeCompare(b.technician?.name || '', 'pt-BR'),
       render: (_, r) => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
     },
     {
-      title: 'Categoria', key: 'category',
+      title: 'Categoria', key: 'category', ellipsis: true, width: 110,
       sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'),
       render: (_, r) => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
@@ -356,7 +356,7 @@ export default function Tickets() {
       <div className="page-table-wrap">
         <Table
           dataSource={filteredTickets} columns={columns} rowKey="id" loading={loading}
-          scroll={{ x: 1300 }} size="middle"
+          size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} chamados` }}
           onRow={r => ({ onClick: () => navigate(`/app/tickets/${r.id}`), style: { cursor: 'pointer' } })}
         />
