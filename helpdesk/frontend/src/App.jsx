@@ -23,6 +23,7 @@ import CRM from './pages/CRM';
 import Implantacoes from './pages/Implantacoes';
 import Treinamentos from './pages/Treinamentos';
 import Visitas from './pages/Visitas';
+import AgendaTecnica from './pages/AgendaTecnica';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="implantacoes" element={<Implantacoes />} />
         <Route path="treinamentos" element={<Treinamentos />} />
         <Route path="visitas" element={<Visitas />} />
+        <Route path="agenda-tecnica" element={<AgendaTecnica />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
