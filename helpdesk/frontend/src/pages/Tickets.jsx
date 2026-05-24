@@ -233,34 +233,34 @@ export default function Tickets() {
       ),
     },
     {
-      title: 'Empresa', key: 'company', ellipsis: true,
+      title: 'Empresa', key: 'company', width: 180,
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
+          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500, whiteSpace: 'normal', wordBreak: 'break-word' }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
-            <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{r.company.fantasia}</div>
+            <div style={{ fontSize: 11, color: 'var(--cl-text-muted)', whiteSpace: 'normal', wordBreak: 'break-word' }}>{r.company.fantasia}</div>
           )}
         </div>
       ),
     },
     {
-      title: 'Funcionário', key: 'employee', ellipsis: true, width: 130,
+      title: 'Funcionário', key: 'employee', width: 140,
       sorter: (a, b) => (a.employee?.name || '').localeCompare(b.employee?.name || '', 'pt-BR'),
       render: (_, r) => r.employee ? (
         <div>
-          <div style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{r.employee.name}</div>
-          {r.employee.position && <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{r.employee.position}</div>}
+          <div style={{ fontSize: 13, color: 'var(--cl-text-soft)', whiteSpace: 'normal', wordBreak: 'break-word' }}>{r.employee.name}</div>
+          {r.employee.position && <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', whiteSpace: 'normal', wordBreak: 'break-word' }}>{r.employee.position}</div>}
         </div>
       ) : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
-      title: 'Técnico', key: 'technician', ellipsis: true, width: 110,
+      title: 'Técnico', key: 'technician', width: 100,
       sorter: (a, b) => (a.technician?.name || '').localeCompare(b.technician?.name || '', 'pt-BR'),
       render: (_, r) => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.technician?.name || '—'}</span>,
     },
     {
-      title: 'Categoria', key: 'category', ellipsis: true, width: 110,
+      title: 'Categoria', key: 'category', width: 110,
       sorter: (a, b) => (a.category?.name || '').localeCompare(b.category?.name || '', 'pt-BR'),
       render: (_, r) => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{r.category?.name || '—'}</span>,
     },
