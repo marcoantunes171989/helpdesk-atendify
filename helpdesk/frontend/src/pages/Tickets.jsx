@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Modal, Form, Input, Select, Tag, Space,
-  message, Tooltip, Badge, Upload,
+  message, Tooltip, Upload,
 } from 'antd';
 import {
   PlusOutlined, EyeOutlined, DeleteOutlined, ExclamationCircleOutlined,
@@ -519,11 +519,14 @@ export default function Tickets() {
 
             <Form.Item
               label={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Badge count={fileList.length} size="small" color="#2563eb" offset={[4, -2]}>
-                    <PaperClipOutlined style={{ fontSize: 15 }} />
-                  </Badge>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <PaperClipOutlined style={{ fontSize: 15 }} />
                   <span>Anexos</span>
+                  {fileList.length > 0 && (
+                    <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                      {fileList.length}
+                    </span>
+                  )}
                   <span style={{ color: 'var(--cl-text-muted)', fontSize: 12, fontWeight: 400 }}>
                     opcional · máx. {MAX_FILE_SIZE_MB}MB por arquivo
                   </span>
