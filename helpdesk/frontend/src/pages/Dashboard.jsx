@@ -549,7 +549,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke={cc.grid} vertical={false} />
               <XAxis dataKey="hour" tick={{ fill: cc.text, fontSize: 10 }} tickLine={false} axisLine={false} interval={1} />
               <YAxis tick={{ fill: cc.text, fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
-              <ChartTooltip content={<PeakTooltip />} />
+              <ChartTooltip content={<PeakTooltip />} cursor={false} />
               <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
               <Bar dataKey="seg_sex" name="Seg–Sex" radius={[3, 3, 0, 0]}>
                 {peakHours.map((entry) => (
