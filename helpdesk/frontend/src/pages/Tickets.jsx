@@ -44,6 +44,9 @@ export default function Tickets() {
   const [filters, setFilters] = useState({});
   const [search, setSearch] = useState('');
   const [fileList, setFileList] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
   const [form] = Form.useForm();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -95,6 +98,21 @@ export default function Tickets() {
     setDrawerOpen(false);
     setFileList([]);
     setCompanyEmployees([]);
+  };
+
+  const handlePreview = async (file) => {
+    const isImage = file.type?.startsWith('image/') || /\.(jpe?g|png|gif|webp|svg|bmp)$/i.test(file.name || '');
+    if (!isImage) return;
+    if (!file.url && !file.preview) {
+      file.preview = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+    setPreviewImage(file.url || file.preview);
+    setPreviewTitle(file.name || '');
+    setPreviewOpen(true);
   };
 
   const beforeUpload = (file) => {
@@ -517,15 +535,29 @@ export default function Tickets() {
                 beforeUpload={beforeUpload}
                 fileList={fileList}
                 onChange={({ fileList: newList }) => setFileList(newList)}
-                showUploadList={{ showRemoveIcon: true }}
+                listType="picture-card"
+                onPreview={handlePreview}
+                style={{ width: '100%' }}
               >
-                <Button icon={<PaperClipOutlined />} style={{ borderRadius: 8 }}>
-                  Adicionar arquivo
-                </Button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: 'var(--cl-text-soft)', fontSize: 12 }}>
+                  <PlusOutlined style={{ fontSize: 16 }} />
+                  <span>Adicionar</span>
+                </div>
               </Upload>
             </Form.Item>
           </Form>
         </div>
+      </Modal>
+
+      {/* Modal — Preview de anexo */}
+      <Modal
+        open={previewOpen}
+        title={previewTitle}
+        footer={null}
+        centered
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: '100%', borderRadius: 8 }} src={previewImage} />
       </Modal>
     </div>
   );
