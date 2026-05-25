@@ -50,24 +50,36 @@ function faseProgress(fases = []) {
   return Math.round((fases.filter(f => f.status === 'CONCLUIDO').length / fases.length) * 100);
 }
 
-function gerarATAImplantacao(imp, allEmployees = []) {
+function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
   const fmt = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
 
   const statusStyle = {
-    PENDENTE:     { bg: '#fff8e1', color: '#b45309', border: '#f59e0b' },
-    EM_ANDAMENTO: { bg: '#eff6ff', color: '#1d4ed8', border: '#3b82f6' },
-    CONCLUIDO:    { bg: '#f0fdf4', color: '#15803d', border: '#22c55e' },
-    BLOQUEADO:    { bg: '#fef2f2', color: '#b91c1c', border: '#ef4444' },
+    PENDENTE:     { bg: '#fff8e1', color: '#b45309', border: '#f59e0b', label: 'Pendente' },
+    EM_ANDAMENTO: { bg: '#eff6ff', color: '#1d4ed8', border: '#3b82f6', label: 'Em Andamento' },
+    CONCLUIDO:    { bg: '#f0fdf4', color: '#15803d', border: '#22c55e', label: 'Concluído' },
   };
   const statusBadge = s => {
     const st = statusStyle[s] || statusStyle.PENDENTE;
-    const label = FASE_STATUS[s]?.label || s;
-    return `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${label}</span>`;
+    return `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:10px;font-weight:700;background:${st.bg};color:${st.color};border:1px solid ${st.border};letter-spacing:.3px">${st.label}</span>`;
   };
+  const statusLabel = s => ({ PENDENTE: 'Pendente', EM_ANDAMENTO: 'Em Andamento', PAUSADO: 'Pausado', CONCLUIDO: 'Concluído', CANCELADO: 'Cancelado' }[s] || s);
 
   const fases = imp.fases || [];
 
-  // collect unique employees across all fases
+  // Enrich each fase with resolved etapa/module metadata
+  const fasesWithMeta = fases.map(f => {
+    const etapa = f.etapaTreinamentoId ? etapasTemplate.find(e => e.id === f.etapaTreinamentoId) : null;
+    return {
+      ...f,
+      etapa,
+      moduloId:    etapa?.modulo?.id    ?? null,
+      moduloName:  etapa?.modulo?.name  ?? null,
+      moduloOrder: etapa?.modulo?.order ?? 9999,
+      etapaOrder:  etapa?.order         ?? f.order ?? 9999,
+    };
+  });
+
+  // Collect unique employees
   const empMap = {};
   fases.forEach(f => {
     (f.employeeIds || []).forEach(eid => {
@@ -77,150 +89,239 @@ function gerarATAImplantacao(imp, allEmployees = []) {
       }
     });
   });
-  const employees = Object.values(empMap).sort((a, b) => a.name.localeCompare(b.name));
-  const unassigned = fases.filter(f => !f.employeeIds || f.employeeIds.length === 0);
-
-  const infoRow = (label, value) =>
-    `<tr><td style="padding:8px 14px;border:1px solid #e2e8f0;font-weight:600;background:#f8fafc;width:32%;font-size:12px;color:#475569;text-transform:uppercase;letter-spacing:.4px">${label}</td><td style="padding:8px 14px;border:1px solid #e2e8f0;font-size:13px;color:#1e293b">${value}</td></tr>`;
-
-  const fasesTableRows = (list) => list.map((f, i) => `
-    <tr style="${i % 2 === 1 ? 'background:#f8fafc' : ''}">
-      <td style="padding:8px 12px;border:1px solid #e2e8f0;font-size:12px;color:#334155;width:36px;text-align:center;font-weight:600">${f.order ?? i + 1}</td>
-      <td style="padding:8px 12px;border:1px solid #e2e8f0;font-size:13px;color:#1e293b">${f.title}</td>
-      <td style="padding:8px 12px;border:1px solid #e2e8f0;font-size:12px;text-align:center">${statusBadge(f.status)}</td>
-      <td style="padding:8px 12px;border:1px solid #e2e8f0;font-size:12px;color:#64748b">${f.description || '—'}</td>
-    </tr>`).join('');
-
-  const empSections = employees.map(emp => {
-    const empFases = fases.filter(f => (f.employeeIds || []).includes(emp.id));
-    const concluidas = empFases.filter(f => f.status === 'CONCLUIDO').length;
-    const pct = empFases.length ? Math.round((concluidas / empFases.length) * 100) : 0;
-    return `
-      <div style="margin-bottom:24px">
-        <div style="display:flex;align-items:center;justify-content:space-between;background:#1e3a5f;color:#fff;padding:10px 16px;border-radius:6px 6px 0 0">
-          <div>
-            <span style="font-size:14px;font-weight:700">${emp.name}</span>
-            ${emp.position ? `<span style="font-size:11px;margin-left:10px;opacity:.8;font-style:italic">${emp.position}</span>` : ''}
-          </div>
-          <div style="font-size:11px;opacity:.85">${concluidas}/${empFases.length} módulos concluídos &nbsp;·&nbsp; ${pct}%</div>
-        </div>
-        <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-top:none">
-          <thead><tr style="background:#f1f5f9">
-            <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:center;width:36px;color:#64748b">#</th>
-            <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:left;color:#64748b">MÓDULO / ETAPA</th>
-            <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:center;width:130px;color:#64748b">STATUS</th>
-            <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:left;color:#64748b">OBSERVAÇÃO</th>
-          </tr></thead>
-          <tbody>${fasesTableRows(empFases)}</tbody>
-        </table>
-      </div>`;
-  }).join('');
-
-  const unassignedSection = unassigned.length ? `
-    <div style="margin-bottom:24px">
-      <div style="background:#64748b;color:#fff;padding:10px 16px;border-radius:6px 6px 0 0;font-size:13px;font-weight:700">Etapas sem responsável atribuído</div>
-      <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-top:none">
-        <thead><tr style="background:#f1f5f9">
-          <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:center;width:36px;color:#64748b">#</th>
-          <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:left;color:#64748b">MÓDULO / ETAPA</th>
-          <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:center;width:130px;color:#64748b">STATUS</th>
-          <th style="padding:7px 12px;border:1px solid #e2e8f0;font-size:11px;text-align:left;color:#64748b">OBSERVAÇÃO</th>
-        </tr></thead>
-        <tbody>${fasesTableRows(unassigned)}</tbody>
-      </table>
-    </div>` : '';
+  const employees = Object.values(empMap).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const unassigned = fasesWithMeta.filter(f => !f.employeeIds || f.employeeIds.length === 0);
 
   const totalFases = fases.length;
   const totalConcluidas = fases.filter(f => f.status === 'CONCLUIDO').length;
   const progPct = totalFases ? Math.round((totalConcluidas / totalFases) * 100) : 0;
+  const progColor = progPct === 100 ? '#22c55e' : progPct >= 50 ? '#2563eb' : '#f59e0b';
+  const progTextColor = progPct === 100 ? '#15803d' : '#1e3a5f';
+
+  const infoRow = (label, value) =>
+    `<tr><td style="padding:9px 16px;border:1px solid #e2e8f0;font-weight:600;background:#f8fafc;width:33%;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.5px">${label}</td><td style="padding:9px 16px;border:1px solid #e2e8f0;font-size:13px;color:#1e293b">${value}</td></tr>`;
+
+  // Build grouped module sections for a list of fases
+  function buildModuleSections(empFases) {
+    const moduleMap = new Map();
+    empFases.forEach(f => {
+      const key = f.moduloId || '__none__';
+      if (!moduleMap.has(key)) {
+        moduleMap.set(key, { name: f.moduloName, order: f.moduloOrder, fases: [] });
+      }
+      moduleMap.get(key).fases.push(f);
+    });
+
+    const modules = [...moduleMap.values()].sort((a, b) =>
+      (a.order - b.order) || (a.name || '').localeCompare(b.name || '', 'pt-BR')
+    );
+    modules.forEach(m => m.fases.sort((a, b) => a.etapaOrder - b.etapaOrder));
+
+    let seq = 0;
+    return modules.map(mod => {
+      const modDone = mod.fases.filter(f => f.status === 'CONCLUIDO').length;
+      const modPct  = mod.fases.length ? Math.round((modDone / mod.fases.length) * 100) : 0;
+      const modColor = modPct === 100 ? '#22c55e' : modPct >= 50 ? '#60a5fa' : '#fbbf24';
+
+      const rows = mod.fases.map(f => {
+        seq++;
+        const bg = seq % 2 === 0 ? '#f8fafc' : '#ffffff';
+        return `<tr style="background:${bg}">
+          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:11px;text-align:center;width:34px;font-weight:700;color:#94a3b8">${seq}</td>
+          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:13px;color:#1e293b;font-weight:500">${f.title}</td>
+          <td style="padding:8px 12px;border:1px solid #e8edf2;text-align:center;width:128px">${statusBadge(f.status)}</td>
+          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:12px;color:#64748b">${f.description || '—'}</td>
+        </tr>`;
+      }).join('');
+
+      const modHeader = mod.name
+        ? `<div style="background:#334155;color:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
+             <div style="display:flex;align-items:center;gap:10px">
+               <span style="background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:4px;font-size:9px;letter-spacing:.8px;font-weight:700">MÓDULO</span>
+               <span style="font-size:12px;font-weight:700;letter-spacing:.2px">${mod.name}</span>
+             </div>
+             <div style="display:flex;align-items:center;gap:10px">
+               <div style="width:80px;height:5px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden">
+                 <div style="height:100%;width:${modPct}%;background:${modColor};border-radius:3px"></div>
+               </div>
+               <span style="font-size:10px;opacity:.75;white-space:nowrap">${modDone}/${mod.fases.length} · ${modPct}%</span>
+             </div>
+           </div>`
+        : `<div style="background:#475569;color:#fff;padding:8px 14px;font-size:11px;font-weight:600;letter-spacing:.3px;font-style:italic">Etapas sem módulo vinculado</div>`;
+
+      return `
+        <div style="margin-bottom:14px;border-radius:5px;overflow:hidden;border:1px solid #e2e8f0">
+          ${modHeader}
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:#f1f5f9">
+              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:34px;letter-spacing:.5px">#</th>
+              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:left;color:#94a3b8;letter-spacing:.5px">ETAPA / TELA</th>
+              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:128px;letter-spacing:.5px">STATUS</th>
+              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:left;color:#94a3b8;letter-spacing:.5px">OBSERVAÇÃO</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }).join('');
+  }
+
+  // Employee sections
+  const empSections = employees.map(emp => {
+    const empFases = fasesWithMeta.filter(f => (f.employeeIds || []).includes(emp.id));
+    const done = empFases.filter(f => f.status === 'CONCLUIDO').length;
+    const pct  = empFases.length ? Math.round((done / empFases.length) * 100) : 0;
+    const barC = pct === 100 ? '#4ade80' : '#93c5fd';
+    const pctC = pct === 100 ? '#4ade80' : '#93c5fd';
+
+    return `
+      <div style="margin-bottom:28px;border:1px solid #d1dae6;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(30,58,95,.06)">
+        <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1e4a80 100%);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,0.2)">
+              ${emp.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:700;letter-spacing:.3px">${emp.name}</div>
+              ${emp.position ? `<div style="font-size:11px;opacity:.7;margin-top:2px">${emp.position}</div>` : ''}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:22px;font-weight:800;color:${pctC};line-height:1">${pct}%</div>
+            <div style="font-size:10px;opacity:.65;margin-top:3px">${done} de ${empFases.length} etapas concluídas</div>
+          </div>
+        </div>
+        <div style="height:5px;background:#e2e8f0"><div style="height:100%;width:${pct}%;background:${barC}"></div></div>
+        <div style="padding:16px 16px 4px">
+          ${buildModuleSections(empFases)}
+        </div>
+      </div>`;
+  }).join('');
+
+  // Unassigned section
+  const unassignedSection = unassigned.length ? `
+    <div style="margin-bottom:28px;border:1px solid #d1dae6;border-radius:8px;overflow:hidden">
+      <div style="background:#64748b;color:#fff;padding:12px 20px;font-size:13px;font-weight:700">Etapas sem responsável atribuído</div>
+      <div style="padding:16px 16px 4px">${buildModuleSections(unassigned)}</div>
+    </div>` : '';
 
   const html = `
-    <div style="font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;max-width:820px;margin:0 auto;padding:40px 40px 60px">
+    <div style="font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;max-width:840px;margin:0 auto;padding:36px 36px 60px">
 
-      <!-- Cabeçalho -->
-      <div style="background:#1e3a5f;color:#fff;padding:28px 32px;border-radius:8px;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between">
-        <div>
-          <div style="font-size:9px;letter-spacing:2px;opacity:.7;margin-bottom:6px;text-transform:uppercase">Documento Oficial</div>
-          <h1 style="margin:0;font-size:24px;font-weight:700;letter-spacing:.5px">ATA DE IMPLANTAÇÃO</h1>
-          <div style="margin-top:8px;font-size:13px;opacity:.85">${imp.title}</div>
+      <!-- ── CABEÇALHO ───────────────────────────────────────────── -->
+      <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1a3d7a 100%);color:#fff;border-radius:10px;margin-bottom:32px;overflow:hidden">
+        <div style="background:rgba(0,0,0,.18);padding:8px 28px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;opacity:.65;font-weight:600">Documento Oficial · Sistema de Implantação</span>
+          <span style="font-size:10px;opacity:.6">Emitido em ${new Date().toLocaleString('pt-BR')}</span>
         </div>
-        <div style="text-align:right;font-size:11px;opacity:.75;line-height:1.8">
-          <div>Emitido em ${new Date().toLocaleString('pt-BR')}</div>
-          ${imp.company?.fantasia ? `<div style="margin-top:2px;font-size:12px;opacity:.9;font-weight:600">${imp.company.fantasia}</div>` : ''}
+        <div style="padding:22px 28px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px">
+          <div>
+            <h1 style="margin:0 0 6px;font-size:27px;font-weight:800;letter-spacing:.4px;line-height:1.1">ATA DE IMPLANTAÇÃO</h1>
+            <div style="font-size:14px;opacity:.8;font-weight:500">${imp.title}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            ${imp.company?.fantasia ? `<div style="font-size:15px;font-weight:700;letter-spacing:.2px">${imp.company.fantasia}</div>` : ''}
+            ${imp.code ? `<div style="font-size:10px;opacity:.5;margin-top:4px;font-family:monospace">#${String(imp.code).padStart(4,'0')}</div>` : ''}
+          </div>
+        </div>
+        <div style="background:rgba(0,0,0,.12);padding:10px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.6px">Status</span>
+            <span style="font-size:11px;font-weight:700;padding:2px 12px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2)">${statusLabel(imp.status)}</span>
+          </div>
+          ${imp.startDate   ? `<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.6px">Início</span><span style="font-size:11px;font-weight:600">${fmt(imp.startDate)}</span></div>` : ''}
+          ${imp.expectedEnd ? `<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.6px">Término</span><span style="font-size:11px;font-weight:600">${fmt(imp.expectedEnd)}</span></div>` : ''}
+          ${totalFases > 0 ? `
+          <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <div style="width:100px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${progPct}%;background:${progPct===100?'#4ade80':'#60a5fa'};border-radius:3px"></div>
+            </div>
+            <span style="font-size:14px;font-weight:800;color:${progPct===100?'#4ade80':'#93c5fd'}">${progPct}%</span>
+          </div>` : ''}
         </div>
       </div>
 
-      <!-- Dados gerais -->
+      <!-- ── DADOS DA IMPLANTAÇÃO ────────────────────────────────── -->
       <div style="margin-bottom:28px">
-        <div style="font-size:11px;font-weight:700;color:#1e3a5f;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #1e3a5f">Dados da Implantação</div>
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Dados da Implantação</div>
         <table style="width:100%;border-collapse:collapse">
           ${infoRow('Empresa', imp.company?.name || '—')}
           ${imp.company?.fantasia ? infoRow('Nome Fantasia', imp.company.fantasia) : ''}
-          ${infoRow('Técnico Responsável', imp.technician?.name || '—')}
+          ${imp.responsible ? infoRow('Responsável', imp.responsible.name) : ''}
+          ${imp.technician  ? infoRow('Técnico', imp.technician.name) : ''}
+          ${imp.employee    ? infoRow('Funcionário / Cliente', `${imp.employee.name}${imp.employee.position ? ` <span style="color:#94a3b8;font-size:11px"> · ${imp.employee.position}</span>` : ''}`) : ''}
           ${infoRow('Status', statusBadge(imp.status))}
-          ${infoRow('Início Previsto', fmt(imp.startDate))}
-          ${infoRow('Fim Previsto', fmt(imp.expectedEnd || imp.endDate))}
+          ${imp.startDate   ? infoRow('Início', fmt(imp.startDate)) : ''}
+          ${imp.expectedEnd ? infoRow('Previsão de Término', fmt(imp.expectedEnd)) : ''}
           ${imp.completedAt ? infoRow('Concluído em', fmt(imp.completedAt)) : ''}
         </table>
       </div>
 
-      <!-- Progresso geral -->
+      <!-- ── PROGRESSO GERAL ─────────────────────────────────────── -->
       ${totalFases > 0 ? `
-      <div style="margin-bottom:28px;padding:14px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;gap:20px">
+      <div style="margin-bottom:28px;padding:16px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;gap:20px">
         <div style="flex:1">
-          <div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Progresso Geral</div>
-          <div style="background:#e2e8f0;border-radius:8px;height:8px;overflow:hidden">
-            <div style="background:${progPct === 100 ? '#22c55e' : '#2563eb'};height:100%;width:${progPct}%;border-radius:8px;transition:width .3s"></div>
+          <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Progresso Geral — ${totalConcluidas} de ${totalFases} etapas concluídas</div>
+          <div style="background:#e2e8f0;border-radius:8px;height:10px;overflow:hidden">
+            <div style="height:100%;width:${progPct}%;background:${progColor};border-radius:8px"></div>
           </div>
         </div>
-        <div style="text-align:right;min-width:90px">
-          <div style="font-size:22px;font-weight:700;color:${progPct === 100 ? '#15803d' : '#1e3a5f'}">${progPct}%</div>
-          <div style="font-size:11px;color:#64748b">${totalConcluidas} de ${totalFases} módulos</div>
+        <div style="text-align:right;min-width:70px">
+          <div style="font-size:26px;font-weight:800;color:${progTextColor};line-height:1">${progPct}%</div>
         </div>
       </div>` : ''}
 
-      <!-- Descrição -->
+      <!-- ── DESCRIÇÃO / ESCOPO ──────────────────────────────────── -->
       ${imp.description ? `
       <div style="margin-bottom:28px">
-        <div style="font-size:11px;font-weight:700;color:#1e3a5f;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #1e3a5f">Descrição / Escopo</div>
-        <p style="font-size:13px;line-height:1.8;color:#334155;white-space:pre-wrap;margin:0">${imp.description}</p>
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Descrição / Escopo</div>
+        <p style="font-size:13px;line-height:1.8;color:#334155;white-space:pre-wrap;margin:0;padding:14px 18px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:0 6px 6px 0">${imp.description}</p>
       </div>` : ''}
 
-      <!-- Cronograma por funcionário -->
-      ${(empSections || unassignedSection) ? `
+      <!-- ── CRONOGRAMA POR FUNCIONÁRIO ──────────────────────────── -->
+      ${(employees.length || unassigned.length) ? `
       <div style="margin-bottom:28px">
-        <div style="font-size:11px;font-weight:700;color:#1e3a5f;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;padding-bottom:4px;border-bottom:2px solid #1e3a5f">Cronograma de Treinamento por Funcionário</div>
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Cronograma de Treinamento por Funcionário</div>
         ${empSections}
         ${unassignedSection}
       </div>` : ''}
 
-      <!-- Observações -->
+      <!-- ── OBSERVAÇÕES ─────────────────────────────────────────── -->
       ${imp.notes ? `
       <div style="margin-bottom:36px">
-        <div style="font-size:11px;font-weight:700;color:#1e3a5f;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #1e3a5f">Observações</div>
-        <p style="font-size:13px;line-height:1.8;color:#334155;white-space:pre-wrap;margin:0">${imp.notes}</p>
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Observações</div>
+        <p style="font-size:13px;line-height:1.8;color:#334155;white-space:pre-wrap;margin:0;padding:14px 18px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0">${imp.notes}</p>
       </div>` : ''}
 
-      <!-- Assinaturas -->
-      <div style="margin-top:70px;border-top:1px solid #e2e8f0;padding-top:32px;display:flex;gap:40px">
-        <div style="flex:1;text-align:center">
-          <div style="border-top:1px solid #334155;padding-top:8px;display:inline-block;min-width:180px">
-            <div style="font-size:13px;font-weight:600;color:#1e293b">${imp.technician?.name || '________________________________'}</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px">Técnico Responsável</div>
+      <!-- ── ASSINATURAS ─────────────────────────────────────────── -->
+      <div style="margin-top:70px;border-top:2px solid #e2e8f0;padding-top:36px;display:flex;gap:32px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px;text-align:center">
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid #94a3b8;padding-top:10px;display:inline-block;min-width:190px">
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${imp.technician?.name || '________________________________'}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:3px">Técnico Responsável</div>
           </div>
         </div>
-        <div style="flex:1;text-align:center">
-          <div style="border-top:1px solid #334155;padding-top:8px;display:inline-block;min-width:180px">
-            <div style="font-size:13px;font-weight:600;color:#1e293b">${imp.company?.name || '________________________________'}</div>
-            ${imp.company?.fantasia ? `<div style="font-size:11px;color:#94a3b8">${imp.company.fantasia}</div>` : ''}
-            <div style="font-size:11px;color:#64748b;margin-top:2px">Cliente</div>
+        <div style="flex:1;min-width:160px;text-align:center">
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid #94a3b8;padding-top:10px;display:inline-block;min-width:190px">
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${imp.employee?.name || '________________________________'}</div>
+            ${imp.employee?.position ? `<div style="font-size:11px;color:#94a3b8">${imp.employee.position}</div>` : ''}
+            <div style="font-size:11px;color:#64748b;margin-top:3px">Funcionário / Cliente</div>
           </div>
         </div>
+        ${imp.responsible ? `
+        <div style="flex:1;min-width:160px;text-align:center">
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid #94a3b8;padding-top:10px;display:inline-block;min-width:190px">
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${imp.responsible.name}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:3px">Responsável</div>
+          </div>
+        </div>` : ''}
       </div>
     </div>`;
 
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ATA - ${imp.title}</title><style>*{box-sizing:border-box}body{margin:0;background:#fff}@media print{body{margin:0;padding:0}@page{margin:15mm}}</style></head><body>${html}<script>window.onload=function(){window.print()}<\/script></body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ATA - ${imp.title}</title><style>*{box-sizing:border-box}body{margin:0;background:#f1f5f9;print-color-adjust:exact;-webkit-print-color-adjust:exact}@media print{body{margin:0;padding:0;background:#fff}@page{margin:12mm;size:A4}}</style></head><body>${html}<script>window.onload=function(){window.print()}<\/script></body></html>`);
   win.document.close();
 }
 
@@ -469,7 +570,7 @@ export default function Implantacoes() {
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
           <Tooltip title="Gerar ATA">
-            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATAImplantacao(record, allEmployees)} />
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATAImplantacao(record, allEmployees, etapasTemplate)} />
           </Tooltip>
           {canEdit && (
             <>
@@ -684,7 +785,7 @@ export default function Implantacoes() {
             )}
 
             <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Button icon={<PrinterOutlined />} onClick={() => gerarATAImplantacao(selected, allEmployees)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
+              <Button icon={<PrinterOutlined />} onClick={() => gerarATAImplantacao(selected, allEmployees, etapasTemplate)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
                 Gerar ATA
               </Button>
               {canEdit && (
