@@ -857,7 +857,7 @@ export default function Implantacoes() {
                             label: (
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: 13 }}>{e.title}</span>
-                                {e.category && <span style={{ fontSize: 11, color: '#94a3b8' }}>{e.category}</span>}
+                                {e.modulo?.name && <span style={{ fontSize: 11, color: '#94a3b8' }}>{e.modulo.name}</span>}
                               </div>
                             ),
                           }))}

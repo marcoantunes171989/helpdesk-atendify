@@ -1,44 +1,61 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const include = { modulo: { select: { id: true, name: true } } };
+
 exports.list = async (req, res) => {
-  const { search, category, active } = req.query;
+  const { search, moduloId, active } = req.query;
   const where = {};
   if (active !== undefined) where.active = active === 'true';
-  if (category) where.category = { contains: category, mode: 'insensitive' };
+  if (moduloId) where.moduloId = moduloId;
   if (search) {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
       { description: { contains: search, mode: 'insensitive' } },
-      { category: { contains: search, mode: 'insensitive' } },
+      { modulo: { name: { contains: search, mode: 'insensitive' } } },
     ];
   }
   const items = await prisma.etapaTreinamento.findMany({
     where,
-    orderBy: [{ category: 'asc' }, { order: 'asc' }, { title: 'asc' }],
+    include,
+    orderBy: [{ modulo: { order: 'asc' } }, { order: 'asc' }, { title: 'asc' }],
   });
   res.json(items);
 };
 
 exports.get = async (req, res) => {
-  const item = await prisma.etapaTreinamento.findUnique({ where: { id: req.params.id } });
+  const item = await prisma.etapaTreinamento.findUnique({ where: { id: req.params.id }, include });
   if (!item) return res.status(404).json({ error: 'Etapa não encontrada' });
   res.json(item);
 };
 
 exports.create = async (req, res) => {
-  const { title, description, category, order, active } = req.body;
+  const { title, description, moduloId, order, active } = req.body;
   const item = await prisma.etapaTreinamento.create({
-    data: { title, description: description || null, category: category || null, order: order ? Number(order) : null, active: active !== false },
+    data: {
+      title,
+      description: description || null,
+      moduloId: moduloId || null,
+      order: order ? Number(order) : null,
+      active: active !== false,
+    },
+    include,
   });
   res.status(201).json(item);
 };
 
 exports.update = async (req, res) => {
-  const { title, description, category, order, active } = req.body;
+  const { title, description, moduloId, order, active } = req.body;
   const item = await prisma.etapaTreinamento.update({
     where: { id: req.params.id },
-    data: { title, description: description || null, category: category || null, order: order ? Number(order) : null, active },
+    data: {
+      title,
+      description: description || null,
+      moduloId: moduloId || null,
+      order: order ? Number(order) : null,
+      active,
+    },
+    include,
   });
   res.json(item);
 };

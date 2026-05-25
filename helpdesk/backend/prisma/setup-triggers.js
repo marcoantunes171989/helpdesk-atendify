@@ -63,19 +63,46 @@ async function main() {
   // implantacao_fases.employeeIds
   await prisma.$executeRawUnsafe(`ALTER TABLE "implantacao_fases" ADD COLUMN IF NOT EXISTS "employeeIds" TEXT`);
 
+  // Tabela de módulos de treinamento
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "modulos_treinamento" (
+      "id" TEXT NOT NULL,
+      "name" TEXT NOT NULL,
+      "description" TEXT,
+      "order" INTEGER,
+      "active" BOOLEAN NOT NULL DEFAULT true,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "modulos_treinamento_pkey" PRIMARY KEY ("id")
+    )
+  `);
+
   // Tabela de etapas de treinamento
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "etapas_treinamento" (
       "id" TEXT NOT NULL,
       "title" TEXT NOT NULL,
       "description" TEXT,
-      "category" TEXT,
       "order" INTEGER,
       "active" BOOLEAN NOT NULL DEFAULT true,
       "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
       "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
       CONSTRAINT "etapas_treinamento_pkey" PRIMARY KEY ("id")
     )
+  `);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "etapas_treinamento" ADD COLUMN IF NOT EXISTS "moduloId" TEXT`);
+  await prisma.$executeRawUnsafe(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'etapas_treinamento_moduloId_fkey'
+      ) THEN
+        ALTER TABLE "etapas_treinamento"
+          ADD CONSTRAINT "etapas_treinamento_moduloId_fkey"
+          FOREIGN KEY ("moduloId") REFERENCES "modulos_treinamento"("id")
+          ON DELETE SET NULL ON UPDATE CASCADE;
+      END IF;
+    END $$
   `);
 
   console.log('[setup-triggers] schema patches OK');

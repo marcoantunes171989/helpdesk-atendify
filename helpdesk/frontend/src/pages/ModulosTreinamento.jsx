@@ -1,27 +1,23 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Table, Button, Modal, Form, Input, InputNumber, Space, Tag, Switch,
-  Select, message, Tooltip,
+  message, Tooltip,
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, UnorderedListOutlined,
+  PlusOutlined, EditOutlined, DeleteOutlined, AppstoreAddOutlined,
   ExclamationCircleOutlined, SearchOutlined,
 } from '@ant-design/icons';
-import { etapaTreinamentoService, moduloTreinamentoService } from '../services/api';
+import { moduloTreinamentoService } from '../services/api';
 import { normalize } from '../utils/constants';
 import { useAuth } from '../contexts/AuthContext';
 
-const { Option } = Select;
-
-export default function EtapasTreinamento() {
+export default function ModulosTreinamento() {
   const { user } = useAuth();
   const canEdit = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role);
 
   const [items, setItems] = useState([]);
-  const [modulos, setModulos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterModulo, setFilterModulo] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -29,27 +25,19 @@ export default function EtapasTreinamento() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [form] = Form.useForm();
 
-  const loadAll = useCallback(() => {
+  const load = useCallback(() => {
     setLoading(true);
-    Promise.all([
-      etapaTreinamentoService.list(),
-      moduloTreinamentoService.list({ active: 'true' }),
-    ]).then(([etapas, mods]) => {
-      setItems(etapas);
-      setModulos(mods);
-    }).finally(() => setLoading(false));
+    moduloTreinamentoService.list().then(setItems).finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => { load(); }, [load]);
 
-  const filtered = items.filter(i => {
-    if (filterModulo && i.moduloId !== filterModulo) return false;
-    if (search) {
-      const q = normalize(search);
-      return [i.title, i.description, i.modulo?.name].some(f => normalize(f).includes(q));
-    }
-    return true;
-  });
+  const filtered = search
+    ? (() => {
+        const q = normalize(search);
+        return items.filter(i => [i.name, i.description].some(f => normalize(f).includes(q)));
+      })()
+    : items;
 
   const openCreate = () => {
     setEditing(null);
@@ -60,9 +48,8 @@ export default function EtapasTreinamento() {
   const openEdit = (record) => {
     setEditing(record);
     form.setFieldsValue({
-      title: record.title,
+      name: record.name,
       description: record.description,
-      moduloId: record.moduloId || undefined,
       order: record.order,
       active: record.active,
     });
@@ -73,14 +60,14 @@ export default function EtapasTreinamento() {
     setSaving(true);
     try {
       if (editing) {
-        await etapaTreinamentoService.update(editing.id, values);
-        message.success('Etapa atualizada');
+        await moduloTreinamentoService.update(editing.id, values);
+        message.success('Módulo atualizado');
       } else {
-        await etapaTreinamentoService.create(values);
-        message.success('Etapa cadastrada');
+        await moduloTreinamentoService.create(values);
+        message.success('Módulo cadastrado');
       }
       setModalOpen(false);
-      loadAll();
+      load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar');
     } finally {
@@ -91,10 +78,10 @@ export default function EtapasTreinamento() {
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      await etapaTreinamentoService.remove(deleteModal.id);
-      message.success('Etapa removida');
+      await moduloTreinamentoService.remove(deleteModal.id);
+      message.success('Módulo removido');
       setDeleteModal(null);
-      loadAll();
+      load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao remover');
     } finally {
@@ -113,29 +100,24 @@ export default function EtapasTreinamento() {
         : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
-      title: 'Etapa / Módulo',
-      dataIndex: 'title',
-      sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
-      render: (title, r) => (
+      title: 'Módulo',
+      dataIndex: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
+      render: (name, r) => (
         <div>
-          <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{title}</div>
+          <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{name}</div>
           {r.description && (
-            <div style={{ fontSize: 11, color: 'var(--cl-text-muted)', marginTop: 2, maxWidth: 400,
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {r.description}
-            </div>
+            <div style={{ fontSize: 11, color: 'var(--cl-text-muted)', marginTop: 2 }}>{r.description}</div>
           )}
         </div>
       ),
     },
     {
-      title: 'Módulo',
-      dataIndex: ['modulo', 'name'],
-      width: 180,
-      sorter: (a, b) => (a.modulo?.name || '').localeCompare(b.modulo?.name || '', 'pt-BR'),
-      render: (name) => name
-        ? <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>{name}</Tag>
-        : <span style={{ color: 'var(--cl-text-dim)', fontSize: 12 }}>—</span>,
+      title: 'Etapas',
+      dataIndex: ['_count', 'etapas'],
+      width: 90,
+      sorter: (a, b) => (a._count?.etapas ?? 0) - (b._count?.etapas ?? 0),
+      render: v => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{v ?? 0}</span>,
     },
     {
       title: 'Situação',
@@ -143,7 +125,7 @@ export default function EtapasTreinamento() {
       width: 100,
       render: v => (
         <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>
-          {v ? 'Ativa' : 'Inativa'}
+          {v ? 'Ativo' : 'Inativo'}
         </Tag>
       ),
     },
@@ -159,7 +141,7 @@ export default function EtapasTreinamento() {
           </Tooltip>
           <Tooltip title="Remover">
             <Button type="text" icon={<DeleteOutlined />} size="small" danger
-              onClick={() => setDeleteModal({ id: record.id, title: record.title })} />
+              onClick={() => setDeleteModal({ id: record.id, name: record.name, etapas: record._count?.etapas ?? 0 })} />
           </Tooltip>
         </Space>
       ),
@@ -170,39 +152,28 @@ export default function EtapasTreinamento() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Etapas de Treinamento</h1>
+          <h1 className="page-title">Módulos de Treinamento</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filtered.length} etapa{filtered.length !== 1 ? 's' : ''} cadastrada{filtered.length !== 1 ? 's' : ''}
+            {filtered.length} módulo{filtered.length !== 1 ? 's' : ''} cadastrado{filtered.length !== 1 ? 's' : ''}
           </p>
         </div>
         {canEdit && (
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
             style={{ borderRadius: 8, fontWeight: 600 }}>
-            Nova Etapa
+            Novo Módulo
           </Button>
         )}
       </div>
 
-      <div className="filter-bar" style={{ display: 'flex', gap: 12 }}>
+      <div className="filter-bar">
         <Input
           prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
-          placeholder="Buscar por título, descrição ou módulo..."
+          placeholder="Buscar por nome ou descrição..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ flex: 1 }}
+          style={{ width: '100%' }}
         />
-        <Select
-          placeholder="Filtrar por módulo"
-          allowClear
-          value={filterModulo || undefined}
-          onChange={v => setFilterModulo(v || '')}
-          style={{ width: 220 }}
-          showSearch
-          filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-        >
-          {modulos.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
-        </Select>
       </div>
 
       <div className="page-table-wrap">
@@ -212,8 +183,8 @@ export default function EtapasTreinamento() {
           rowKey="id"
           loading={loading}
           size="middle"
-          scroll={{ x: 600 }}
-          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} etapa${t !== 1 ? 's' : ''}` }}
+          scroll={{ x: 500 }}
+          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} módulo${t !== 1 ? 's' : ''}` }}
         />
       </div>
 
@@ -223,17 +194,17 @@ export default function EtapasTreinamento() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.12)',
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <UnorderedListOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
+              <AppstoreAddOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
-              {editing ? 'Editar Etapa' : 'Nova Etapa de Treinamento'}
+              {editing ? 'Editar Módulo' : 'Novo Módulo de Treinamento'}
             </span>
           </div>
         }
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         centered
-        width={560}
+        width={520}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
           <Space>
@@ -247,36 +218,22 @@ export default function EtapasTreinamento() {
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="title" label="Título da Etapa"
-              rules={[{ required: true, message: 'Informe o título' }]}>
-              <Input placeholder="Ex: Cadastro de Produtos, Programação de Oferta..." size="large" />
-            </Form.Item>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
-              <Form.Item name="moduloId" label="Módulo">
-                <Select
-                  placeholder="Selecione o módulo"
-                  allowClear
-                  showSearch
-                  size="large"
-                  filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                >
-                  {modulos.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
-                </Select>
+              <Form.Item name="name" label="Nome do Módulo"
+                rules={[{ required: true, message: 'Informe o nome' }]}>
+                <Input placeholder="Ex: PDV, Estoque, Financeiro..." size="large" />
               </Form.Item>
               <Form.Item name="order" label="Ordem">
                 <InputNumber min={1} max={999} size="large" style={{ width: '100%' }} placeholder="1" />
               </Form.Item>
             </div>
-
-            <Form.Item name="description" label="Descrição / Observação">
-              <Input.TextArea rows={3} placeholder="Descreva o que é realizado nesta etapa..."
+            <Form.Item name="description" label="Descrição">
+              <Input.TextArea rows={3} placeholder="Descreva o conteúdo deste módulo..."
                 style={{ resize: 'none' }} />
             </Form.Item>
-
             {editing && (
               <Form.Item name="active" label="Situação" valuePropName="checked">
-                <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
+                <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
               </Form.Item>
             )}
           </Form>
@@ -290,20 +247,30 @@ export default function EtapasTreinamento() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Remover etapa</span>
+            <span style={{ fontWeight: 700 }}>Remover módulo</span>
           </div>
         }
         footer={
           <Space>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
-            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>Remover</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+              Remover
+            </Button>
           </Space>
         }
       >
         {deleteModal && (
-          <p style={{ padding: '8px 0', margin: 0 }}>
-            Remover <strong>{deleteModal.title}</strong>? Esta ação não pode ser desfeita.
-          </p>
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ marginBottom: deleteModal.etapas > 0 ? 12 : 0 }}>
+              Remover o módulo <strong>{deleteModal.name}</strong>? Esta ação não pode ser desfeita.
+            </p>
+            {deleteModal.etapas > 0 && (
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
+                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+                Atenção: {deleteModal.etapas} etapa{deleteModal.etapas !== 1 ? 's' : ''} perderá o vínculo com este módulo.
+              </div>
+            )}
+          </div>
         )}
       </Modal>
     </div>

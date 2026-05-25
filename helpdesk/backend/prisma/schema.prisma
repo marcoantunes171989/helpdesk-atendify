@@ -564,17 +564,31 @@ model AgendaTecnico {
   @@map("agenda_tecnicos")
 }
 
-// ─── ETAPAS DE TREINAMENTO ───────────────────────────────────────────────────
+// ─── MÓDULOS E ETAPAS DE TREINAMENTO ─────────────────────────────────────────
+
+model ModuloTreinamento {
+  id          String             @id @default(cuid())
+  name        String
+  description String?            @db.Text
+  order       Int?
+  active      Boolean            @default(true)
+  etapas      EtapaTreinamento[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("modulos_treinamento")
+}
 
 model EtapaTreinamento {
-  id          String   @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
-  description String?  @db.Text
-  category    String?
+  description String?            @db.Text
+  moduloId    String?
+  modulo      ModuloTreinamento? @relation(fields: [moduloId], references: [id])
   order       Int?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  active      Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@map("etapas_treinamento")
 }
