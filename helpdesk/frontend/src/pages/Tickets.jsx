@@ -183,6 +183,7 @@ export default function Tickets() {
     ? (() => {
         const q = normalize(search);
         return tickets.filter(r => [
+          r.code ? String(r.code).padStart(4, '0') : null, r.code ? String(r.code) : null,
           r.id, r.title, r.description,
           r.company?.name, r.company?.fantasia, r.employee?.name, r.employee?.position,
           r.technician?.name, r.category?.name,

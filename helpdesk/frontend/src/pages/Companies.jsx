@@ -243,7 +243,7 @@ export default function Companies() {
   const hasLinks = deleteModal && (deleteModal.employees > 0 || deleteModal.tickets > 0 || deleteModal.categories > 0);
 
   const filteredCompanies = search
-    ? (() => { const q = normalize(search); return companies.filter(c => [c.name, c.cnpj, c.email, c.phone, c.city, c.state].some(f => normalize(f).includes(q))); })()
+    ? (() => { const q = normalize(search); return companies.filter(c => [c.name, c.fantasia, c.cnpj, c.email, c.phone, c.city, c.state, c.notes].some(f => normalize(f).includes(q))); })()
     : companies;
 
   return (

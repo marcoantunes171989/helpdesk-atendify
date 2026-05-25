@@ -328,7 +328,7 @@ export default function Visitas() {
     if (filterStatus) list = list.filter(i => i.status === filterStatus);
     if (search) {
       const q = normalize(search);
-      list = list.filter(i => [i.title, i.company?.name, i.technician?.name, i.employee?.name].some(f => normalize(f).includes(q)));
+      list = list.filter(i => [i.title, i.company?.name, i.company?.fantasia, i.technician?.name, i.employee?.name, i.objectives, i.conclusions, i.nextSteps].some(f => normalize(f).includes(q)));
     }
     return list;
   })();

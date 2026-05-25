@@ -164,11 +164,7 @@ export default function Treinamentos() {
     if (filterTipo && i.tipo !== filterTipo) return false;
     if (search) {
       const q = normalize(search);
-      return (
-        normalize(i.title).includes(q) ||
-        normalize(i.company?.name || '').includes(q) ||
-        normalize(i.trainer?.name || '').includes(q)
-      );
+      return [i.title, i.company?.name, i.company?.fantasia, i.trainer?.name, i.tipo, i.description, i.notes].some(f => normalize(f).includes(q));
     }
     return true;
   });

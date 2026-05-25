@@ -141,11 +141,7 @@ export default function Implantacoes() {
     if (filterStatus && i.status !== filterStatus) return false;
     if (search) {
       const q = normalize(search);
-      return (
-        normalize(i.title).includes(q) ||
-        normalize(i.company?.name || '').includes(q) ||
-        normalize(i.responsible?.name || '').includes(q)
-      );
+      return [i.title, i.company?.name, i.company?.fantasia, i.responsible?.name, i.technician?.name, i.description, i.notes].some(f => normalize(f).includes(q));
     }
     return true;
   });

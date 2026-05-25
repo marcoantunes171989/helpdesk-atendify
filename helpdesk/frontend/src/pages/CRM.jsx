@@ -393,13 +393,13 @@ export default function CRM() {
 
   // ─── filtered data ────
   const filteredContacts = search
-    ? contacts.filter(c => [c.name, c.email, c.phone, c.position, c.company?.name].some(f => normalize(f).includes(normalize(search))))
+    ? contacts.filter(c => [c.name, c.email, c.phone, c.position, c.company?.name, c.company?.fantasia, c.notes].some(f => normalize(f).includes(normalize(search))))
     : contacts;
   const filteredOpps = search
-    ? opportunities.filter(o => [o.title, o.company?.name, o.contact?.name].some(f => normalize(f).includes(normalize(search))))
+    ? opportunities.filter(o => [o.title, o.company?.name, o.contact?.name, o.stage, o.owner?.name, o.description, String(o.value ?? '')].some(f => normalize(f).includes(normalize(search))))
     : opportunities;
   const filteredActs = search
-    ? activities.filter(a => [a.title, a.company?.name, a.contact?.name, a.opportunity?.title].some(f => normalize(f).includes(normalize(search))))
+    ? activities.filter(a => [a.title, a.company?.name, a.contact?.name, a.opportunity?.title, a.type, a.status, a.user?.name, a.description].some(f => normalize(f).includes(normalize(search))))
     : activities;
 
   // contacts filtered by company for opportunity modal

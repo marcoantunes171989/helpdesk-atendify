@@ -264,7 +264,8 @@ export default function KnowledgeBase() {
       return (
         normalize(a.title).includes(q) ||
         normalize(a.tags || '').includes(q) ||
-        normalize(a.content).includes(q)
+        normalize(a.content).includes(q) ||
+        normalize(KB_CATEGORIES[a.category]?.label || a.category || '').includes(q)
       );
     }
     return true;
