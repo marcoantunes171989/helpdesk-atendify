@@ -3,7 +3,64 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('[setup-triggers] iniciando...');
-  console.log('Configurando triggers de código sequencial...');
+
+  // 0. Schema patches — fallback para quando prisma migrate deploy não roda em produção
+
+  // implantacoes.employeeId
+  await prisma.$executeRawUnsafe(`ALTER TABLE "implantacoes" ADD COLUMN IF NOT EXISTS "employeeId" TEXT`);
+  await prisma.$executeRawUnsafe(`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'implantacoes_employeeId_fkey'
+      ) THEN
+        ALTER TABLE "implantacoes"
+          ADD CONSTRAINT "implantacoes_employeeId_fkey"
+          FOREIGN KEY ("employeeId") REFERENCES "employees"("id")
+          ON DELETE SET NULL ON UPDATE CASCADE;
+      END IF;
+    END $$
+  `);
+
+  // Tabelas da agenda técnica
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "agenda_visitas" (
+      "id" TEXT NOT NULL, "tecnico" TEXT NOT NULL, "cliente" TEXT NOT NULL,
+      "tipo" TEXT, "data" TEXT, "mes" TEXT, "obs" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "agenda_visitas_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "agenda_plantoes" (
+      "id" TEXT NOT NULL, "data" TEXT, "tecnico" TEXT NOT NULL,
+      "tipo" TEXT, "aba" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "agenda_plantoes_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "agenda_ferias" (
+      "id" TEXT NOT NULL, "colaborador" TEXT NOT NULL,
+      "mes" TEXT, "periodo" TEXT, "tipo" TEXT, "equipe" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "agenda_ferias_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "agenda_tecnicos" (
+      "id" TEXT NOT NULL, "nome" TEXT NOT NULL,
+      "equipe" TEXT, "modalidade" TEXT, "horario" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "agenda_tecnicos_pkey" PRIMARY KEY ("id")
+    )
+  `);
+
+  console.log('[setup-triggers] schema patches OK');
 
   // 1. Sequences
   await prisma.$executeRawUnsafe(`CREATE SEQUENCE IF NOT EXISTS seq_company_code START 1`);
