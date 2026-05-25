@@ -99,6 +99,9 @@ export default function KnowledgeBase() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
   const [form] = Form.useForm();
 
   const [deleteModal, setDeleteModal] = useState(null);
@@ -160,14 +163,36 @@ export default function KnowledgeBase() {
     setModalOpen(true);
   };
 
+  const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file.originFileObj || file);
+  });
+
+  const handlePreview = async (file) => {
+    const isImage = file.type?.startsWith('image/') || /\.(jpe?g|png|gif|webp|svg|bmp)$/i.test(file.name || '');
+    if (!isImage || !file.originFileObj) return;
+    if (!file.preview) {
+      file.preview = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+    setPreviewImage(file.preview);
+    setPreviewTitle(file.name || '');
+    setPreviewOpen(true);
+  };
+
   const handleSubmit = async (values) => {
     setSaving(true);
     try {
-      const attachments = fileList.map(f =>
-        f.id
-          ? { id: f.id }
-          : { name: f.name, mimeType: f.type || f.mimeType, size: f.size, data: f.data }
-      ).filter(a => a.id || a.data);
+      const attachments = await Promise.all(fileList.map(async f => {
+        if (f.id) return { id: f.id };
+        const data = await readFileAsBase64(f);
+        return { name: f.name, mimeType: f.type || f.mimeType, size: f.size, data };
+      }));
 
       const payload = { ...values, tags: values.tags || null, attachments };
 
@@ -229,20 +254,6 @@ export default function KnowledgeBase() {
       message.error(`${file.name} excede o limite de 10 MB`);
       return Upload.LIST_IGNORE;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target.result.split(',')[1];
-      setFileList(prev => [...prev, {
-        uid: file.uid,
-        name: file.name,
-        type: file.type,
-        mimeType: file.type,
-        size: file.size,
-        status: 'done',
-        data: base64,
-      }]);
-    };
-    reader.readAsDataURL(file);
     return false;
   };
 
@@ -518,23 +529,45 @@ export default function KnowledgeBase() {
               </Form.Item>
             )}
 
-            <Form.Item label="Anexos">
+            <Form.Item
+              label={
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <PaperClipOutlined style={{ fontSize: 15 }} />
+                  <span>Anexos</span>
+                  {fileList.length > 0 && (
+                    <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                      {fileList.length}
+                    </span>
+                  )}
+                  <span style={{ color: 'var(--cl-text-muted)', fontSize: 12, fontWeight: 400 }}>
+                    opcional · máx. 10MB · PDF, Word, Excel, imagens, ZIP
+                  </span>
+                </div>
+              }
+            >
               <Upload
                 fileList={fileList}
                 beforeUpload={beforeUpload}
-                onRemove={file => setFileList(prev => prev.filter(f => f.uid !== file.uid))}
+                onChange={({ fileList: nl }) => setFileList(nl.map(f => ({ ...f, status: 'done' })))}
+                onPreview={handlePreview}
                 multiple
                 accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.zip,.rar"
-                showUploadList={{ showRemoveIcon: true, showDownloadIcon: false }}
+                listType="picture-card"
+                style={{ width: '100%' }}
               >
-                <Button icon={<PaperClipOutlined />}>Adicionar Arquivo</Button>
-                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--cl-text-faint)' }}>
-                  PDF, TXT, Word, Excel, imagens, ZIP, RAR — máx. 10 MB cada
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: 'var(--cl-text-soft)', fontSize: 12 }}>
+                  <PlusOutlined style={{ fontSize: 16 }} />
+                  <span>Adicionar</span>
+                </div>
               </Upload>
             </Form.Item>
           </Form>
         </div>
+      </Modal>
+
+      {/* Modal — Preview de anexo */}
+      <Modal open={previewOpen} title={previewTitle} footer={null} centered onCancel={() => setPreviewOpen(false)}>
+        <img alt="preview" style={{ width: '100%', borderRadius: 8 }} src={previewImage} />
       </Modal>
 
       {/* Modal — Delete confirmation */}

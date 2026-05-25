@@ -9,7 +9,7 @@ import {
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
   DeleteOutlined, PaperClipOutlined, DownloadOutlined, FileOutlined, EditOutlined,
-  EyeOutlined, MessageOutlined, LockOutlined, UnlockOutlined, CheckCircleOutlined,
+  EyeOutlined, MessageOutlined, LockOutlined, UnlockOutlined, CheckCircleOutlined, PlusOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -279,9 +279,12 @@ export default function TicketDetail() {
       let msg = statusChangeComment.trim();
       if (builtinStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
       else if (builtinStatus === 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
+      const scAttachments = await Promise.all(statusChangeFiles.map(async f => ({
+        name: f.name, mimeType: f.type, size: f.size, data: await readFileAsBase64(f),
+      })));
       await ticketService.addComment(id, {
         message: msg,
-        attachments: statusChangeFiles,
+        attachments: scAttachments,
         createdAt: statusChangeDate?.toISOString(),
       });
       const updated = await ticketService.update(id, { statusId: pendingStatusId });
@@ -295,14 +298,30 @@ export default function TicketDetail() {
     }
   };
 
-  const addStatusChangeFile = (file) => {
+  const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target.result.split(',')[1];
-      setStatusChangeFiles(prev => [...prev, { name: file.name, mimeType: file.type, size: file.size, data: base64 }]);
-    };
-    reader.readAsDataURL(file);
+    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file.originFileObj || file);
+  });
+
+  const beforeUploadFile = (file) => {
+    if (file.size > 10 * 1024 * 1024) {
+      message.error(`${file.name} excede 10MB`);
+      return Upload.LIST_IGNORE;
+    }
     return false;
+  };
+
+  const handleUploadPreview = async (file) => {
+    const isImage = file.type?.startsWith('image/') || /\.(jpe?g|png|gif|webp|svg|bmp)$/i.test(file.name || '');
+    if (!isImage || !file.originFileObj) return;
+    const src = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file.originFileObj);
+      reader.onload = () => resolve(reader.result);
+    });
+    setPreviewImage({ src, name: file.name });
   };
 
   const handleUpdate = async (field, value) => {
@@ -337,9 +356,12 @@ export default function TicketDetail() {
       let msg = comment.trim();
       if (builtinStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
       else if (builtinStatus === 'OPEN' && ticket.status !== 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
+      const cfAttachments = await Promise.all(commentFiles.map(async f => ({
+        name: f.name, mimeType: f.type, size: f.size, data: await readFileAsBase64(f),
+      })));
       await ticketService.addComment(id, {
         message: msg,
-        attachments: commentFiles,
+        attachments: cfAttachments,
         createdAt: commentDate?.toISOString(),
       });
       if (commentStatusId !== ticket.statusId) {
@@ -361,9 +383,12 @@ export default function TicketDetail() {
     if (!editingCommentText.trim()) { message.warning('O texto não pode ficar em branco'); return; }
     setEditingCommentSaving(true);
     try {
+      const ecAttachments = await Promise.all(editingCommentFiles.map(async f => ({
+        name: f.name, mimeType: f.type, size: f.size, data: await readFileAsBase64(f),
+      })));
       const updated = await ticketService.updateComment(id, commentId, {
         message: editingCommentText,
-        attachments: editingCommentFiles,
+        attachments: ecAttachments,
         createdAt: editingCommentDate?.toISOString(),
       });
       setTicket(prev => ({
@@ -381,15 +406,6 @@ export default function TicketDetail() {
     }
   };
 
-  const addEditingCommentFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target.result.split(',')[1];
-      setEditingCommentFiles(prev => [...prev, { name: file.name, mimeType: file.type, size: file.size, data: base64 }]);
-    };
-    reader.readAsDataURL(file);
-    return false;
-  };
 
   const handleDeleteComment = async (commentId) => {
     try {
@@ -401,15 +417,6 @@ export default function TicketDetail() {
     }
   };
 
-  const addCommentFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target.result.split(',')[1];
-      setCommentFiles(prev => [...prev, { name: file.name, mimeType: file.type, size: file.size, data: base64 }]);
-    };
-    reader.readAsDataURL(file);
-    return false;
-  };
 
   const downloadAttachment = (att) => {
     const link = document.createElement('a');
@@ -956,27 +963,22 @@ export default function TicketDetail() {
                             style={{ borderRadius: 8, resize: 'none', marginBottom: 8 }}
                             autoFocus
                           />
-                          {editingCommentFiles.length > 0 && (
-                            <div style={{ marginBottom: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                              {editingCommentFiles.map((f, i) => (
-                                <div key={i} style={{
-                                  display: 'flex', alignItems: 'center', gap: 6,
-                                  background: 'var(--cl-bg-input)', borderRadius: 6, padding: '3px 10px', fontSize: 12, maxWidth: 220,
-                                }}>
-                                  <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 11, flexShrink: 0 }} />
-                                  <span style={{ color: 'var(--cl-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {f.name}
-                                  </span>
-                                  <button
-                                    onClick={() => setEditingCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cl-text-muted)', padding: 0, fontSize: 14, lineHeight: 1 }}
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                          <div style={{ marginBottom: 8 }}>
+                            <Upload
+                              multiple
+                              beforeUpload={beforeUploadFile}
+                              fileList={editingCommentFiles}
+                              onChange={({ fileList: nl }) => setEditingCommentFiles(nl.map(f => ({ ...f, status: 'done' })))}
+                              onPreview={handleUploadPreview}
+                              listType="picture-card"
+                              style={{ width: '100%' }}
+                            >
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: 'var(--cl-text-soft)', fontSize: 12 }}>
+                                <PlusOutlined style={{ fontSize: 14 }} />
+                                <span>Adicionar</span>
+                              </div>
+                            </Upload>
+                          </div>
                           <div style={{ marginBottom: 8 }}>
                             <div style={LABEL_STYLE}>Data / Hora do Trâmite</div>
                             <DateTimeInput
@@ -985,21 +987,7 @@ export default function TicketDetail() {
                               disabledDate={disabledDate}
                             />
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Upload multiple beforeUpload={addEditingCommentFile} showUploadList={false}>
-                              <Tooltip title="Anexar arquivo">
-                                <Button
-                                  type="text"
-                                  size="small"
-                                  icon={
-                                    <Badge count={editingCommentFiles.length} size="small" offset={[6, -4]}>
-                                      <PaperClipOutlined style={{ fontSize: 15 }} />
-                                    </Badge>
-                                  }
-                                  style={{ color: editingCommentFiles.length > 0 ? '#60a5fa' : 'var(--cl-text-muted)' }}
-                                />
-                              </Tooltip>
-                            </Upload>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <Space>
                               <Button size="small" onClick={() => { setEditingCommentId(null); setEditingCommentFiles([]); setEditingCommentDate(null); }}>Cancelar</Button>
                               <Button
@@ -1233,31 +1221,31 @@ export default function TicketDetail() {
             </div>
 
             <div>
-              <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>Anexos</div>
-              <Upload multiple beforeUpload={addCommentFile} showUploadList={false}>
-                <Button icon={<PaperClipOutlined />} size="large" style={{ borderRadius: 8 }}>
-                  Adicionar arquivo
-                </Button>
-              </Upload>
-              {commentFiles.length > 0 && (
-                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {commentFiles.map((f, i) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      background: 'var(--cl-bg-input)', borderRadius: 6, padding: '4px 12px', fontSize: 13,
-                    }}>
-                      <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 12 }} />
-                      <span style={{ color: 'var(--cl-text)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {f.name}
-                      </span>
-                      <button
-                        onClick={() => setCommentFiles(prev => prev.filter((_, idx) => idx !== i))}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cl-text-muted)', padding: 0, fontSize: 16, lineHeight: 1 }}
-                      >×</button>
-                    </div>
-                  ))}
+              <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <PaperClipOutlined style={{ fontSize: 14 }} />
+                  <span>Anexos</span>
+                  {commentFiles.length > 0 && (
+                    <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                      {commentFiles.length}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <Upload
+                multiple
+                beforeUpload={beforeUploadFile}
+                fileList={commentFiles}
+                onChange={({ fileList: nl }) => setCommentFiles(nl.map(f => ({ ...f, status: 'done' })))}
+                onPreview={handleUploadPreview}
+                listType="picture-card"
+                style={{ width: '100%' }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: 'var(--cl-text-soft)', fontSize: 12 }}>
+                  <PlusOutlined style={{ fontSize: 16 }} />
+                  <span>Adicionar</span>
                 </div>
-              )}
+              </Upload>
             </div>
           </div>
         </div>
@@ -1312,31 +1300,30 @@ export default function TicketDetail() {
               disabledDate={disabledDate}
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Upload multiple beforeUpload={addStatusChangeFile} showUploadList={false}>
-              <Button icon={<PaperClipOutlined />} size="small" style={{ borderRadius: 6 }}>
-                Anexar arquivo
-              </Button>
-            </Upload>
-            {statusChangeFiles.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {statusChangeFiles.map((f, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    background: 'var(--cl-bg-input)', borderRadius: 6, padding: '2px 8px', fontSize: 11,
-                  }}>
-                    <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 10 }} />
-                    <span style={{ color: 'var(--cl-text)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {f.name}
-                    </span>
-                    <button
-                      onClick={() => setStatusChangeFiles(prev => prev.filter((_, idx) => idx !== i))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cl-text-muted)', padding: 0, lineHeight: 1 }}
-                    >×</button>
-                  </div>
-                ))}
+          <div>
+            <div style={{ ...LABEL_STYLE, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <PaperClipOutlined style={{ fontSize: 14 }} />
+              <span>Anexos</span>
+              {statusChangeFiles.length > 0 && (
+                <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                  {statusChangeFiles.length}
+                </span>
+              )}
+            </div>
+            <Upload
+              multiple
+              beforeUpload={beforeUploadFile}
+              fileList={statusChangeFiles}
+              onChange={({ fileList: nl }) => setStatusChangeFiles(nl.map(f => ({ ...f, status: 'done' })))}
+              onPreview={handleUploadPreview}
+              listType="picture-card"
+              style={{ width: '100%' }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: 'var(--cl-text-soft)', fontSize: 12 }}>
+                <PlusOutlined style={{ fontSize: 16 }} />
+                <span>Adicionar</span>
               </div>
-            )}
+            </Upload>
           </div>
         </div>
       </Modal>
