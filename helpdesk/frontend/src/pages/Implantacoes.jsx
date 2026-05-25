@@ -637,7 +637,7 @@ export default function Implantacoes() {
                   .filter(e => e.companyId === selectedCompanyId)
                   .map(e => (
                     <Option key={e.id} value={e.id} label={e.name}>
-                      {e.name}{e.position ? ` — ${e.position}` : ''}
+                      {e.name}
                     </Option>
                   ))}
               </Select>
@@ -732,7 +732,7 @@ export default function Implantacoes() {
                     >
                       {companyEmployees.map(e => (
                         <Option key={e.id} value={e.id}>
-                          {e.name}{e.position ? ` — ${e.position}` : ''}
+                          {e.name}
                         </Option>
                       ))}
                     </Select>
