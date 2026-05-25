@@ -587,6 +587,9 @@ h1, h2, h3, h4, h5 {
 /* Prevent Chrome autofill overlay on address-like fields */
 input:-webkit-autofill { animation-name: none !important; background-color: transparent !important; }
 
+/* Arredondar bordas de todos os campos textarea (TextArea do Ant Design) */
+textarea.ant-input { border-radius: 8px !important; }
+
 /* Remove focus outline on Recharts SVG elements */
 .recharts-wrapper svg:focus,
 .recharts-wrapper:focus { outline: none; }
