@@ -59,6 +59,7 @@ exports.create = async (req, res) => {
           description: f.description || null,
           status: f.status || 'PENDENTE',
           employeeIds: JSON.stringify(f.employeeIds || []),
+          etapaTreinamentoId: f.etapaTreinamentoId || null,
         })),
       },
     },
@@ -88,6 +89,7 @@ exports.update = async (req, res) => {
         description: f.description || null,
         status: f.status || 'PENDENTE',
         employeeIds: JSON.stringify(f.employeeIds || []),
+        etapaTreinamentoId: f.etapaTreinamentoId || null,
         completedAt: f.completedAt ? new Date(f.completedAt) : null,
       })),
     };

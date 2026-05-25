@@ -444,10 +444,11 @@ model ImplantacaoFase {
   title          String
   description    String?               @db.Text
   status         ImplantacaoFaseStatus @default(PENDENTE)
-  employeeIds    String?               @db.Text
-  completedAt    DateTime?
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+  employeeIds         String?               @db.Text
+  etapaTreinamentoId  String?               @db.Text
+  completedAt         DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 
   @@map("implantacao_fases")
 }

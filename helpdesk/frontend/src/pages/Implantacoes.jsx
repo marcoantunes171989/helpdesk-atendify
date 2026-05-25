@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Button, Modal, Form, Input, Select, Space, Tag, Tooltip,
-  message, Table, Progress, Drawer, Divider, Steps, Badge, AutoComplete,
+  message, Table, Progress, Drawer, Divider, Steps, Badge,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined,
@@ -303,7 +303,7 @@ export default function Implantacoes() {
       expectedEnd: record.expectedEnd ? record.expectedEnd.slice(0, 10) : '',
       notes: record.notes,
     });
-    setFasesForm(record.fases?.map(f => ({ ...f, employeeIds: f.employeeIds || [] })) || []);
+    setFasesForm(record.fases?.map(f => ({ ...f, employeeIds: f.employeeIds || [], etapaTreinamentoId: f.etapaTreinamentoId || null })) || []);
     setModalOpen(true);
   };
 
@@ -374,11 +374,15 @@ export default function Implantacoes() {
 
   const addFase = () => setFasesForm(prev => [
     ...prev,
-    { id: null, order: prev.length + 1, title: '', description: '', status: 'PENDENTE', employeeIds: [] },
+    { id: null, order: prev.length + 1, title: '', description: '', status: 'PENDENTE', employeeIds: [], etapaTreinamentoId: null },
   ]);
 
   const updateFaseField = (idx, field, value) => {
     setFasesForm(prev => prev.map((f, i) => i === idx ? { ...f, [field]: value } : f));
+  };
+
+  const updateFaseFields = (idx, fields) => {
+    setFasesForm(prev => prev.map((f, i) => i === idx ? { ...f, ...fields } : f));
   };
 
   const removeFase = (idx) => {
@@ -846,24 +850,30 @@ export default function Implantacoes() {
                     display: 'flex', flexDirection: 'column', gap: 8,
                   }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px auto', gap: 8, alignItems: 'center' }}>
-                      <AutoComplete
-                        placeholder={`Fase ${idx + 1} — título ou selecione uma etapa`}
-                        value={fase.title}
-                        onChange={v => updateFaseField(idx, 'title', v)}
-                        options={etapasTemplate
-                          .filter(e => !fase.title || normalize(e.title).includes(normalize(fase.title)))
-                          .map(e => ({
-                            value: e.title,
-                            label: (
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: 13 }}>{e.title}</span>
-                                {e.modulo?.name && <span style={{ fontSize: 11, color: '#94a3b8' }}>{e.modulo.name}</span>}
-                              </div>
-                            ),
-                          }))}
-                        filterOption={false}
+                      <Select
+                        placeholder={`Selecione a etapa de treinamento...`}
+                        value={fase.etapaTreinamentoId || undefined}
+                        onChange={etapaId => {
+                          const etapa = etapasTemplate.find(e => e.id === etapaId);
+                          updateFaseFields(idx, {
+                            etapaTreinamentoId: etapaId || null,
+                            title: etapa ? etapa.title : fase.title,
+                          });
+                        }}
+                        showSearch
                         allowClear
-                      />
+                        optionLabelProp="label"
+                        filterOption={(input, option) => normalize(option?.label || '').includes(normalize(input))}
+                      >
+                        {etapasTemplate.map(e => (
+                          <Option key={e.id} value={e.id} label={e.title}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 13 }}>{e.title}</span>
+                              {e.modulo?.name && <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>{e.modulo.name}</span>}
+                            </div>
+                          </Option>
+                        ))}
+                      </Select>
                       <Select
                         value={fase.status}
                         onChange={v => updateFaseField(idx, 'status', v)}
@@ -873,6 +883,25 @@ export default function Implantacoes() {
                       </Select>
                       <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFase(idx)} />
                     </div>
+                    {/* Módulo em cinza (read-only, apenas quando etapa selecionada) */}
+                    {fase.etapaTreinamentoId && (() => {
+                      const etapa = etapasTemplate.find(e => e.id === fase.etapaTreinamentoId);
+                      return etapa?.modulo?.name ? (
+                        <div style={{ fontSize: 11, color: 'var(--cl-text-dim)', paddingLeft: 2, marginTop: -2 }}>
+                          <span style={{ opacity: .7 }}>Módulo:</span> {etapa.modulo.name}
+                        </div>
+                      ) : null;
+                    })()}
+                    {/* Título legado — editável quando não há etapa vinculada e existe título salvo */}
+                    {!fase.etapaTreinamentoId && (
+                      <Input
+                        placeholder={`Título da fase ${idx + 1}...`}
+                        value={fase.title}
+                        onChange={e => updateFaseField(idx, 'title', e.target.value)}
+                        size="small"
+                        style={{ fontSize: 12 }}
+                      />
+                    )}
                     <Select
                       mode="multiple"
                       placeholder={selectedCompanyId ? 'Funcionários responsáveis (opcional)' : 'Selecione a empresa primeiro'}
