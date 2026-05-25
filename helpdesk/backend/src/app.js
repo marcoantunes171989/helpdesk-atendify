@@ -90,6 +90,11 @@ process.on('unhandledRejection', (reason) => {
 
 const PORT = process.env.PORT || 3001;
 
-runSetupTriggers().then(() => {
-  app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-});
+const startServer = () => app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+
+runSetupTriggers()
+  .then(startServer)
+  .catch(err => {
+    console.error('[startup] Erro no setup-triggers, iniciando servidor assim mesmo:', err?.message || err);
+    startServer();
+  });

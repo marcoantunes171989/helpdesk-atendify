@@ -149,7 +149,10 @@ export default function Treinamentos() {
 
   const load = useCallback(() => {
     setLoading(true);
-    treinamentoService.list().then(setItems).finally(() => setLoading(false));
+    treinamentoService.list()
+      .then(setItems)
+      .catch(() => message.error('Erro ao carregar treinamentos'))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {

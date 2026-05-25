@@ -342,6 +342,6 @@ module.exports = async function runSetupTriggers() {
   } catch (e) {
     console.error('[setup-triggers] Erro (não fatal):', e.message);
   } finally {
-    await prisma.$disconnect();
+    try { await prisma.$disconnect(); } catch (_) {}
   }
 };
