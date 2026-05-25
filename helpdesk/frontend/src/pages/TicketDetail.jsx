@@ -558,8 +558,8 @@ export default function TicketDetail() {
                     SLA Vencido
                   </Tag>
                 )}
-                <code style={{ fontSize: 11, color: 'var(--cl-text-faint)', background: 'var(--cl-bg-soft)', padding: '2px 8px', borderRadius: 4 }}>
-                  #{ticket.id.slice(-8).toUpperCase()}
+                <code style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', background: 'var(--cl-bg-soft)', padding: '2px 10px', borderRadius: 6, letterSpacing: '0.02em' }}>
+                  #{ticket.code ? String(ticket.code).padStart(4, '0') : ticket.id.slice(-8).toUpperCase()}
                 </code>
               </Space>
               {canEdit && !isResolved && !isClosed && !editMode && (
