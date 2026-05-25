@@ -221,7 +221,8 @@ model Employee {
   company      Company   @relation(fields: [companyId], references: [id])
   tickets      Ticket[]
   treinamentoParticipacoes TreinamentoParticipante[]
-  visitaContatos   Visita[]     @relation("VisitaEmployee")
+  visitaContatos   Visita[]        @relation("VisitaEmployee")
+  implantacoes     Implantacao[]   @relation("ImplantacaoEmployee")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -422,6 +423,8 @@ model Implantacao {
   responsible     User?               @relation("ImplantacaoResponsavel", fields: [responsibleId], references: [id])
   technicianId    String?
   technician      Technician?         @relation(fields: [technicianId], references: [id])
+  employeeId      String?
+  employee        Employee?           @relation("ImplantacaoEmployee", fields: [employeeId], references: [id])
   startDate       DateTime?
   expectedEnd     DateTime?
   completedAt     DateTime?

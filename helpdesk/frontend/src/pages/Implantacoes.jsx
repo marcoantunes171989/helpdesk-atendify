@@ -9,7 +9,7 @@ import {
   PauseCircleOutlined, CloseCircleOutlined, SyncOutlined,
   CalendarOutlined, TeamOutlined, ToolOutlined, BuildOutlined, PrinterOutlined,
 } from '@ant-design/icons';
-import { implantacaoService, companyService, userService, technicianService } from '../services/api';
+import { implantacaoService, companyService, userService, technicianService, employeeService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { normalize } from '../utils/constants';
 
@@ -107,6 +107,8 @@ export default function Implantacoes() {
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -135,6 +137,7 @@ export default function Implantacoes() {
     companyService.list({ active: true }).then(r => setCompanies(r.data || r));
     userService.list({ active: true }).then(r => setUsers(r.data || r));
     technicianService.list({ active: true }).then(r => setTechnicians(r.data || r));
+    employeeService.list({ active: true }).then(r => setAllEmployees(r.data || r));
   }, [load]);
 
   const filtered = items.filter(i => {
@@ -149,12 +152,14 @@ export default function Implantacoes() {
   const openCreate = () => {
     setEditing(null);
     setFasesForm([]);
+    setSelectedCompanyId(null);
     form.resetFields();
     setModalOpen(true);
   };
 
   const openEdit = (record) => {
     setEditing(record);
+    setSelectedCompanyId(record.companyId || null);
     form.setFieldsValue({
       title: record.title,
       description: record.description,
@@ -162,6 +167,7 @@ export default function Implantacoes() {
       companyId: record.companyId,
       responsibleId: record.responsibleId,
       technicianId: record.technicianId,
+      employeeId: record.employeeId || undefined,
       startDate: record.startDate ? record.startDate.slice(0, 10) : '',
       expectedEnd: record.expectedEnd ? record.expectedEnd.slice(0, 10) : '',
       notes: record.notes,
@@ -439,6 +445,7 @@ export default function Implantacoes() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
               {[
                 { label: 'Empresa', value: selected.company?.fantasia || selected.company?.name, icon: <TeamOutlined /> },
+                { label: 'Funcionário', value: selected.employee ? `${selected.employee.name}${selected.employee.position ? ` — ${selected.employee.position}` : ''}` : null, icon: <TeamOutlined /> },
                 { label: 'Responsável', value: selected.responsible?.name, icon: <TeamOutlined /> },
                 { label: 'Técnico', value: selected.technician?.name, icon: <ToolOutlined /> },
                 { label: 'Início', value: selected.startDate ? new Date(selected.startDate).toLocaleDateString('pt-BR') : null, icon: <CalendarOutlined /> },
@@ -554,10 +561,43 @@ export default function Implantacoes() {
             </Form.Item>
 
             <Form.Item name="companyId" label="Empresa" rules={[{ required: true }]}>
-              <Select placeholder="Selecione a empresa" showSearch
+              <Select
+                placeholder="Selecione a empresa" showSearch size="large"
+                optionFilterProp="label"
+                filterOption={(input, option) => {
+                  const q = normalize(input);
+                  return normalize(option?.name || '').includes(q) || normalize(option?.fantasia || '').includes(q);
+                }}
+                onChange={v => {
+                  setSelectedCompanyId(v || null);
+                  form.setFieldValue('employeeId', undefined);
+                }}
+              >
+                {companies.map(c => (
+                  <Option key={c.id} value={c.id} label={[c.name, c.fantasia].filter(Boolean).join(' ')} name={c.name} fantasia={c.fantasia || ''}>
+                    <div style={{ lineHeight: 1.35 }}>
+                      <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
+                      {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
+                    </div>
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="employeeId" label="Funcionário da empresa">
+              <Select
+                placeholder={selectedCompanyId ? 'Selecione o funcionário' : 'Selecione a empresa primeiro'}
+                allowClear showSearch size="large"
+                disabled={!selectedCompanyId}
                 filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                size="large">
-                {companies.map(c => <Option key={c.id} value={c.id}>{c.fantasia || c.name}</Option>)}
+              >
+                {allEmployees
+                  .filter(e => e.companyId === selectedCompanyId)
+                  .map(e => (
+                    <Option key={e.id} value={e.id}>
+                      {e.name}{e.position ? ` — ${e.position}` : ''}
+                    </Option>
+                  ))}
               </Select>
             </Form.Item>
 

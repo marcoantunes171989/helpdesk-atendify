@@ -5,6 +5,7 @@ const include = {
   company: { select: { id: true, name: true, fantasia: true } },
   responsible: { select: { id: true, name: true, email: true } },
   technician: { select: { id: true, name: true } },
+  employee: { select: { id: true, name: true, position: true } },
   fases: { orderBy: { order: 'asc' } },
 };
 
