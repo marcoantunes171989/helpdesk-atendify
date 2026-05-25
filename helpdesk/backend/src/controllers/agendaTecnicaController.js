@@ -4,128 +4,196 @@ const prisma = new PrismaClient();
 // ─── Visitas ──────────────────────────────────────────────────────────────────
 
 exports.listVisitas = async (req, res) => {
-  const { mes, tecnico } = req.query;
-  const where = {};
-  if (mes)     where.mes     = mes;
-  if (tecnico) where.tecnico = { contains: tecnico, mode: 'insensitive' };
-  const data = await prisma.agendaVisita.findMany({
-    where,
-    orderBy: [{ data: 'asc' }, { tecnico: 'asc' }],
-  });
-  res.json(data);
+  try {
+    const { mes, tecnico } = req.query;
+    const where = {};
+    if (mes)     where.mes     = mes;
+    if (tecnico) where.tecnico = { contains: tecnico, mode: 'insensitive' };
+    const data = await prisma.agendaVisita.findMany({
+      where,
+      orderBy: [{ data: 'asc' }, { tecnico: 'asc' }],
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('listVisitas error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.createVisita = async (req, res) => {
-  const { tecnico, cliente, tipo, data, mes, obs } = req.body;
-  if (!tecnico || !cliente) return res.status(400).json({ error: 'tecnico e cliente são obrigatórios' });
-  const item = await prisma.agendaVisita.create({ data: { tecnico, cliente, tipo, data, mes, obs } });
-  res.status(201).json(item);
+  try {
+    const { tecnico, cliente, tipo, data, mes, obs } = req.body;
+    if (!tecnico || !cliente) return res.status(400).json({ error: 'tecnico e cliente são obrigatórios' });
+    const item = await prisma.agendaVisita.create({ data: { tecnico, cliente, tipo, data, mes, obs } });
+    res.status(201).json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.updateVisita = async (req, res) => {
-  const { tecnico, cliente, tipo, data, mes, obs } = req.body;
-  const item = await prisma.agendaVisita.update({
-    where: { id: req.params.id },
-    data: { tecnico, cliente, tipo, data, mes, obs },
-  });
-  res.json(item);
+  try {
+    const { tecnico, cliente, tipo, data, mes, obs } = req.body;
+    const item = await prisma.agendaVisita.update({
+      where: { id: req.params.id },
+      data: { tecnico, cliente, tipo, data, mes, obs },
+    });
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.removeVisita = async (req, res) => {
-  await prisma.agendaVisita.delete({ where: { id: req.params.id } });
-  res.json({ ok: true });
+  try {
+    await prisma.agendaVisita.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // ─── Plantões ─────────────────────────────────────────────────────────────────
 
 exports.listPlantoes = async (req, res) => {
-  const { aba, tecnico } = req.query;
-  const where = {};
-  if (aba)     where.aba     = aba;
-  if (tecnico) where.tecnico = { contains: tecnico, mode: 'insensitive' };
-  const data = await prisma.agendaPlantao.findMany({ where, orderBy: { data: 'asc' } });
-  res.json(data);
+  try {
+    const { aba, tecnico } = req.query;
+    const where = {};
+    if (aba)     where.aba     = aba;
+    if (tecnico) where.tecnico = { contains: tecnico, mode: 'insensitive' };
+    const data = await prisma.agendaPlantao.findMany({ where, orderBy: { data: 'asc' } });
+    res.json(data);
+  } catch (err) {
+    console.error('listPlantoes error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.createPlantao = async (req, res) => {
-  const { data, tecnico, tipo, aba } = req.body;
-  if (!tecnico) return res.status(400).json({ error: 'tecnico é obrigatório' });
-  const item = await prisma.agendaPlantao.create({ data: { data, tecnico, tipo, aba } });
-  res.status(201).json(item);
+  try {
+    const { data, tecnico, tipo, aba } = req.body;
+    if (!tecnico) return res.status(400).json({ error: 'tecnico é obrigatório' });
+    const item = await prisma.agendaPlantao.create({ data: { data, tecnico, tipo, aba } });
+    res.status(201).json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.updatePlantao = async (req, res) => {
-  const { data, tecnico, tipo, aba } = req.body;
-  const item = await prisma.agendaPlantao.update({
-    where: { id: req.params.id },
-    data: { data, tecnico, tipo, aba },
-  });
-  res.json(item);
+  try {
+    const { data, tecnico, tipo, aba } = req.body;
+    const item = await prisma.agendaPlantao.update({
+      where: { id: req.params.id },
+      data: { data, tecnico, tipo, aba },
+    });
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.removePlantao = async (req, res) => {
-  await prisma.agendaPlantao.delete({ where: { id: req.params.id } });
-  res.json({ ok: true });
+  try {
+    await prisma.agendaPlantao.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // ─── Férias ──────────────────────────────────────────────────────────────────
 
 exports.listFerias = async (req, res) => {
-  const { tipo, colaborador } = req.query;
-  const where = {};
-  if (tipo)        where.tipo        = tipo;
-  if (colaborador) where.colaborador = { contains: colaborador, mode: 'insensitive' };
-  const data = await prisma.agendaFerias.findMany({ where, orderBy: { colaborador: 'asc' } });
-  res.json(data);
+  try {
+    const { tipo, colaborador } = req.query;
+    const where = {};
+    if (tipo)        where.tipo        = tipo;
+    if (colaborador) where.colaborador = { contains: colaborador, mode: 'insensitive' };
+    const data = await prisma.agendaFerias.findMany({ where, orderBy: { colaborador: 'asc' } });
+    res.json(data);
+  } catch (err) {
+    console.error('listFerias error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.createFerias = async (req, res) => {
-  const { colaborador, mes, periodo, tipo, equipe } = req.body;
-  if (!colaborador) return res.status(400).json({ error: 'colaborador é obrigatório' });
-  const item = await prisma.agendaFerias.create({ data: { colaborador, mes, periodo, tipo, equipe } });
-  res.status(201).json(item);
+  try {
+    const { colaborador, mes, periodo, tipo, equipe } = req.body;
+    if (!colaborador) return res.status(400).json({ error: 'colaborador é obrigatório' });
+    const item = await prisma.agendaFerias.create({ data: { colaborador, mes, periodo, tipo, equipe } });
+    res.status(201).json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.updateFerias = async (req, res) => {
-  const { colaborador, mes, periodo, tipo, equipe } = req.body;
-  const item = await prisma.agendaFerias.update({
-    where: { id: req.params.id },
-    data: { colaborador, mes, periodo, tipo, equipe },
-  });
-  res.json(item);
+  try {
+    const { colaborador, mes, periodo, tipo, equipe } = req.body;
+    const item = await prisma.agendaFerias.update({
+      where: { id: req.params.id },
+      data: { colaborador, mes, periodo, tipo, equipe },
+    });
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.removeFerias = async (req, res) => {
-  await prisma.agendaFerias.delete({ where: { id: req.params.id } });
-  res.json({ ok: true });
+  try {
+    await prisma.agendaFerias.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // ─── Técnicos ─────────────────────────────────────────────────────────────────
 
 exports.listTecnicos = async (req, res) => {
-  const data = await prisma.agendaTecnico.findMany({ orderBy: { nome: 'asc' } });
-  res.json(data);
+  try {
+    const data = await prisma.agendaTecnico.findMany({ orderBy: { nome: 'asc' } });
+    res.json(data);
+  } catch (err) {
+    console.error('listTecnicos error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.createTecnico = async (req, res) => {
-  const { nome, equipe, modalidade, horario } = req.body;
-  if (!nome) return res.status(400).json({ error: 'nome é obrigatório' });
-  const item = await prisma.agendaTecnico.create({ data: { nome, equipe, modalidade, horario } });
-  res.status(201).json(item);
+  try {
+    const { nome, equipe, modalidade, horario } = req.body;
+    if (!nome) return res.status(400).json({ error: 'nome é obrigatório' });
+    const item = await prisma.agendaTecnico.create({ data: { nome, equipe, modalidade, horario } });
+    res.status(201).json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.updateTecnico = async (req, res) => {
-  const { nome, equipe, modalidade, horario } = req.body;
-  const item = await prisma.agendaTecnico.update({
-    where: { id: req.params.id },
-    data: { nome, equipe, modalidade, horario },
-  });
-  res.json(item);
+  try {
+    const { nome, equipe, modalidade, horario } = req.body;
+    const item = await prisma.agendaTecnico.update({
+      where: { id: req.params.id },
+      data: { nome, equipe, modalidade, horario },
+    });
+    res.json(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.removeTecnico = async (req, res) => {
-  await prisma.agendaTecnico.delete({ where: { id: req.params.id } });
-  res.json({ ok: true });
+  try {
+    await prisma.agendaTecnico.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // ─── Bulk import ──────────────────────────────────────────────────────────────
