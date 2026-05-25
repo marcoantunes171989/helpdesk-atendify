@@ -109,6 +109,7 @@ export default function Implantacoes() {
   const [technicians, setTechnicians] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -153,6 +154,7 @@ export default function Implantacoes() {
     setEditing(null);
     setFasesForm([]);
     setSelectedCompanyId(null);
+    setSelectedEmployeeId(null);
     form.resetFields();
     setModalOpen(true);
   };
@@ -160,6 +162,7 @@ export default function Implantacoes() {
   const openEdit = (record) => {
     setEditing(record);
     setSelectedCompanyId(record.companyId || null);
+    setSelectedEmployeeId(record.employeeId || null);
     form.setFieldsValue({
       title: record.title,
       description: record.description,
@@ -592,15 +595,12 @@ export default function Implantacoes() {
                 }}
                 onChange={v => {
                   setSelectedCompanyId(v || null);
+                  setSelectedEmployeeId(null);
                   form.setFieldValue('employeeId', undefined);
                 }}
               >
                 {companies.map(c => (
-                  <Option
-                    key={c.id} value={c.id}
-                    label={c.fantasia ? `${c.name} — ${c.fantasia}` : c.name}
-                    name={c.name} fantasia={c.fantasia || ''}
-                  >
+                  <Option key={c.id} value={c.id} label={c.name} name={c.name} fantasia={c.fantasia || ''}>
                     <div style={{ lineHeight: 1.35 }}>
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
                       {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
@@ -609,23 +609,53 @@ export default function Implantacoes() {
                 ))}
               </Select>
             </Form.Item>
+            {(() => {
+              const co = companies.find(c => c.id === selectedCompanyId);
+              return co?.fantasia ? (
+                <div style={{ marginTop: -16, marginBottom: 16 }}>
+                  <Input
+                    value={co.fantasia}
+                    readOnly
+                    size="small"
+                    prefix={<span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Fantasia:</span>}
+                    style={{ background: 'var(--cl-bg)', color: 'var(--cl-text-muted)', cursor: 'default', borderRadius: 6 }}
+                  />
+                </div>
+              ) : null;
+            })()}
 
             <Form.Item name="employeeId" label="Funcionário da empresa">
               <Select
                 placeholder={selectedCompanyId ? 'Selecione o funcionário' : 'Selecione a empresa primeiro'}
                 allowClear showSearch size="large"
                 disabled={!selectedCompanyId}
-                filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                optionLabelProp="label"
+                filterOption={(input, option) => normalize(option?.label || '').includes(normalize(input))}
+                onChange={v => setSelectedEmployeeId(v || null)}
               >
                 {allEmployees
                   .filter(e => e.companyId === selectedCompanyId)
                   .map(e => (
-                    <Option key={e.id} value={e.id}>
+                    <Option key={e.id} value={e.id} label={e.name}>
                       {e.name}{e.position ? ` — ${e.position}` : ''}
                     </Option>
                   ))}
               </Select>
             </Form.Item>
+            {(() => {
+              const emp = allEmployees.find(e => e.id === selectedEmployeeId);
+              return emp?.position ? (
+                <div style={{ marginTop: -16, marginBottom: 16 }}>
+                  <Input
+                    value={emp.position}
+                    readOnly
+                    size="small"
+                    prefix={<span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Cargo:</span>}
+                    style={{ background: 'var(--cl-bg)', color: 'var(--cl-text-muted)', cursor: 'default', borderRadius: 6 }}
+                  />
+                </div>
+              ) : null;
+            })()}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <Form.Item name="responsibleId" label="Responsável">
