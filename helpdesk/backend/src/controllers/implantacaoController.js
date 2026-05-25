@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const include = {
-  company: { select: { id: true, name: true, fantasia: true } },
+  company: { select: { id: true, name: true, fantasia: true, city: true, state: true } },
   responsible: { select: { id: true, name: true, email: true } },
   technician: { select: { id: true, name: true } },
   employee: { select: { id: true, name: true, position: true } },
