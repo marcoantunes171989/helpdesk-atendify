@@ -1,7 +1,21 @@
 require('dotenv').config();
+const path = require('path');
+const { execSync } = require('child_process');
 const express = require('express');
 const cors = require('cors');
 const runSetupTriggers = require('../prisma/setup-triggers');
+
+// Garante que todas as migrations estejam aplicadas antes de subir o servidor
+try {
+  console.log('[migrate] rodando prisma migrate deploy...');
+  execSync('npx prisma migrate deploy', {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..'),
+  });
+  console.log('[migrate] concluído');
+} catch (e) {
+  console.error('[migrate] falhou (não fatal):', e.message);
+}
 
 const authRoutes = require('./routes/auth');
 const companyRoutes = require('./routes/companies');
