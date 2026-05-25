@@ -381,8 +381,10 @@ export default function AgendaTecnica() {
         agendaTecnicaService.listTecnicos(),
       ]);
       setVisitas(v); setPlantoes(p); setFerias(f); setTecnicos(t);
-    } catch {
-      message.error('Erro ao carregar dados da agenda.');
+    } catch (err) {
+      const detail = err?.response?.data?.error || err?.message || 'Erro desconhecido';
+      message.error(`Erro ao carregar agenda: ${detail}`, 8);
+      console.error('loadAll error:', err);
     } finally {
       setLoading(false);
     }
