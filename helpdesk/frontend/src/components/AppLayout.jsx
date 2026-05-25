@@ -7,7 +7,7 @@ import {
   MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined, IdcardOutlined,
   TagsOutlined, ToolOutlined, SettingOutlined, GlobalOutlined, EnvironmentOutlined,
   BookOutlined, BarChartOutlined, ContactsOutlined, RocketOutlined, ReadOutlined,
-  CarOutlined, ScheduleOutlined,
+  CarOutlined, ScheduleOutlined, OrderedListOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { canManageCompanies, canManageUsers, canManageCategories, ROLES } from '../utils/constants';
@@ -46,6 +46,7 @@ export default function AppLayout() {
     canManageCategories(user?.role) && { key: '/app/reports', icon: <BarChartOutlined />, label: 'Relatórios' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/crm', icon: <ContactsOutlined />, label: 'CRM' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/implantacoes', icon: <RocketOutlined />, label: 'Implantações' },
+    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/etapas-treinamento', icon: <OrderedListOutlined />, label: 'Etapas de Treinamento' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/treinamentos', icon: <ReadOutlined />, label: 'Treinamentos' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/visitas', icon: <CarOutlined />, label: 'Visitas Técnicas' },
     ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/agenda-tecnica', icon: <ScheduleOutlined />, label: 'Agenda Técnica' },

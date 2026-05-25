@@ -21,6 +21,7 @@ import KnowledgeBase from './pages/KnowledgeBase';
 import Reports from './pages/Reports';
 import CRM from './pages/CRM';
 import Implantacoes from './pages/Implantacoes';
+import EtapasTreinamento from './pages/EtapasTreinamento';
 import Treinamentos from './pages/Treinamentos';
 import Visitas from './pages/Visitas';
 import AgendaTecnica from './pages/AgendaTecnica';
@@ -59,6 +60,7 @@ function AppRoutes() {
         <Route path="reports" element={<Reports />} />
         <Route path="crm" element={<CRM />} />
         <Route path="implantacoes" element={<Implantacoes />} />
+        <Route path="etapas-treinamento" element={<EtapasTreinamento />} />
         <Route path="treinamentos" element={<Treinamentos />} />
         <Route path="visitas" element={<Visitas />} />
         <Route path="agenda-tecnica" element={<AgendaTecnica />} />

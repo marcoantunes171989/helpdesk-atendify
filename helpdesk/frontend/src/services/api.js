@@ -155,6 +155,14 @@ export const implantacaoService = {
   remove: (id) => api.delete(`/implantacoes/${id}`).then(r => r.data),
 };
 
+export const etapaTreinamentoService = {
+  list: (params) => api.get('/etapas-treinamento', { params }).then(r => r.data),
+  get: (id) => api.get(`/etapas-treinamento/${id}`).then(r => r.data),
+  create: (data) => api.post('/etapas-treinamento', data).then(r => r.data),
+  update: (id, data) => api.put(`/etapas-treinamento/${id}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/etapas-treinamento/${id}`).then(r => r.data),
+};
+
 export const treinamentoService = {
   list: (params) => api.get('/treinamentos', { params }).then(r => r.data),
   get: (id) => api.get(`/treinamentos/${id}`).then(r => r.data),

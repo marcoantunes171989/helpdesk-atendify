@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Button, Modal, Form, Input, Select, Space, Tag, Tooltip,
-  message, Table, Progress, Drawer, Divider, Steps, Badge,
+  message, Table, Progress, Drawer, Divider, Steps, Badge, AutoComplete,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined,
@@ -9,7 +9,7 @@ import {
   PauseCircleOutlined, CloseCircleOutlined, SyncOutlined,
   CalendarOutlined, TeamOutlined, ToolOutlined, BuildOutlined, PrinterOutlined,
 } from '@ant-design/icons';
-import { implantacaoService, companyService, userService, technicianService, employeeService } from '../services/api';
+import { implantacaoService, companyService, userService, technicianService, employeeService, etapaTreinamentoService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { normalize } from '../utils/constants';
 
@@ -234,6 +234,7 @@ export default function Implantacoes() {
   const [users, setUsers] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [allEmployees, setAllEmployees] = useState([]);
+  const [etapasTemplate, setEtapasTemplate] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
 
@@ -265,6 +266,7 @@ export default function Implantacoes() {
     userService.list({ active: true }).then(r => setUsers(r.data || r));
     technicianService.list({ active: true }).then(r => setTechnicians(r.data || r));
     employeeService.list({ active: true }).then(r => setAllEmployees(r.data || r));
+    etapaTreinamentoService.list({ active: 'true' }).then(setEtapasTemplate);
   }, [load]);
 
   const filtered = items.filter(i => {
@@ -844,10 +846,23 @@ export default function Implantacoes() {
                     display: 'flex', flexDirection: 'column', gap: 8,
                   }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px auto', gap: 8, alignItems: 'center' }}>
-                      <Input
-                        placeholder={`Fase ${idx + 1} — título`}
+                      <AutoComplete
+                        placeholder={`Fase ${idx + 1} — título ou selecione uma etapa`}
                         value={fase.title}
-                        onChange={e => updateFaseField(idx, 'title', e.target.value)}
+                        onChange={v => updateFaseField(idx, 'title', v)}
+                        options={etapasTemplate
+                          .filter(e => !fase.title || normalize(e.title).includes(normalize(fase.title)))
+                          .map(e => ({
+                            value: e.title,
+                            label: (
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: 13 }}>{e.title}</span>
+                                {e.category && <span style={{ fontSize: 11, color: '#94a3b8' }}>{e.category}</span>}
+                              </div>
+                            ),
+                          }))}
+                        filterOption={false}
+                        allowClear
                       />
                       <Select
                         value={fase.status}

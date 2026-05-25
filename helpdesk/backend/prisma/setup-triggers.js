@@ -63,6 +63,21 @@ async function main() {
   // implantacao_fases.employeeIds
   await prisma.$executeRawUnsafe(`ALTER TABLE "implantacao_fases" ADD COLUMN IF NOT EXISTS "employeeIds" TEXT`);
 
+  // Tabela de etapas de treinamento
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "etapas_treinamento" (
+      "id" TEXT NOT NULL,
+      "title" TEXT NOT NULL,
+      "description" TEXT,
+      "category" TEXT,
+      "order" INTEGER,
+      "active" BOOLEAN NOT NULL DEFAULT true,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "etapas_treinamento_pkey" PRIMARY KEY ("id")
+    )
+  `);
+
   console.log('[setup-triggers] schema patches OK');
 
   // 1. Sequences

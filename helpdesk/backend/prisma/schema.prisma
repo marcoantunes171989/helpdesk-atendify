@@ -564,6 +564,21 @@ model AgendaTecnico {
   @@map("agenda_tecnicos")
 }
 
+// ─── ETAPAS DE TREINAMENTO ───────────────────────────────────────────────────
+
+model EtapaTreinamento {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  category    String?
+  order       Int?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("etapas_treinamento")
+}
+
 model Visita {
   id              String       @id @default(cuid())
   code            Int?         @unique @default(autoincrement())
