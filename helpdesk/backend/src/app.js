@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const runSetupTriggers = require('../prisma/setup-triggers');
 
 const authRoutes = require('./routes/auth');
 const companyRoutes = require('./routes/companies');
@@ -70,4 +71,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+
+runSetupTriggers().then(() => {
+  app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+});

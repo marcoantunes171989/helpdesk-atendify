@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('[setup-triggers] iniciando...');
   console.log('Configurando triggers de código sequencial...');
 
   // 1. Sequences
@@ -221,9 +222,22 @@ async function main() {
   );
   console.log(`✓ Backfill: ${companies} empresas, ${users} usuários, ${employees} funcionários`);
 
-  console.log('\n✅ Setup de triggers concluído com sucesso!');
+  console.log('[setup-triggers] ✅ concluído com sucesso!');
 }
 
-main()
-  .catch(e => { console.error('Erro:', e); process.exit(1); })
-  .finally(() => prisma.$disconnect());
+// Permite ser chamado via require() ou como script standalone
+if (require.main === module) {
+  main()
+    .catch(e => { console.error('[setup-triggers] Erro:', e); process.exit(1); })
+    .finally(() => prisma.$disconnect());
+}
+
+module.exports = async function runSetupTriggers() {
+  try {
+    await main();
+  } catch (e) {
+    console.error('[setup-triggers] Erro (não fatal):', e.message);
+  } finally {
+    await prisma.$disconnect();
+  }
+};
