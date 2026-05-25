@@ -304,8 +304,24 @@ export default function Employees() {
                 label="Empresa"
                 rules={[{ required: true, message: 'Selecione a empresa' }]}
               >
-                <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large">
-                  {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                <Select
+                  placeholder="Selecione a empresa"
+                  showSearch
+                  size="large"
+                  optionFilterProp="label"
+                  filterOption={(input, option) => {
+                    const q = normalize(input);
+                    return normalize(option?.name || '').includes(q) || normalize(option?.fantasia || '').includes(q);
+                  }}
+                >
+                  {companies.map(c => (
+                    <Option key={c.id} value={c.id} label={[c.name, c.fantasia].filter(Boolean).join(' ')} name={c.name} fantasia={c.fantasia || ''}>
+                      <div style={{ lineHeight: 1.35 }}>
+                        <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
+                        {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
+                      </div>
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             )}
