@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Button, Modal, Form, Input, InputNumber, Space, Tag, Switch,
+  Table, Button, Modal, Form, Input, Space, Tag, Switch,
   Select, message, Tooltip,
 } from 'antd';
 import {
@@ -63,7 +63,6 @@ export default function EtapasTreinamento() {
       title: record.title,
       description: record.description,
       moduloId: record.moduloId || undefined,
-      order: record.order,
       active: record.active,
     });
     setModalOpen(true);
@@ -252,22 +251,17 @@ export default function EtapasTreinamento() {
               <Input placeholder="Ex: Cadastro de Produtos, Programação de Oferta..." size="large" />
             </Form.Item>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
-              <Form.Item name="moduloId" label="Módulo">
-                <Select
-                  placeholder="Selecione o módulo"
-                  allowClear
-                  showSearch
-                  size="large"
-                  filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                >
-                  {modulos.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
-                </Select>
-              </Form.Item>
-              <Form.Item name="order" label="Ordem">
-                <InputNumber min={1} max={999} size="large" style={{ width: '100%' }} placeholder="1" />
-              </Form.Item>
-            </div>
+            <Form.Item name="moduloId" label="Módulo">
+              <Select
+                placeholder="Selecione o módulo"
+                allowClear
+                showSearch
+                size="large"
+                filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+              >
+                {modulos.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
+              </Select>
+            </Form.Item>
 
             <Form.Item name="description" label="Descrição / Observação">
               <Input.TextArea rows={3} placeholder="Descreva o que é realizado nesta etapa..."

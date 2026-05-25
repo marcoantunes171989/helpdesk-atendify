@@ -25,19 +25,25 @@ exports.get = async (req, res) => {
   res.json(item);
 };
 
+async function nextOrder() {
+  const last = await prisma.moduloTreinamento.findFirst({ orderBy: { order: 'desc' }, select: { order: true } });
+  return (last?.order ?? 0) + 1;
+}
+
 exports.create = async (req, res) => {
-  const { name, description, order, active } = req.body;
+  const { name, description, active } = req.body;
+  const order = await nextOrder();
   const item = await prisma.moduloTreinamento.create({
-    data: { name, description: description || null, order: order ? Number(order) : null, active: active !== false },
+    data: { name, description: description || null, order, active: active !== false },
   });
   res.status(201).json(item);
 };
 
 exports.update = async (req, res) => {
-  const { name, description, order, active } = req.body;
+  const { name, description, active } = req.body;
   const item = await prisma.moduloTreinamento.update({
     where: { id: req.params.id },
-    data: { name, description: description || null, order: order ? Number(order) : null, active },
+    data: { name, description: description || null, active },
   });
   res.json(item);
 };

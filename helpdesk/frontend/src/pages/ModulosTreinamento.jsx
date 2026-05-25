@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Button, Modal, Form, Input, InputNumber, Space, Tag, Switch,
+  Table, Button, Modal, Form, Input, Space, Tag, Switch,
   message, Tooltip,
 } from 'antd';
 import {
@@ -50,7 +50,6 @@ export default function ModulosTreinamento() {
     form.setFieldsValue({
       name: record.name,
       description: record.description,
-      order: record.order,
       active: record.active,
     });
     setModalOpen(true);
@@ -218,15 +217,10 @@ export default function ModulosTreinamento() {
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12 }}>
-              <Form.Item name="name" label="Nome do Módulo"
-                rules={[{ required: true, message: 'Informe o nome' }]}>
-                <Input placeholder="Ex: PDV, Estoque, Financeiro..." size="large" />
-              </Form.Item>
-              <Form.Item name="order" label="Ordem">
-                <InputNumber min={1} max={999} size="large" style={{ width: '100%' }} placeholder="1" />
-              </Form.Item>
-            </div>
+            <Form.Item name="name" label="Nome do Módulo"
+              rules={[{ required: true, message: 'Informe o nome' }]}>
+              <Input placeholder="Ex: PDV, Estoque, Financeiro..." size="large" />
+            </Form.Item>
             <Form.Item name="description" label="Descrição">
               <Input.TextArea rows={3} placeholder="Descreva o conteúdo deste módulo..."
                 style={{ resize: 'none' }} />
