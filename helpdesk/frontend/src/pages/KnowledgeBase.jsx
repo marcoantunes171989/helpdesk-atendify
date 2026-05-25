@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Row, Col, Button, Modal, Form, Input, Select, Space, Tag,
-  message, Tooltip, Upload, Divider, Spin, Empty, Tabs,
+  message, Tooltip, Upload, Divider, Spin, Empty,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined,
@@ -93,7 +93,7 @@ export default function KnowledgeBase() {
   const [articleLoading, setArticleLoading] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [search, setSearch] = useState('');
-  const [rightTab, setRightTab] = useState('ai');
+  const [showAi, setShowAi] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -123,7 +123,7 @@ export default function KnowledgeBase() {
   useEffect(() => { load(); }, []);
 
   const selectArticle = async (id) => {
-    setRightTab('article');
+    setShowAi(false);
     setArticleLoading(true);
     try {
       const full = await knowledgeService.get(id);
@@ -280,6 +280,7 @@ export default function KnowledgeBase() {
 
   return (
     <div className="page-wrap">
+      {/* Header */}
       <div className="page-header">
         <div>
           <h1 className="page-title">Base de Conhecimento</h1>
@@ -287,58 +288,79 @@ export default function KnowledgeBase() {
             {articles.length} artigo{articles.length !== 1 ? 's' : ''} cadastrado{articles.length !== 1 ? 's' : ''}
           </p>
         </div>
-        {canEdit && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-            Novo Artigo
+        <Space>
+          <Button
+            icon={<RobotOutlined />}
+            onClick={() => { setShowAi(true); setSelectedArticle(null); }}
+            style={{
+              borderRadius: 8, fontWeight: 600,
+              color: '#a78bfa',
+              borderColor: 'rgba(124,58,237,0.35)',
+              background: showAi ? 'rgba(124,58,237,0.1)' : 'transparent',
+            }}
+          >
+            Consultar IA
           </Button>
-        )}
+          {canEdit && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
+              Novo Artigo
+            </Button>
+          )}
+        </Space>
       </div>
 
+      {/* Search + category filters — full width, prominent */}
+      <div style={{ marginBottom: 16 }}>
+        <Input
+          size="large"
+          prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)', fontSize: 16 }} />}
+          placeholder="Buscar por título, tags ou conteúdo..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ borderRadius: 10, marginBottom: 10 }}
+        />
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {[
+            { key: 'ALL', label: 'Todos' },
+            { key: 'DUVIDA', label: 'Dúvidas' },
+            { key: 'ERRO', label: 'Erros' },
+            { key: 'CONFIGURACAO', label: 'Configurações' },
+          ].map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setCategoryFilter(opt.key)}
+              style={{
+                padding: '4px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', border: '1px solid',
+                background: categoryFilter === opt.key
+                  ? (opt.key === 'ALL' ? 'rgba(37,99,235,0.18)' : KB_CATEGORIES[opt.key]?.bg || 'rgba(37,99,235,0.18)')
+                  : 'transparent',
+                borderColor: categoryFilter === opt.key
+                  ? (opt.key === 'ALL' ? 'rgba(37,99,235,0.4)' : KB_CATEGORIES[opt.key]?.border || 'rgba(37,99,235,0.4)')
+                  : 'var(--cl-border)',
+                color: categoryFilter === opt.key
+                  ? (opt.key === 'ALL' ? '#60a5fa' : KB_CATEGORIES[opt.key]?.color || '#60a5fa')
+                  : 'var(--cl-text-soft)',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+          {(search || categoryFilter !== 'ALL') && (
+            <span style={{ fontSize: 12, color: 'var(--cl-text-faint)', marginLeft: 4 }}>
+              {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Two-column layout — no tabs */}
       <Row gutter={[16, 16]}>
         {/* Left — article list */}
-        <Col xs={24} lg={10}>
+        <Col xs={24} lg={9}>
           <div style={panelStyle}>
-            {/* Filters */}
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--cl-border)' }}>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-                {[
-                  { key: 'ALL', label: 'Todos' },
-                  { key: 'DUVIDA', label: 'Dúvidas' },
-                  { key: 'ERRO', label: 'Erros' },
-                  { key: 'CONFIGURACAO', label: 'Configurações' },
-                ].map(opt => (
-                  <button
-                    key={opt.key}
-                    onClick={() => setCategoryFilter(opt.key)}
-                    style={{
-                      padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                      cursor: 'pointer', border: '1px solid',
-                      background: categoryFilter === opt.key
-                        ? (opt.key === 'ALL' ? 'rgba(37,99,235,0.18)' : KB_CATEGORIES[opt.key]?.bg || 'rgba(37,99,235,0.18)')
-                        : 'transparent',
-                      borderColor: categoryFilter === opt.key
-                        ? (opt.key === 'ALL' ? 'rgba(37,99,235,0.4)' : KB_CATEGORIES[opt.key]?.border || 'rgba(37,99,235,0.4)')
-                        : 'var(--cl-border)',
-                      color: categoryFilter === opt.key
-                        ? (opt.key === 'ALL' ? '#60a5fa' : KB_CATEGORIES[opt.key]?.color || '#60a5fa')
-                        : 'var(--cl-text-soft)',
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-              <Input
-                prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
-                placeholder="Buscar por título, tags ou conteúdo..."
-                allowClear
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-
-            {/* Article list */}
-            <div style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
+            <div style={{ maxHeight: 'calc(100vh - 290px)', overflowY: 'auto' }}>
               {loading ? (
                 <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
               ) : filtered.length === 0 ? (
@@ -353,42 +375,48 @@ export default function KnowledgeBase() {
                       key={article.id}
                       onClick={() => selectArticle(article.id)}
                       style={{
-                        padding: '14px 16px',
+                        padding: '12px 16px',
                         borderBottom: '1px solid var(--cl-border)',
                         cursor: 'pointer',
                         background: isSelected ? 'rgba(37,99,235,0.08)' : 'transparent',
                         borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent',
                         transition: 'background 0.15s',
+                        opacity: article.active === false ? 0.5 : 1,
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                        <CategoryBadge category={article.category} small />
-                        <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13, marginBottom: 4, lineHeight: 1.4 }}>
+                            {article.title}
+                          </div>
+                          <div style={{
+                            fontSize: 12, color: 'var(--cl-text-muted)',
+                            overflow: 'hidden', display: '-webkit-box',
+                            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                            lineHeight: 1.5, marginBottom: 6,
+                          }}>
+                            {article.content}
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <CategoryBadge category={article.category} small />
+                            {article.attachments?.length > 0 && (
+                              <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>
+                                <PaperClipOutlined /> {article.attachments.length}
+                              </span>
+                            )}
+                            {article.tags && (
+                              <span style={{ fontSize: 11, color: 'var(--cl-text-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
+                                🏷 {article.tags}
+                              </span>
+                            )}
+                            {article.active === false && (
+                              <Tag style={{ fontSize: 10, margin: 0, lineHeight: '16px' }}>Inativo</Tag>
+                            )}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700, flexShrink: 0 }}>
                           #{String(article.code).padStart(4, '0')}
                         </span>
-                      </div>
-                      <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13, marginBottom: 4 }}>
-                        {article.title}
-                      </div>
-                      <div style={{
-                        fontSize: 12, color: 'var(--cl-text-muted)',
-                        overflow: 'hidden', display: '-webkit-box',
-                        WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                        marginBottom: 6,
-                      }}>
-                        {article.content}
-                      </div>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        {article.attachments?.length > 0 && (
-                          <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>
-                            <PaperClipOutlined /> {article.attachments.length} anexo{article.attachments.length !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {article.tags && (
-                          <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>
-                            🏷 {article.tags}
-                          </span>
-                        )}
                       </div>
                     </div>
                   );
@@ -398,67 +426,62 @@ export default function KnowledgeBase() {
           </div>
         </Col>
 
-        {/* Right — article detail or AI chat */}
-        <Col xs={24} lg={14}>
-          <div style={{ ...panelStyle, minHeight: 'calc(100vh - 260px)' }}>
-            <Tabs
-              activeKey={rightTab}
-              onChange={setRightTab}
-              style={{ height: '100%' }}
-              tabBarStyle={{ padding: '0 16px', margin: 0, borderBottom: '1px solid var(--cl-border)' }}
-              items={[
-                {
-                  key: 'article',
-                  label: (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <BookOutlined /> Artigo
-                    </span>
-                  ),
-                  children: (
-                    <div style={{ padding: 20, maxHeight: 'calc(100vh - 330px)', overflowY: 'auto' }}>
-                      {articleLoading ? (
-                        <div style={{ padding: 40, textAlign: 'center' }}><Spin /></div>
-                      ) : selectedArticle ? (
-                        <ArticleDetailPanel
-                          article={selectedArticle}
-                          canEdit={canEdit}
-                          onEdit={() => openEdit(selectedArticle)}
-                          onDelete={() => setDeleteModal({ id: selectedArticle.id, title: selectedArticle.title })}
-                        />
-                      ) : (
-                        <div style={{ padding: '60px 0', textAlign: 'center' }}>
-                          <BookOutlined style={{ fontSize: 40, color: 'var(--cl-text-dim)', marginBottom: 12 }} />
-                          <p style={{ color: 'var(--cl-text-muted)', fontSize: 14 }}>
-                            Selecione um artigo na lista para visualizar
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ),
-                },
-                {
-                  key: 'ai',
-                  label: (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <RobotOutlined /> Consultar IA
-                    </span>
-                  ),
-                  children: (
-                    <div style={{ padding: 20 }}>
-                      <AiPanel
-                        question={aiQuestion}
-                        onQuestionChange={setAiQuestion}
-                        onQuery={handleAiQuery}
-                        loading={aiLoading}
-                        answer={aiAnswer}
-                        sources={aiSources}
-                        onSelectSource={id => selectArticle(id)}
-                      />
-                    </div>
-                  ),
-                },
-              ]}
-            />
+        {/* Right — article detail or AI panel (no tab switching) */}
+        <Col xs={24} lg={15}>
+          <div style={{ ...panelStyle, position: 'sticky', top: 16 }}>
+            <div style={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto' }}>
+              {showAi ? (
+                <div style={{ padding: 24 }}>
+                  <AiPanel
+                    question={aiQuestion}
+                    onQuestionChange={setAiQuestion}
+                    onQuery={handleAiQuery}
+                    loading={aiLoading}
+                    answer={aiAnswer}
+                    sources={aiSources}
+                    onSelectSource={id => selectArticle(id)}
+                  />
+                </div>
+              ) : articleLoading ? (
+                <div style={{ padding: 60, textAlign: 'center' }}><Spin size="large" /></div>
+              ) : selectedArticle ? (
+                <div style={{ padding: 24 }}>
+                  <ArticleDetailPanel
+                    article={selectedArticle}
+                    canEdit={canEdit}
+                    onEdit={() => openEdit(selectedArticle)}
+                    onDelete={() => setDeleteModal({ id: selectedArticle.id, title: selectedArticle.title })}
+                  />
+                </div>
+              ) : (
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', padding: '80px 24px', textAlign: 'center', gap: 16,
+                }}>
+                  <BookOutlined style={{ fontSize: 48, color: 'var(--cl-text-dim)' }} />
+                  <div>
+                    <p style={{ color: 'var(--cl-text-hi)', fontSize: 15, fontWeight: 600, margin: '0 0 6px' }}>
+                      Selecione um artigo para leitura
+                    </p>
+                    <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: 0 }}>
+                      Ou use a IA para encontrar o que precisa rapidamente
+                    </p>
+                  </div>
+                  <Button
+                    icon={<RobotOutlined />}
+                    onClick={() => setShowAi(true)}
+                    style={{
+                      borderRadius: 8, fontWeight: 600,
+                      color: '#a78bfa',
+                      borderColor: 'rgba(124,58,237,0.35)',
+                      background: 'rgba(124,58,237,0.08)',
+                    }}
+                  >
+                    Consultar IA
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </Col>
       </Row>
@@ -522,7 +545,7 @@ export default function KnowledgeBase() {
             </Form.Item>
 
             {editing && (
-              <Form.Item name="active" label="Status" valuePropName="checked">
+              <Form.Item name="active" label="Status">
                 <Select size="large" style={{ width: 160 }}>
                   <Option value={true}>Ativo</Option>
                   <Option value={false}>Inativo</Option>
@@ -617,8 +640,9 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Top bar: category + code + actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <CategoryBadge category={article.category} />
           <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>
             #{String(article.code).padStart(4, '0')}
@@ -651,31 +675,35 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
         </Space>
       </div>
 
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--cl-text-hi)', marginBottom: 8 }}>
+      {/* Title */}
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--cl-text-hi)', marginBottom: 10, lineHeight: 1.35 }}>
         {article.title}
       </h2>
 
+      {/* Tags */}
       {article.tags && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 14 }}>
           {article.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
             <Tag key={tag} style={{ fontSize: 11, borderRadius: 20, marginBottom: 4 }}>{tag}</Tag>
           ))}
         </div>
       )}
 
-      <Divider style={{ margin: '12px 0' }} />
+      <Divider style={{ margin: '14px 0' }} />
 
+      {/* Content */}
       <div style={{
-        fontSize: 14, color: 'var(--cl-text)', lineHeight: 1.7,
+        fontSize: 14, color: 'var(--cl-text)', lineHeight: 1.75,
         whiteSpace: 'pre-wrap', wordBreak: 'break-word',
       }}>
         {article.content}
       </div>
 
+      {/* Attachments */}
       {article.attachments?.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <Divider style={{ margin: '16px 0 12px' }} />
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text-soft)', marginBottom: 8 }}>
+        <div style={{ marginTop: 24 }}>
+          <Divider style={{ margin: '16px 0 14px' }} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text-soft)', marginBottom: 10 }}>
             <PaperClipOutlined /> Anexos ({article.attachments.length})
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -710,16 +738,16 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
 function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources, onSelectSource }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 10,
+          width: 40, height: 40, borderRadius: 12,
           background: 'rgba(124,58,237,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <RobotOutlined style={{ color: '#a78bfa', fontSize: 18 }} />
+          <RobotOutlined style={{ color: '#a78bfa', fontSize: 20 }} />
         </div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--cl-text-hi)' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--cl-text-hi)' }}>
             Assistente de Conhecimento
           </div>
           <div style={{ fontSize: 12, color: 'var(--cl-text-faint)' }}>
@@ -738,12 +766,12 @@ function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) onQuery();
         }}
       />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Ctrl+Enter para enviar</span>
         <Button
           type="primary" icon={<SendOutlined />} loading={loading}
           onClick={onQuery} disabled={!question.trim()}
-          style={{ background: '#7c3aed', borderColor: '#7c3aed' }}
+          style={{ background: '#7c3aed', borderColor: '#7c3aed', borderRadius: 8, fontWeight: 600 }}
         >
           Perguntar
         </Button>
@@ -761,12 +789,12 @@ function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources
           <div style={{
             background: 'rgba(124,58,237,0.08)',
             border: '1px solid rgba(124,58,237,0.2)',
-            borderRadius: 10, padding: '14px 16px', marginBottom: 16,
+            borderRadius: 10, padding: '16px 18px', marginBottom: 16,
           }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#a78bfa', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#a78bfa', marginBottom: 10 }}>
               <RobotOutlined /> Resposta da IA
             </div>
-            <div style={{ fontSize: 13, color: 'var(--cl-text)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+            <div style={{ fontSize: 14, color: 'var(--cl-text)', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
               {answer}
             </div>
           </div>
