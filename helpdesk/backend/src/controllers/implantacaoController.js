@@ -14,6 +14,13 @@ async function nextCode() {
   return (last?.code ?? 0) + 1;
 }
 
+function parseFases(fases = []) {
+  return fases.map(f => ({
+    ...f,
+    employeeIds: f.employeeIds ? JSON.parse(f.employeeIds) : [],
+  }));
+}
+
 exports.list = async (req, res) => {
   const { search, status, companyId } = req.query;
   const where = {};
@@ -27,13 +34,13 @@ exports.list = async (req, res) => {
     ];
   }
   const items = await prisma.implantacao.findMany({ where, include, orderBy: { createdAt: 'desc' } });
-  res.json(items);
+  res.json(items.map(i => ({ ...i, fases: parseFases(i.fases) })));
 };
 
 exports.get = async (req, res) => {
   const item = await prisma.implantacao.findUnique({ where: { id: req.params.id }, include });
   if (!item) return res.status(404).json({ error: 'Implantação não encontrada' });
-  res.json(item);
+  res.json({ ...item, fases: parseFases(item.fases) });
 };
 
 exports.create = async (req, res) => {
@@ -51,12 +58,13 @@ exports.create = async (req, res) => {
           title: f.title,
           description: f.description || null,
           status: f.status || 'PENDENTE',
+          employeeIds: JSON.stringify(f.employeeIds || []),
         })),
       },
     },
     include,
   });
-  res.status(201).json(item);
+  res.status(201).json({ ...item, fases: parseFases(item.fases) });
 };
 
 exports.update = async (req, res) => {
@@ -79,13 +87,14 @@ exports.update = async (req, res) => {
         title: f.title,
         description: f.description || null,
         status: f.status || 'PENDENTE',
+        employeeIds: JSON.stringify(f.employeeIds || []),
         completedAt: f.completedAt ? new Date(f.completedAt) : null,
       })),
     };
   }
 
   const item = await prisma.implantacao.update({ where: { id: req.params.id }, data: payload, include });
-  res.json(item);
+  res.json({ ...item, fases: parseFases(item.fases) });
 };
 
 exports.updateFase = async (req, res) => {

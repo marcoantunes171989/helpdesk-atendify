@@ -172,7 +172,7 @@ export default function Implantacoes() {
       expectedEnd: record.expectedEnd ? record.expectedEnd.slice(0, 10) : '',
       notes: record.notes,
     });
-    setFasesForm(record.fases?.map(f => ({ ...f })) || []);
+    setFasesForm(record.fases?.map(f => ({ ...f, employeeIds: f.employeeIds || [] })) || []);
     setModalOpen(true);
   };
 
@@ -243,7 +243,7 @@ export default function Implantacoes() {
 
   const addFase = () => setFasesForm(prev => [
     ...prev,
-    { id: null, order: prev.length + 1, title: '', description: '', status: 'PENDENTE' },
+    { id: null, order: prev.length + 1, title: '', description: '', status: 'PENDENTE', employeeIds: [] },
   ]);
 
   const updateFaseField = (idx, field, value) => {
@@ -478,28 +478,50 @@ export default function Implantacoes() {
                   direction="vertical"
                   size="small"
                   current={-1}
-                  items={selected.fases.map(fase => ({
-                    title: (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 13, fontWeight: 600 }}>{fase.title}</span>
-                        <Space size={4}>
-                          {canEdit && fase.status !== 'CONCLUIDO' && (
-                            <Button
-                              size="small" type="text"
-                              loading={updatingFase === fase.id}
-                              onClick={() => handleFaseStatus(fase.id, fase.status === 'PENDENTE' ? 'EM_ANDAMENTO' : 'CONCLUIDO')}
-                              style={{ fontSize: 11, color: '#60a5fa' }}
-                            >
-                              {fase.status === 'PENDENTE' ? 'Iniciar' : 'Concluir'}
-                            </Button>
+                  items={selected.fases.map(fase => {
+                    const faseEmps = (fase.employeeIds || [])
+                      .map(eid => allEmployees.find(e => e.id === eid))
+                      .filter(Boolean);
+                    return {
+                      title: (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>{fase.title}</span>
+                          <Space size={4}>
+                            {canEdit && fase.status !== 'CONCLUIDO' && (
+                              <Button
+                                size="small" type="text"
+                                loading={updatingFase === fase.id}
+                                onClick={() => handleFaseStatus(fase.id, fase.status === 'PENDENTE' ? 'EM_ANDAMENTO' : 'CONCLUIDO')}
+                                style={{ fontSize: 11, color: '#60a5fa' }}
+                              >
+                                {fase.status === 'PENDENTE' ? 'Iniciar' : 'Concluir'}
+                              </Button>
+                            )}
+                            <Tag color={FASE_STATUS[fase.status]?.color}>{FASE_STATUS[fase.status]?.label}</Tag>
+                          </Space>
+                        </div>
+                      ),
+                      description: (
+                        <div>
+                          {fase.description && <div style={{ marginBottom: faseEmps.length ? 4 : 0 }}>{fase.description}</div>}
+                          {faseEmps.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                              {faseEmps.map(e => (
+                                <span key={e.id} style={{
+                                  fontSize: 11, padding: '1px 8px', borderRadius: 10,
+                                  background: 'rgba(37,99,235,0.1)', color: '#60a5fa',
+                                  border: '1px solid rgba(37,99,235,0.2)',
+                                }}>
+                                  {e.name}
+                                </span>
+                              ))}
+                            </div>
                           )}
-                          <Tag color={FASE_STATUS[fase.status]?.color}>{FASE_STATUS[fase.status]?.label}</Tag>
-                        </Space>
-                      </div>
-                    ),
-                    description: fase.description,
-                    status: fase.status === 'CONCLUIDO' ? 'finish' : fase.status === 'EM_ANDAMENTO' ? 'process' : 'wait',
-                  }))}
+                        </div>
+                      ),
+                      status: fase.status === 'CONCLUIDO' ? 'finish' : fase.status === 'EM_ANDAMENTO' ? 'process' : 'wait',
+                    };
+                  })}
                 />
               </>
             )}
@@ -643,27 +665,50 @@ export default function Implantacoes() {
             {/* Fases */}
             <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Fases / Etapas</Divider>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-              {fasesForm.map((fase, idx) => (
-                <div key={idx} style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'start',
-                  padding: '10px 12px', borderRadius: 8,
-                  background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
-                }}>
-                  <Input
-                    placeholder={`Fase ${idx + 1} — título`}
-                    value={fase.title}
-                    onChange={e => updateFaseField(idx, 'title', e.target.value)}
-                  />
-                  <Select
-                    value={fase.status}
-                    onChange={v => updateFaseField(idx, 'status', v)}
-                    size="middle"
-                  >
-                    {Object.entries(FASE_STATUS).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
-                  </Select>
-                  <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFase(idx)} />
-                </div>
-              ))}
+              {fasesForm.map((fase, idx) => {
+                const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
+                return (
+                  <div key={idx} style={{
+                    padding: '10px 12px', borderRadius: 8,
+                    background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px auto', gap: 8, alignItems: 'center' }}>
+                      <Input
+                        placeholder={`Fase ${idx + 1} — título`}
+                        value={fase.title}
+                        onChange={e => updateFaseField(idx, 'title', e.target.value)}
+                      />
+                      <Select
+                        value={fase.status}
+                        onChange={v => updateFaseField(idx, 'status', v)}
+                        size="middle"
+                      >
+                        {Object.entries(FASE_STATUS).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
+                      </Select>
+                      <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFase(idx)} />
+                    </div>
+                    <Select
+                      mode="multiple"
+                      placeholder={selectedCompanyId ? 'Funcionários responsáveis (opcional)' : 'Selecione a empresa primeiro'}
+                      value={fase.employeeIds || []}
+                      onChange={v => updateFaseField(idx, 'employeeIds', v)}
+                      disabled={!selectedCompanyId}
+                      showSearch
+                      filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                      style={{ width: '100%' }}
+                      size="small"
+                      allowClear
+                    >
+                      {companyEmployees.map(e => (
+                        <Option key={e.id} value={e.id}>
+                          {e.name}{e.position ? ` — ${e.position}` : ''}
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
+                );
+              })}
             </div>
             <Button icon={<PlusOutlined />} onClick={addFase} size="small" style={{ marginBottom: 16 }}>
               Adicionar Fase

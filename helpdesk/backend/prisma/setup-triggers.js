@@ -60,6 +60,9 @@ async function main() {
     )
   `);
 
+  // implantacao_fases.employeeIds
+  await prisma.$executeRawUnsafe(`ALTER TABLE "implantacao_fases" ADD COLUMN IF NOT EXISTS "employeeIds" TEXT`);
+
   console.log('[setup-triggers] schema patches OK');
 
   // 1. Sequences
