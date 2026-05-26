@@ -130,7 +130,6 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
           <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:11px;text-align:center;width:34px;font-weight:700;color:#94a3b8">${seq}</td>
           <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:13px;color:#1e293b;font-weight:500">${f.title}</td>
           <td style="padding:8px 12px;border:1px solid #e8edf2;text-align:center;width:128px">${statusBadge(f.status)}</td>
-          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:12px;color:#64748b">${f.description || '—'}</td>
         </tr>`;
       }).join('');
 
@@ -157,7 +156,6 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
               <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:34px;letter-spacing:.5px">#</th>
               <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:left;color:#94a3b8;letter-spacing:.5px">ETAPA / TELA</th>
               <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:128px;letter-spacing:.5px">STATUS</th>
-              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:left;color:#94a3b8;letter-spacing:.5px">OBSERVAÇÃO</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>
