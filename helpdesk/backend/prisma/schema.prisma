@@ -612,6 +612,7 @@ model Visita {
   topicTreino     Boolean      @default(false)
   topicTreinoDesc String?      @db.Text
   topicTreinoMods String?      @db.Text
+  topicTreinoEmps String?      @db.Text
   topicOutros     Boolean      @default(false)
   topicOutrosDesc String?      @db.Text
   conclusions     String?      @db.Text

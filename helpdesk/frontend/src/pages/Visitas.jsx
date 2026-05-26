@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
-  visitaService, companyService, technicianService, employeeService,
+  visitaService, companyService, technicianService, employeeService, etapaTreinamentoService,
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { normalize } from '../utils/constants';
@@ -32,8 +32,27 @@ function gerarATA(visita) {
     topics.push(`<b>Configuração</b><br>${visita.topicConfigDesc || ''}`);
   }
   if (visita.topicTreino) {
+    let treinoEtapas = [], treinoEmps = [];
+    try { treinoEtapas = JSON.parse(visita.topicTreinoMods || '[]'); if (!Array.isArray(treinoEtapas)) treinoEtapas = []; } catch {}
+    try { treinoEmps   = JSON.parse(visita.topicTreinoEmps  || '[]'); if (!Array.isArray(treinoEmps))   treinoEmps   = []; } catch {}
+
+    const byMod = treinoEtapas.reduce((acc, e) => {
+      const k = e.moduloName || '—';
+      if (!acc[k]) acc[k] = [];
+      acc[k].push(e.title || e.id || '');
+      return acc;
+    }, {});
+
     let t = `<b>Treinamento</b>`;
-    if (visita.topicTreinoMods) t += `<br><i>Módulos:</i> ${visita.topicTreinoMods}`;
+    if (Object.keys(byMod).length > 0) {
+      t += `<br><ul style="margin:4px 0 4px 16px;padding:0">` +
+        Object.entries(byMod).map(([mod, steps]) =>
+          `<li style="margin-bottom:3px"><span style="font-weight:600">${mod}:</span> ${steps.join(', ')}</li>`
+        ).join('') + `</ul>`;
+    }
+    if (treinoEmps.length > 0) {
+      t += `<br><i>Funcionários:</i> ${treinoEmps.map(e => e.name || e.id).join(', ')}`;
+    }
     if (visita.topicTreinoDesc) t += `<br>${visita.topicTreinoDesc}`;
     topics.push(t);
   }
@@ -145,6 +164,10 @@ export default function Visitas() {
   const [topicTreino, setTopicTreino] = useState(false);
   const [topicOutros, setTopicOutros] = useState(false);
 
+  const [etapasTemplate, setEtapasTemplate] = useState([]);
+  const [treinoEtapaIds, setTreinoEtapaIds] = useState([]);
+  const [treinoEmpIds,   setTreinoEmpIds]   = useState([]);
+
   const load = () => {
     setLoading(true);
     visitaService.list().then(setItems).finally(() => setLoading(false));
@@ -158,6 +181,10 @@ export default function Visitas() {
       arr.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
       setTechnicians(arr);
     });
+    etapaTreinamentoService.list({ active: 'true' }).then(r => {
+      const arr = Array.isArray(r) ? r : r.data || [];
+      setEtapasTemplate(arr);
+    }).catch(() => {});
   }, []);
 
   const handleCompanyChange = (val) => {
@@ -180,6 +207,7 @@ export default function Visitas() {
     form.resetFields();
     form.setFieldsValue({ status: 'REALIZADA', visitDate: dayjs() });
     setTopicConfig(false); setTopicTreino(false); setTopicOutros(false);
+    setTreinoEtapaIds([]); setTreinoEmpIds([]);
     setEmployees([]);
     setModalOpen(true);
   };
@@ -204,6 +232,16 @@ export default function Visitas() {
     setTopicConfig(!!record.topicConfig);
     setTopicTreino(!!record.topicTreino);
     setTopicOutros(!!record.topicOutros);
+    // parse etapa IDs
+    try {
+      const parsed = JSON.parse(record.topicTreinoMods || '[]');
+      setTreinoEtapaIds(Array.isArray(parsed) ? parsed.map(x => (typeof x === 'string' ? x : x?.id)).filter(Boolean) : []);
+    } catch { setTreinoEtapaIds([]); }
+    // parse employee IDs
+    try {
+      const parsed = JSON.parse(record.topicTreinoEmps || '[]');
+      setTreinoEmpIds(Array.isArray(parsed) ? parsed.map(x => (typeof x === 'string' ? x : x?.id)).filter(Boolean) : []);
+    } catch { setTreinoEmpIds([]); }
     if (record.companyId) {
       setLoadingEmpl(true);
       employeeService.list({ companyId: record.companyId, active: 'true' })
@@ -228,7 +266,18 @@ export default function Visitas() {
         topicConfig, topicTreino, topicOutros,
         topicConfigDesc: topicConfig ? values.topicConfigDesc : null,
         topicTreinoDesc: topicTreino ? values.topicTreinoDesc : null,
-        topicTreinoMods: topicTreino ? values.topicTreinoMods : null,
+        topicTreinoMods: topicTreino
+          ? JSON.stringify(treinoEtapaIds.map(id => {
+              const e = etapasTemplate.find(et => et.id === id);
+              return { id, title: e?.title || id, moduloName: e?.modulo?.name || null };
+            }))
+          : null,
+        topicTreinoEmps: topicTreino
+          ? JSON.stringify(treinoEmpIds.map(id => {
+              const emp = employees.find(e => e.id === id);
+              return { id, name: emp?.name || id, position: emp?.position || null };
+            }))
+          : null,
         topicOutrosDesc: topicOutros ? values.topicOutrosDesc : null,
       };
       if (editing) {
@@ -445,9 +494,46 @@ export default function Visitas() {
                   {selected.topicOutros  && <Tag color="default">Outros</Tag>}
                   {!selected.topicConfig && !selected.topicTreino && !selected.topicOutros && <span style={{ fontSize: 13, color: 'var(--cl-text-faint)' }}>Nenhum tema registrado</span>}
                 </Space>
-                {selected.topicTreino && selected.topicTreinoMods && (
-                  <DetailField label="Módulos do Treinamento" value={selected.topicTreinoMods} />
-                )}
+                {selected.topicTreino && (() => {
+                  let etapas = [], emps = [];
+                  try { etapas = JSON.parse(selected.topicTreinoMods || '[]'); if (!Array.isArray(etapas)) etapas = []; } catch {}
+                  try { emps   = JSON.parse(selected.topicTreinoEmps  || '[]'); if (!Array.isArray(emps))   emps   = []; } catch {}
+                  const byMod = etapas.reduce((acc, e) => {
+                    const k = e.moduloName || '—';
+                    if (!acc[k]) acc[k] = [];
+                    acc[k].push(e);
+                    return acc;
+                  }, {});
+                  return (
+                    <div style={{ marginBottom: 8 }}>
+                      {Object.keys(byMod).length > 0 && (
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={LABEL}>Etapas de Treinamento</div>
+                          {Object.entries(byMod).map(([mod, steps]) => (
+                            <div key={mod} style={{ marginBottom: 6 }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--cl-text-muted)', marginBottom: 3 }}>{mod}</div>
+                              {steps.map((s, i) => (
+                                <Tag key={i} style={{ marginBottom: 3, borderRadius: 4, fontSize: 11 }}>{s.title || s.id}</Tag>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {emps.length > 0 && (
+                        <div>
+                          <div style={LABEL}>Funcionários Treinados</div>
+                          <Space wrap>
+                            {emps.map((e, i) => (
+                              <Tag key={i} color="blue" style={{ borderRadius: 4, fontSize: 11 }}>
+                                {e.name || e.id}{e.position ? ` — ${e.position}` : ''}
+                              </Tag>
+                            ))}
+                          </Space>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </Col>
             </Row>
             <Divider style={{ margin: '8px 0 16px' }} />
@@ -541,19 +627,19 @@ export default function Visitas() {
             </Row>
 
             <Row gutter={16}>
-              <Col xs={24} sm={12}>
+              <Col xs={24} sm={10}>
                 <Form.Item name="technicianId" label="Técnico Responsável">
                   <Select allowClear showSearch optionFilterProp="children" placeholder="Selecione o técnico" size="large">
                     {technicians.map(t => <Option key={t.id} value={t.id}>{t.name}</Option>)}
                   </Select>
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={8}>
+              <Col xs={24} sm={9}>
                 <Form.Item name="visitDate" label="Data da Visita" rules={[{ required: true, message: 'Informe a data' }]}>
                   <DatePicker showTime={{ format: 'HH:mm' }} format="DD/MM/YYYY HH:mm" size="large" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={4}>
+              <Col xs={24} sm={5}>
                 <Form.Item name="status" label="Status">
                   <Select size="large">
                     {Object.entries(STATUS_MAP).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
@@ -586,12 +672,64 @@ export default function Visitas() {
                 Treinamento
               </Checkbox>
               {topicTreino && (
-                <div style={{ marginTop: 8 }}>
-                  <Form.Item name="topicTreinoMods" label="Módulos Abordados" style={{ marginBottom: 8 }}>
-                    <Input placeholder="Ex: Módulo Financeiro, Módulo Estoque..." />
-                  </Form.Item>
+                <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--cl-bg)', border: '1px solid var(--cl-border)', borderRadius: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {/* Etapas de treinamento */}
+                  <div>
+                    <div style={{ fontSize: 12, color: 'var(--cl-text-muted)', fontWeight: 600, marginBottom: 6 }}>Etapas de Treinamento</div>
+                    <Select
+                      mode="multiple"
+                      value={treinoEtapaIds}
+                      onChange={setTreinoEtapaIds}
+                      placeholder="Selecione as etapas abordadas..."
+                      showSearch
+                      allowClear
+                      style={{ width: '100%' }}
+                      optionLabelProp="label"
+                      filterOption={(input, opt) => normalize(opt?.label || '').includes(normalize(input))}
+                    >
+                      {etapasTemplate.map(e => (
+                        <Option key={e.id} value={e.id} label={e.title}>
+                          <div style={{ lineHeight: 1.3, padding: '2px 0' }}>
+                            <div style={{ fontSize: 13 }}>{e.title}</div>
+                            {e.modulo?.name && (
+                              <div style={{ fontSize: 11, color: '#94a3b8' }}>{e.modulo.name}</div>
+                            )}
+                          </div>
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
+
+                  {/* Funcionários treinados */}
+                  <div>
+                    <div style={{ fontSize: 12, color: 'var(--cl-text-muted)', fontWeight: 600, marginBottom: 6 }}>Funcionários Treinados</div>
+                    <Select
+                      mode="multiple"
+                      value={treinoEmpIds}
+                      onChange={setTreinoEmpIds}
+                      placeholder="Selecione os funcionários..."
+                      showSearch
+                      allowClear
+                      style={{ width: '100%' }}
+                      optionLabelProp="label"
+                      loading={loadingEmpl}
+                      filterOption={(input, opt) => normalize(opt?.label || '').includes(normalize(input))}
+                      notFoundContent={employees.length === 0 ? 'Selecione uma empresa primeiro' : 'Nenhum funcionário encontrado'}
+                    >
+                      {employees.map(e => (
+                        <Option key={e.id} value={e.id} label={e.name}>
+                          <div style={{ lineHeight: 1.3, padding: '2px 0' }}>
+                            <div style={{ fontSize: 13 }}>{e.name}</div>
+                            {e.position && <div style={{ fontSize: 11, color: '#94a3b8' }}>{e.position}</div>}
+                          </div>
+                        </Option>
+                      ))}
+                    </Select>
+                  </div>
+
+                  {/* Observações do treinamento */}
                   <Form.Item name="topicTreinoDesc" style={{ marginBottom: 0 }}>
-                    <TextArea rows={2} placeholder="Descreva os temas do treinamento..." style={{ resize: 'none' }} />
+                    <TextArea rows={2} placeholder="Observações sobre o treinamento..." style={{ resize: 'none' }} />
                   </Form.Item>
                 </div>
               )}

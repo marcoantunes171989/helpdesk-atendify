@@ -64,6 +64,8 @@ async function main() {
   await prisma.$executeRawUnsafe(`ALTER TABLE "implantacao_fases" ADD COLUMN IF NOT EXISTS "employeeIds" TEXT`);
   // implantacao_fases.etapaTreinamentoId
   await prisma.$executeRawUnsafe(`ALTER TABLE "implantacao_fases" ADD COLUMN IF NOT EXISTS "etapaTreinamentoId" TEXT`);
+  // visitas.topicTreinoEmps
+  await prisma.$executeRawUnsafe(`ALTER TABLE "visitas" ADD COLUMN IF NOT EXISTS "topicTreinoEmps" TEXT`);
 
   // Tabela de módulos de treinamento
   await prisma.$executeRawUnsafe(`
