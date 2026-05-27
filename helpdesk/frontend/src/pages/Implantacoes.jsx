@@ -826,8 +826,8 @@ export default function Implantacoes() {
         }
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
-        centered width={720}
-        styles={{ body: { padding: '24px 0 8px', maxHeight: '70vh', overflowY: 'auto' } }}
+        centered width={960}
+        styles={{ body: { padding: '24px 0 8px', maxHeight: '82vh', overflowY: 'auto' } }}
         footer={
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
@@ -988,7 +988,7 @@ export default function Implantacoes() {
               </div>
 
               {/* Lista agrupada por módulo */}
-              <div style={{ maxHeight: 420, overflowY: 'auto' }}>
+              <div style={{ maxHeight: 520, overflowY: 'auto' }}>
                 {(() => {
                   const search = normalize(faseSearch);
                   const filtered = etapasTemplate.filter(e =>
