@@ -295,7 +295,8 @@ export default function Companies() {
         onCancel={() => setDrawerOpen(false)}
         centered
         width={780}
-        styles={{ body: { padding: '24px 0 8px', maxHeight: '75vh', overflowY: 'auto' } }}
+        className="company-form-modal"
+        style={{ maxWidth: 'calc(100vw - 16px)' }}
         footer={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
@@ -306,146 +307,144 @@ export default function Companies() {
           </Space>
         }
       >
-        <div style={{ padding: '0 24px' }}>
-          <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle" autoComplete="off">
-            <div className="form-section-label">Identificação</div>
-            <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
-              <Input placeholder="Nome oficial da empresa" />
-            </Form.Item>
-            <Form.Item name="fantasia" label="Nome Fantasia" style={{ marginBottom: 12 }}>
-              <Input placeholder="Nome comercial / fantasia" />
-            </Form.Item>
-            <Row gutter={12}>
-              <Col xs={24} sm={13}>
-                <Form.Item
-                  name="cnpj" label="CNPJ"
-                  rules={[
-                    { required: true, message: 'Informe o CNPJ' },
-                    { validator: (_, v) => !v || validateCNPJ(v) ? Promise.resolve() : Promise.reject('CNPJ inválido') },
-                  ]}
-                  normalize={v => maskCNPJ(v)}
-                  style={{ marginBottom: 12 }}
-                >
-                  <Input placeholder="00.000.000/0001-00" maxLength={18} />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={11}>
-                <Form.Item name="stateRegistration" label="Inscrição Estadual" normalize={v => maskStateReg(v)} style={{ marginBottom: 12 }}>
-                  <Input placeholder="000.000.000.000" maxLength={18} />
-                </Form.Item>
-              </Col>
-            </Row>
+        <Form form={form} layout="vertical" onFinish={handleSubmit} size="middle" autoComplete="off">
+          <div className="form-section-label">Identificação</div>
+          <Form.Item name="name" label="Razão Social" rules={[{ required: true, message: 'Informe a razão social' }]} style={{ marginBottom: 12 }}>
+            <Input placeholder="Nome oficial da empresa" />
+          </Form.Item>
+          <Form.Item name="fantasia" label="Nome Fantasia" style={{ marginBottom: 12 }}>
+            <Input placeholder="Nome comercial / fantasia" />
+          </Form.Item>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={13}>
+              <Form.Item
+                name="cnpj" label="CNPJ"
+                rules={[
+                  { required: true, message: 'Informe o CNPJ' },
+                  { validator: (_, v) => !v || validateCNPJ(v) ? Promise.resolve() : Promise.reject('CNPJ inválido') },
+                ]}
+                normalize={v => maskCNPJ(v)}
+                style={{ marginBottom: 12 }}
+              >
+                <Input placeholder="00.000.000/0001-00" maxLength={18} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={11}>
+              <Form.Item name="stateRegistration" label="Inscrição Estadual" normalize={v => maskStateReg(v)} style={{ marginBottom: 12 }}>
+                <Input placeholder="000.000.000.000" maxLength={18} />
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
+          <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
-            <div className="form-section-label">Contato</div>
-            <Row gutter={12}>
-              <Col xs={24} sm={14}>
-                <Form.Item name="email" label="E-mail"
-                  rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail inválido' }]}
-                  style={{ marginBottom: 12 }}>
-                  <Input placeholder="contato@empresa.com.br" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={10}>
-                <Form.Item name="phone" label="Telefone" normalize={v => maskPhone(v)} style={{ marginBottom: 12 }}>
-                  <Input placeholder="(11) 99999-9999" maxLength={15} />
-                </Form.Item>
-              </Col>
-            </Row>
+          <div className="form-section-label">Contato</div>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={14}>
+              <Form.Item name="email" label="E-mail"
+                rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail inválido' }]}
+                style={{ marginBottom: 12 }}>
+                <Input placeholder="contato@empresa.com.br" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={10}>
+              <Form.Item name="phone" label="Telefone" normalize={v => maskPhone(v)} style={{ marginBottom: 12 }}>
+                <Input placeholder="(11) 99999-9999" maxLength={15} />
+              </Form.Item>
+            </Col>
+          </Row>
 
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
+          <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
-            <div className="form-section-label">Endereço</div>
-            <Row gutter={12}>
-              <Col xs={24} sm={8}>
-                <Form.Item name="zipCode" label="CEP" normalize={v => maskCEP(v)} style={{ marginBottom: 12 }}>
-                  <Input placeholder="00000-000" maxLength={9} />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={16}>
-                <Form.Item name="street" label="Logradouro" style={{ marginBottom: 12 }}>
-                  <Input placeholder="Rua, Avenida, Travessa..." />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col xs={8} sm={6}>
-                <Form.Item name="addressNumber" label="Número" normalize={v => onlyNumbers(v)} style={{ marginBottom: 12 }}>
-                  <Input placeholder="Nº" maxLength={10} inputMode="numeric" />
-                </Form.Item>
-              </Col>
-              <Col xs={16} sm={18}>
-                <Form.Item name="complement" label="Complemento" style={{ marginBottom: 12 }}>
-                  <Input placeholder="Sala, Andar, Bloco..." />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col xs={24} sm={10}>
-                <Form.Item name="neighborhood" label="Bairro" style={{ marginBottom: 12 }}>
-                  <Input placeholder="Nome do bairro" />
-                </Form.Item>
-              </Col>
-              <Col xs={16} sm={9}>
-                <Form.Item
-                  name="city" label="Cidade" style={{ marginBottom: 12 }}
-                  rules={[{ required: true, message: 'Selecione a cidade' }]}
-                >
-                  <Select
-                    placeholder="Buscar cidade..."
-                    showSearch
-                    loading={loadingCities}
-                    options={cityOptions}
-                    filterOption={(input, opt) => normalize(opt.label).includes(normalize(input))}
-                    onSelect={(val, option) => {
-                      const sigla = option.data?.state?.sigla;
-                      if (sigla) {
-                        form.setFieldValue('state', sigla);
-                        setSelectedStateSigla(sigla);
-                      }
-                    }}
-                    onClear={() => {
-                      form.setFieldValue('state', undefined);
-                      setSelectedStateSigla(null);
-                    }}
-                    allowClear
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={8} sm={5}>
-                <Form.Item
-                  name="state" label="UF" style={{ marginBottom: 12 }}
-                  rules={[{ required: true, message: 'Selecione o estado' }]}
-                >
-                  <Select
-                    placeholder="UF"
-                    options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
-                    onChange={(val) => setSelectedStateSigla(val || null)}
-                    allowClear
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+          <div className="form-section-label">Endereço</div>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={8}>
+              <Form.Item name="zipCode" label="CEP" normalize={v => maskCEP(v)} style={{ marginBottom: 12 }}>
+                <Input placeholder="00000-000" maxLength={9} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={16}>
+              <Form.Item name="street" label="Logradouro" style={{ marginBottom: 12 }}>
+                <Input placeholder="Rua, Avenida, Travessa..." />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={10} sm={6}>
+              <Form.Item name="addressNumber" label="Número" normalize={v => onlyNumbers(v)} style={{ marginBottom: 12 }}>
+                <Input placeholder="Nº" maxLength={10} inputMode="numeric" />
+              </Form.Item>
+            </Col>
+            <Col xs={14} sm={18}>
+              <Form.Item name="complement" label="Complemento" style={{ marginBottom: 12 }}>
+                <Input placeholder="Sala, Andar, Bloco..." />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={10}>
+              <Form.Item name="neighborhood" label="Bairro" style={{ marginBottom: 12 }}>
+                <Input placeholder="Nome do bairro" />
+              </Form.Item>
+            </Col>
+            <Col xs={16} sm={9}>
+              <Form.Item
+                name="city" label="Cidade" style={{ marginBottom: 12 }}
+                rules={[{ required: true, message: 'Selecione a cidade' }]}
+              >
+                <Select
+                  placeholder="Buscar cidade..."
+                  showSearch
+                  loading={loadingCities}
+                  options={cityOptions}
+                  filterOption={(input, opt) => normalize(opt.label).includes(normalize(input))}
+                  onSelect={(val, option) => {
+                    const sigla = option.data?.state?.sigla;
+                    if (sigla) {
+                      form.setFieldValue('state', sigla);
+                      setSelectedStateSigla(sigla);
+                    }
+                  }}
+                  onClear={() => {
+                    form.setFieldValue('state', undefined);
+                    setSelectedStateSigla(null);
+                  }}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={8} sm={5}>
+              <Form.Item
+                name="state" label="UF" style={{ marginBottom: 12 }}
+                rules={[{ required: true, message: 'Selecione o estado' }]}
+              >
+                <Select
+                  placeholder="UF"
+                  options={allStates.map(s => ({ value: s.sigla, label: s.sigla }))}
+                  onChange={(val) => setSelectedStateSigla(val || null)}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
-            <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
+          <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
 
-            <div className="form-section-label">Observações</div>
-            <Form.Item name="notes" style={{ marginBottom: 12 }}>
-              <TextArea rows={3} placeholder="Informações adicionais sobre a empresa..." />
-            </Form.Item>
+          <div className="form-section-label">Observações</div>
+          <Form.Item name="notes" style={{ marginBottom: 12 }}>
+            <TextArea rows={3} placeholder="Informações adicionais sobre a empresa..." />
+          </Form.Item>
 
-            {editing && (
-              <>
-                <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
-                <Form.Item name="active" label="Status da empresa" valuePropName="checked" style={{ marginBottom: 0 }}>
-                  <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
-                </Form.Item>
-              </>
-            )}
-          </Form>
-        </div>
+          {editing && (
+            <>
+              <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
+              <Form.Item name="active" label="Status da empresa" valuePropName="checked" style={{ marginBottom: 0 }}>
+                <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
+              </Form.Item>
+            </>
+          )}
+        </Form>
       </Modal>
 
       {/* Modal — Confirmar exclusão */}

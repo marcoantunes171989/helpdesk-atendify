@@ -192,6 +192,77 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ============================================================
+   Company form modal — responsivo (mobile / tablet / desktop)
+   ============================================================ */
+.company-form-modal .ant-modal-content {
+  padding: 0;
+  overflow: hidden;
+}
+.company-form-modal .ant-modal-header {
+  padding: 16px 24px;
+  margin-bottom: 0;
+}
+.company-form-modal .ant-modal-body {
+  padding: 20px 24px 8px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+.company-form-modal .ant-modal-footer {
+  padding: 12px 24px;
+  margin-top: 0;
+  border-top: 1px solid var(--cl-border);
+}
+.company-form-modal .form-section-label {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .company-form-modal .ant-modal-body {
+    padding: 16px 18px 8px;
+    max-height: calc(100vh - 200px);
+  }
+  .company-form-modal .ant-modal-header,
+  .company-form-modal .ant-modal-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 575px) {
+  .company-form-modal {
+    top: 8px !important;
+    padding-bottom: 8px;
+    max-width: calc(100vw - 12px) !important;
+  }
+  .company-form-modal .ant-modal-body {
+    padding: 14px 14px 8px;
+    max-height: calc(100vh - 180px);
+  }
+  .company-form-modal .ant-modal-header,
+  .company-form-modal .ant-modal-footer {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .company-form-modal .ant-form-item {
+    margin-bottom: 8px !important;
+  }
+  .company-form-modal .ant-divider {
+    margin: 2px 0 14px !important;
+  }
+  .company-form-modal .form-section-label {
+    margin-bottom: 10px;
+    font-size: 10px;
+  }
+  .company-form-modal .ant-modal-footer .ant-space {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .company-form-modal .ant-modal-footer .ant-btn {
+    flex: 1;
+  }
+}
+
+/* ============================================================
    Dashboard grid (db-wrap, db-stat-grid, db-chart-grid)
    ============================================================ */
 .db-wrap {
