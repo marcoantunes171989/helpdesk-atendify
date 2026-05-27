@@ -380,11 +380,17 @@ export default function Implantacoes() {
     return true;
   });
 
+  const buildCollapsedAll = () => {
+    const map = {};
+    etapasTemplate.forEach(e => { map[e.modulo?.name || 'Sem Módulo'] = true; });
+    return map;
+  };
+
   const openCreate = () => {
     setEditing(null);
     setFasesForm([]);
     setFaseSearch('');
-    setCollapsedModules({});
+    setCollapsedModules(buildCollapsedAll());
     setSelectedCompanyId(null);
     setSelectedEmployeeId(null);
     form.resetFields();
@@ -407,6 +413,7 @@ export default function Implantacoes() {
       notes: record.notes,
     });
     setFasesForm(record.fases?.map(f => ({ ...f, employeeIds: f.employeeIds || [], etapaTreinamentoId: f.etapaTreinamentoId || null })) || []);
+    setCollapsedModules(buildCollapsedAll());
     setModalOpen(true);
   };
 
