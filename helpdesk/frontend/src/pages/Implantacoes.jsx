@@ -990,9 +990,20 @@ export default function Implantacoes() {
               <div style={{ maxHeight: 520, overflowY: 'auto' }}>
                 {(() => {
                   const search = normalize(faseSearch);
-                  const filtered = etapasTemplate.filter(e =>
-                    !search || normalize(e.title).includes(search) || normalize(e.modulo?.name || '').includes(search)
-                  );
+                  const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
+                  const filtered = etapasTemplate.filter(e => {
+                    if (!search) return true;
+                    if (normalize(e.title).includes(search)) return true;
+                    if (normalize(e.modulo?.name || '').includes(search)) return true;
+                    const fase = fasesForm.find(f => f.etapaTreinamentoId === e.id);
+                    if (fase?.employeeIds?.length) {
+                      return fase.employeeIds.some(eid => {
+                        const emp = companyEmployees.find(ce => ce.id === eid);
+                        return emp && normalize(emp.name).includes(search);
+                      });
+                    }
+                    return false;
+                  });
                   const groups = {};
                   filtered.forEach(e => {
                     const mKey = e.modulo?.id || '__none__';
@@ -1003,7 +1014,6 @@ export default function Implantacoes() {
                   if (sortedGroups.length === 0) {
                     return <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
                   }
-                  const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
                   return sortedGroups.map((group, gi) => {
                     const isCollapsed = faseSearch ? false : !!collapsedModules[group.name];
                     const selectedCount = group.etapas.filter(e => fasesForm.some(f => f.etapaTreinamentoId === e.id)).length;
