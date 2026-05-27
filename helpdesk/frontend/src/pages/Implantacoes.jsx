@@ -959,7 +959,7 @@ export default function Implantacoes() {
             <div style={{ border: '1px solid var(--cl-border)', borderRadius: 10, overflow: 'hidden', marginBottom: 16 }}>
 
               {/* Barra de pesquisa */}
-              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--cl-border)', background: 'var(--cl-bg-secondary)' }}>
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--cl-border)', background: 'var(--cl-bg-secondary)', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                 <Input
                   prefix={<SearchOutlined style={{ color: '#94a3b8', fontSize: 14 }} />}
                   placeholder="Pesquisar etapas ou módulos..."
@@ -967,10 +967,10 @@ export default function Implantacoes() {
                   onChange={e => setFaseSearch(e.target.value)}
                   allowClear
                   size="middle"
-                  style={{ fontSize: 13 }}
+                  style={{ fontSize: 13, width: 'calc((100% - 42px) / 4)' }}
                 />
                 {fasesForm.length > 0 && (
-                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 11, color: '#64748b' }}>Selecionadas:</span>
                     <span style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>
                       {fasesForm.length} etapa{fasesForm.length !== 1 ? 's' : ''}
