@@ -67,7 +67,6 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
 
   const fases = imp.fases || [];
 
-  // Enrich each fase with resolved etapa/module metadata
   const fasesWithMeta = fases.map(f => {
     const etapa = f.etapaTreinamentoId ? etapasTemplate.find(e => e.id === f.etapaTreinamentoId) : null;
     return {
@@ -80,7 +79,6 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
     };
   });
 
-  // Collect unique employees
   const empMap = {};
   fases.forEach(f => {
     (f.employeeIds || []).forEach(eid => {
@@ -102,13 +100,16 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
   const infoRow = (label, value) =>
     `<tr><td style="padding:9px 16px;border:1px solid #e2e8f0;font-weight:600;background:#f8fafc;width:33%;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.5px">${label}</td><td style="padding:9px 16px;border:1px solid #e2e8f0;font-size:13px;color:#1e293b">${value}</td></tr>`;
 
-  // Build grouped module sections for a list of fases
-  function buildModuleSections(empFases) {
+  const empChip = name =>
+    `<span style="display:inline-block;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:600;margin:1px 3px 1px 0;white-space:nowrap">${name}</span>`;
+
+  // Build grouped module sections — showEmployees: includes employee chips per row
+  function buildModuleSections(empFases, showEmployees = false) {
     const moduleMap = new Map();
     empFases.forEach(f => {
       const key = f.moduloId || '__none__';
       if (!moduleMap.has(key)) {
-        moduleMap.set(key, { name: f.moduloName, order: f.moduloOrder, fases: [] });
+        moduleMap.set(key, { name: f.moduloName, fases: [] });
       }
       moduleMap.get(key).fases.push(f);
     });
@@ -120,19 +121,48 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
 
     let seq = 0;
     return modules.map(mod => {
-      const modDone = mod.fases.filter(f => f.status === 'CONCLUIDO').length;
-      const modPct  = mod.fases.length ? Math.round((modDone / mod.fases.length) * 100) : 0;
+      const modDone  = mod.fases.filter(f => f.status === 'CONCLUIDO').length;
+      const modPct   = mod.fases.length ? Math.round((modDone / mod.fases.length) * 100) : 0;
       const modColor = modPct === 100 ? '#22c55e' : modPct >= 50 ? '#60a5fa' : '#fbbf24';
 
       const rows = mod.fases.map(f => {
         seq++;
         const bg = seq % 2 === 0 ? '#f8fafc' : '#ffffff';
+
+        const empNames = showEmployees
+          ? (f.employeeIds || [])
+              .map(eid => allEmployees.find(e => e.id === eid)?.name)
+              .filter(Boolean)
+              .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+          : [];
+
+        const empCell = showEmployees
+          ? `<td style="padding:8px 12px;border:1px solid #e8edf2;vertical-align:top;min-width:140px">
+               ${empNames.length ? empNames.map(empChip).join('') : '<span style="color:#94a3b8;font-size:11px">—</span>'}
+             </td>`
+          : '';
+
+        const obsRow = f.description
+          ? `<tr style="background:${bg}">
+               <td style="padding:0 12px 8px 12px;border:1px solid #e8edf2;border-top:none" colspan="${showEmployees ? 4 : 3}">
+                 <div style="font-size:11px;color:#475569;line-height:1.6;font-style:italic;padding:6px 10px;background:#f8fafc;border-left:2px solid #cbd5e1;border-radius:0 4px 4px 0">
+                   ${f.description}
+                 </div>
+               </td>
+             </tr>`
+          : '';
+
         return `<tr style="background:${bg}">
-          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:11px;text-align:center;width:34px;font-weight:700;color:#94a3b8">${seq}</td>
-          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:13px;color:#1e293b;font-weight:500">${f.title}</td>
-          <td style="padding:8px 12px;border:1px solid #e8edf2;text-align:center;width:128px">${statusBadge(f.status)}</td>
-        </tr>`;
+          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:11px;text-align:center;width:32px;font-weight:700;color:#94a3b8;vertical-align:top">${seq}</td>
+          <td style="padding:8px 12px;border:1px solid #e8edf2;font-size:13px;color:#1e293b;font-weight:500;vertical-align:top">${f.title}</td>
+          ${empCell}
+          <td style="padding:8px 12px;border:1px solid #e8edf2;text-align:center;width:118px;vertical-align:top">${statusBadge(f.status)}</td>
+        </tr>${obsRow}`;
       }).join('');
+
+      const empColHeader = showEmployees
+        ? `<th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:left;color:#94a3b8;letter-spacing:.5px">FUNCIONÁRIOS</th>`
+        : '';
 
       const modHeader = mod.name
         ? `<div style="background:#334155;color:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
@@ -154,9 +184,10 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
           ${modHeader}
           <table style="width:100%;border-collapse:collapse">
             <thead><tr style="background:#f1f5f9">
-              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:34px;letter-spacing:.5px">#</th>
+              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:32px;letter-spacing:.5px">#</th>
               <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:left;color:#94a3b8;letter-spacing:.5px">ETAPA / TELA</th>
-              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:128px;letter-spacing:.5px">STATUS</th>
+              ${empColHeader}
+              <th style="padding:6px 12px;border:1px solid #e8edf2;font-size:9px;text-align:center;color:#94a3b8;width:118px;letter-spacing:.5px">STATUS</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>
@@ -164,16 +195,15 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
     }).join('');
   }
 
-  // Employee sections
+  // Per-employee sections (observation shown, employees omitted since already in header)
   const empSections = employees.map(emp => {
     const empFases = fasesWithMeta.filter(f => (f.employeeIds || []).includes(emp.id));
     const done = empFases.filter(f => f.status === 'CONCLUIDO').length;
     const pct  = empFases.length ? Math.round((done / empFases.length) * 100) : 0;
     const barC = pct === 100 ? '#4ade80' : '#93c5fd';
-    const pctC = pct === 100 ? '#4ade80' : '#93c5fd';
 
     return `
-      <div style="margin-bottom:28px;border:1px solid #d1dae6;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(30,58,95,.06)">
+      <div style="margin-bottom:24px;border:1px solid #d1dae6;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(30,58,95,.06)">
         <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1e4a80 100%);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:14px">
             <div style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,0.2)">
@@ -185,26 +215,25 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
             </div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:22px;font-weight:800;color:${pctC};line-height:1">${pct}%</div>
+            <div style="font-size:22px;font-weight:800;color:${barC};line-height:1">${pct}%</div>
             <div style="font-size:10px;opacity:.65;margin-top:3px">${done} de ${empFases.length} etapas concluídas</div>
           </div>
         </div>
         <div style="height:5px;background:#e2e8f0"><div style="height:100%;width:${pct}%;background:${barC}"></div></div>
-        <div style="padding:16px 16px 4px">
-          ${buildModuleSections(empFases)}
+        <div style="padding:14px 14px 2px">
+          ${buildModuleSections(empFases, false)}
         </div>
       </div>`;
   }).join('');
 
-  // Unassigned section
   const unassignedSection = unassigned.length ? `
-    <div style="margin-bottom:28px;border:1px solid #d1dae6;border-radius:8px;overflow:hidden">
-      <div style="background:#64748b;color:#fff;padding:12px 20px;font-size:13px;font-weight:700">Etapas sem responsável atribuído</div>
-      <div style="padding:16px 16px 4px">${buildModuleSections(unassigned)}</div>
+    <div style="margin-bottom:24px;border:1px solid #d1dae6;border-radius:8px;overflow:hidden">
+      <div style="background:#64748b;color:#fff;padding:12px 20px;font-size:13px;font-weight:700">Etapas sem funcionário atribuído</div>
+      <div style="padding:14px 14px 2px">${buildModuleSections(unassigned, false)}</div>
     </div>` : '';
 
   const html = `
-    <div style="font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;max-width:840px;margin:0 auto;padding:36px 36px 60px">
+    <div style="font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;max-width:900px;margin:0 auto;padding:36px 36px 60px">
 
       <!-- ── CABEÇALHO ───────────────────────────────────────────── -->
       <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1a3d7a 100%);color:#fff;border-radius:10px;margin-bottom:32px;overflow:hidden">
@@ -219,6 +248,7 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
           </div>
           <div style="text-align:right;flex-shrink:0">
             ${imp.company?.fantasia ? `<div style="font-size:15px;font-weight:700;letter-spacing:.2px">${imp.company.fantasia}</div>` : ''}
+            ${imp.company?.name ? `<div style="font-size:11px;opacity:.6;margin-top:2px">${imp.company.name}</div>` : ''}
             ${imp.code ? `<div style="font-size:10px;opacity:.5;margin-top:4px;font-family:monospace">#${String(imp.code).padStart(4,'0')}</div>` : ''}
           </div>
         </div>
@@ -228,13 +258,14 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
             <span style="font-size:11px;font-weight:700;padding:2px 12px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2)">${statusLabel(imp.status)}</span>
           </div>
           ${imp.startDate   ? `<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.6px">Início</span><span style="font-size:11px;font-weight:600">${fmt(imp.startDate)}</span></div>` : ''}
-          ${imp.expectedEnd ? `<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.6px">Término</span><span style="font-size:11px;font-weight:600">${fmt(imp.expectedEnd)}</span></div>` : ''}
+          ${imp.expectedEnd ? `<div style="display:flex;gap:6px;align-items:center"><span style="font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.6px">Término Previsto</span><span style="font-size:11px;font-weight:600">${fmt(imp.expectedEnd)}</span></div>` : ''}
           ${totalFases > 0 ? `
           <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
-            <div style="width:100px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden">
+            <div style="width:110px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden">
               <div style="height:100%;width:${progPct}%;background:${progPct===100?'#4ade80':'#60a5fa'};border-radius:3px"></div>
             </div>
             <span style="font-size:14px;font-weight:800;color:${progPct===100?'#4ade80':'#93c5fd'}">${progPct}%</span>
+            <span style="font-size:10px;opacity:.6">${totalConcluidas}/${totalFases} etapas</span>
           </div>` : ''}
         </div>
       </div>
@@ -247,9 +278,8 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
           ${imp.company?.fantasia ? infoRow('Nome Fantasia', imp.company.fantasia) : ''}
           ${imp.responsible ? infoRow('Responsável', imp.responsible.name) : ''}
           ${imp.technician  ? infoRow('Técnico', imp.technician.name) : ''}
-          ${imp.employee    ? infoRow('Funcionário / Cliente', `${imp.employee.name}${imp.employee.position ? ` <span style="color:#94a3b8;font-size:11px"> · ${imp.employee.position}</span>` : ''}`) : ''}
           ${infoRow('Status', statusBadge(imp.status))}
-          ${imp.startDate   ? infoRow('Início', fmt(imp.startDate)) : ''}
+          ${imp.startDate   ? infoRow('Data de Início', fmt(imp.startDate)) : ''}
           ${imp.expectedEnd ? infoRow('Previsão de Término', fmt(imp.expectedEnd)) : ''}
           ${imp.completedAt ? infoRow('Concluído em', fmt(imp.completedAt)) : ''}
         </table>
@@ -257,15 +287,29 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
 
       <!-- ── PROGRESSO GERAL ─────────────────────────────────────── -->
       ${totalFases > 0 ? `
-      <div style="margin-bottom:28px;padding:16px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;gap:20px">
-        <div style="flex:1">
-          <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Progresso Geral — ${totalConcluidas} de ${totalFases} etapas concluídas</div>
-          <div style="background:#e2e8f0;border-radius:8px;height:10px;overflow:hidden">
-            <div style="height:100%;width:${progPct}%;background:${progColor};border-radius:8px"></div>
+      <div style="margin-bottom:28px;padding:16px 22px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px">
+          <div style="flex:1">
+            <div style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Progresso Geral — ${totalConcluidas} de ${totalFases} etapas concluídas</div>
+            <div style="background:#e2e8f0;border-radius:8px;height:10px;overflow:hidden">
+              <div style="height:100%;width:${progPct}%;background:${progColor};border-radius:8px"></div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:70px">
+            <div style="font-size:28px;font-weight:800;color:${progTextColor};line-height:1">${progPct}%</div>
           </div>
         </div>
-        <div style="text-align:right;min-width:70px">
-          <div style="font-size:26px;font-weight:800;color:${progTextColor};line-height:1">${progPct}%</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          ${(['PENDENTE','EM_ANDAMENTO','CONCLUIDO']).map(s => {
+            const cnt = fases.filter(f => f.status === s).length;
+            const st  = statusStyle[s];
+            return cnt > 0
+              ? `<div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;background:${st.bg};border:1px solid ${st.border}">
+                   <span style="font-size:13px;font-weight:800;color:${st.color}">${cnt}</span>
+                   <span style="font-size:10px;font-weight:600;color:${st.color};text-transform:uppercase;letter-spacing:.4px">${st.label}</span>
+                 </div>`
+              : '';
+          }).join('')}
         </div>
       </div>` : ''}
 
@@ -276,18 +320,27 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
         <p style="font-size:13px;line-height:1.8;color:#334155;white-space:pre-wrap;margin:0;padding:14px 18px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:0 6px 6px 0">${imp.description}</p>
       </div>` : ''}
 
-      <!-- ── CRONOGRAMA POR FUNCIONÁRIO ──────────────────────────── -->
+      <!-- ── VISÃO GERAL POR MÓDULO ─────────────────────────────── -->
+      ${totalFases > 0 ? `
+      <div style="margin-bottom:32px">
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">
+          Visão Geral por Módulo — todas as etapas
+        </div>
+        ${buildModuleSections(fasesWithMeta, true)}
+      </div>` : ''}
+
+      <!-- ── DETALHAMENTO POR FUNCIONÁRIO ───────────────────────── -->
       ${(employees.length || unassigned.length) ? `
       <div style="margin-bottom:28px">
-        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Cronograma de Treinamento por Funcionário</div>
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Detalhamento por Funcionário</div>
         ${empSections}
         ${unassignedSection}
       </div>` : ''}
 
-      <!-- ── OBSERVAÇÕES ─────────────────────────────────────────── -->
+      <!-- ── OBSERVAÇÕES GERAIS ──────────────────────────────────── -->
       ${imp.notes ? `
       <div style="margin-bottom:36px">
-        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Observações</div>
+        <div style="font-size:10px;font-weight:800;color:#1e3a5f;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #1e3a5f">Observações Gerais</div>
         <p style="font-size:13px;line-height:1.8;color:#334155;white-space:pre-wrap;margin:0;padding:14px 18px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 6px 6px 0">${imp.notes}</p>
       </div>` : ''}
 
@@ -300,14 +353,6 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
             <div style="font-size:11px;color:#64748b;margin-top:3px">Técnico Responsável</div>
           </div>
         </div>
-        <div style="flex:1;min-width:160px;text-align:center">
-          <div style="height:52px"></div>
-          <div style="border-top:1px solid #94a3b8;padding-top:10px;display:inline-block;min-width:190px">
-            <div style="font-size:13px;font-weight:700;color:#1e293b">${imp.employee?.name || '________________________________'}</div>
-            ${imp.employee?.position ? `<div style="font-size:11px;color:#94a3b8">${imp.employee.position}</div>` : ''}
-            <div style="font-size:11px;color:#64748b;margin-top:3px">Funcionário / Cliente</div>
-          </div>
-        </div>
         ${imp.responsible ? `
         <div style="flex:1;min-width:160px;text-align:center">
           <div style="height:52px"></div>
@@ -316,11 +361,19 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
             <div style="font-size:11px;color:#64748b;margin-top:3px">Responsável</div>
           </div>
         </div>` : ''}
+        ${employees.length > 0 ? `
+        <div style="flex:1;min-width:160px;text-align:center">
+          <div style="height:52px"></div>
+          <div style="border-top:1px solid #94a3b8;padding-top:10px;display:inline-block;min-width:190px">
+            <div style="font-size:13px;font-weight:700;color:#1e293b">________________________________</div>
+            <div style="font-size:11px;color:#64748b;margin-top:3px">Funcionário / Cliente</div>
+          </div>
+        </div>` : ''}
       </div>
     </div>`;
 
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ATA - ${imp.title}</title><style>*{box-sizing:border-box}body{margin:0;background:#f1f5f9;print-color-adjust:exact;-webkit-print-color-adjust:exact}@media print{body{margin:0;padding:0;background:#fff}@page{margin:12mm;size:A4}}</style></head><body>${html}<script>window.onload=function(){window.print()}<\/script></body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ATA - ${imp.title}</title><style>*{box-sizing:border-box}body{margin:0;background:#f1f5f9;print-color-adjust:exact;-webkit-print-color-adjust:exact}@media print{body{margin:0;padding:0;background:#fff}@page{margin:12mm;size:A4 portrait}}</style></head><body>${html}<script>window.onload=function(){window.print()}<\/script></body></html>`);
   win.document.close();
 }
 
