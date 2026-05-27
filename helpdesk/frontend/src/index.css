@@ -263,6 +263,94 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ============================================================
+   CRM modals — Contato / Oportunidade / Atividade (responsivo)
+   ============================================================ */
+.crm-modal .ant-modal-content {
+  padding: 0;
+  overflow: hidden;
+}
+.crm-modal .ant-modal-header {
+  padding: 16px 24px;
+  margin-bottom: 0;
+}
+.crm-modal .ant-modal-body {
+  padding: 20px 24px 8px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+.crm-modal .ant-modal-footer {
+  padding: 12px 24px;
+  margin-top: 0;
+  border-top: 1px solid var(--cl-border);
+}
+
+@media (max-width: 768px) {
+  .crm-modal .ant-modal-body {
+    padding: 16px 18px 8px;
+    max-height: calc(100vh - 200px);
+  }
+  .crm-modal .ant-modal-header,
+  .crm-modal .ant-modal-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 575px) {
+  .crm-modal {
+    top: 8px !important;
+    padding-bottom: 8px;
+    max-width: calc(100vw - 12px) !important;
+  }
+  .crm-modal .ant-modal-body {
+    padding: 14px 14px 8px;
+    max-height: calc(100vh - 180px);
+  }
+  .crm-modal .ant-modal-header,
+  .crm-modal .ant-modal-footer {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .crm-modal .ant-form-item {
+    margin-bottom: 10px !important;
+  }
+  .crm-modal .ant-modal-footer .ant-space {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .crm-modal .ant-modal-footer .ant-btn {
+    flex: 1;
+  }
+}
+
+/* ============================================================
+   CRM page header — search + new button (responsivo)
+   ============================================================ */
+.crm-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.crm-header-search {
+  width: 220px;
+}
+
+@media (max-width: 575px) {
+  .crm-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .crm-header-search {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .crm-header-actions .ant-btn {
+    flex: 1;
+  }
+}
+
+/* ============================================================
    Dashboard grid (db-wrap, db-stat-grid, db-chart-grid)
    ============================================================ */
 .db-wrap {

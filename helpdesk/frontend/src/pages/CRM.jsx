@@ -465,14 +465,14 @@ export default function CRM() {
             {contacts.length} contatos · {opportunities.length} oportunidades · {activities.length} atividades
           </p>
         </div>
-        <Space>
-          <Input placeholder="Buscar..." allowClear value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
+        <div className="crm-header-actions">
+          <Input placeholder="Buscar..." allowClear value={search} onChange={e => setSearch(e.target.value)} className="crm-header-search" />
           {canEdit && newBtnLabel[activeTab] && (
             <Button type="primary" icon={<PlusOutlined />} onClick={newBtnAction[activeTab]} style={{ borderRadius: 8, fontWeight: 600 }}>
               {newBtnLabel[activeTab]}
             </Button>
           )}
-        </Space>
+        </div>
       </div>
 
       <div style={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 12, overflow: 'hidden' }}>
@@ -489,30 +489,29 @@ export default function CRM() {
         open={modal?.type === 'contact'}
         onCancel={() => setModal(null)}
         centered width={520}
-        styles={{ body: { padding: '20px 0 8px' } }}
+        className="crm-modal"
+        style={{ maxWidth: 'calc(100vw - 16px)' }}
         footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => contactForm.submit()} style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Cadastrar'}</Button></Space>}
       >
-        <div style={{ padding: '0 24px' }}>
-          <Form form={contactForm} layout="vertical" onFinish={handleSaveContact}>
-            <Form.Item name="name" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
-              <Input placeholder="Nome completo" size="large" />
-            </Form.Item>
-            <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
-              <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large">
-                {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-              </Select>
-            </Form.Item>
-            <Row gutter={12}>
-              <Col span={12}><Form.Item name="email" label="E-mail"><Input placeholder="email@empresa.com" size="large" /></Form.Item></Col>
-              <Col span={12}><Form.Item name="phone" label="Telefone"><Input placeholder="(11) 9 9999-9999" size="large" /></Form.Item></Col>
-            </Row>
-            <Row gutter={12}>
-              <Col span={12}><Form.Item name="position" label="Cargo"><Input placeholder="Ex: Gerente Comercial" size="large" /></Form.Item></Col>
-              <Col span={12}><Form.Item name="department" label="Departamento"><Input placeholder="Ex: Compras" size="large" /></Form.Item></Col>
-            </Row>
-            <Form.Item name="notes" label="Observações"><TextArea rows={3} placeholder="Anotações sobre o contato..." /></Form.Item>
-          </Form>
-        </div>
+        <Form form={contactForm} layout="vertical" onFinish={handleSaveContact}>
+          <Form.Item name="name" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
+            <Input placeholder="Nome completo" size="large" />
+          </Form.Item>
+          <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
+            <Select placeholder="Selecione a empresa" showSearch optionFilterProp="children" size="large">
+              {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+            </Select>
+          </Form.Item>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={12}><Form.Item name="email" label="E-mail"><Input placeholder="email@empresa.com" size="large" /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="phone" label="Telefone"><Input placeholder="(11) 9 9999-9999" size="large" /></Form.Item></Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={12}><Form.Item name="position" label="Cargo"><Input placeholder="Ex: Gerente Comercial" size="large" /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="department" label="Departamento"><Input placeholder="Ex: Compras" size="large" /></Form.Item></Col>
+          </Row>
+          <Form.Item name="notes" label="Observações"><TextArea rows={3} placeholder="Anotações sobre o contato..." /></Form.Item>
+        </Form>
       </Modal>
 
       {/* ── Opportunity modal ── */}
@@ -521,54 +520,53 @@ export default function CRM() {
         open={modal?.type === 'opp'}
         onCancel={() => setModal(null)}
         centered width={600}
-        styles={{ body: { padding: '20px 0 8px' } }}
+        className="crm-modal"
+        style={{ maxWidth: 'calc(100vw - 16px)' }}
         footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => oppForm.submit()} style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Criar'}</Button></Space>}
       >
-        <div style={{ padding: '0 24px' }}>
-          <Form form={oppForm} layout="vertical" onFinish={handleSaveOpp}>
-            <Form.Item name="title" label="Título da Oportunidade" rules={[{ required: true, message: 'Informe o título' }]}>
-              <Input placeholder="Ex: Renovação Contrato 2025" size="large" />
-            </Form.Item>
-            <Row gutter={12}>
-              <Col span={14}>
-                <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
-                  <Select placeholder="Empresa" showSearch optionFilterProp="children" size="large" onChange={v => { setSelectedCompanyForContact(v); oppForm.setFieldValue('contactId', null); }}>
-                    {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={10}>
-                <Form.Item name="stage" label="Estágio" rules={[{ required: true, message: 'Selecione' }]} initialValue="LEAD">
-                  <Select size="large">
-                    {Object.entries(STAGES).map(([k, v]) => <Option key={k} value={k}><span style={{ color: v.color }}>{v.label}</span></Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item name="contactId" label="Contato">
-                  <Select placeholder="Selecionar contato" allowClear size="large" disabled={!selectedCompanyForContact}>
-                    {companyContacts.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="ownerId" label="Responsável">
-                  <Select placeholder="Responsável" allowClear showSearch optionFilterProp="children" size="large">
-                    {users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col span={12}><Form.Item name="value" label="Valor (R$)"><InputNumber placeholder="0,00" size="large" style={{ width: '100%' }} min={0} precision={2} /></Form.Item></Col>
-              <Col span={6}><Form.Item name="probability" label="Probabilidade (%)" initialValue={0}><InputNumber size="large" style={{ width: '100%' }} min={0} max={100} addonAfter="%" /></Form.Item></Col>
-              <Col span={6}><Form.Item name="expectedClose" label="Fechamento"><DatePicker size="large" style={{ width: '100%' }} format="DD/MM/YYYY" /></Form.Item></Col>
-            </Row>
-            <Form.Item name="description" label="Descrição"><TextArea rows={3} /></Form.Item>
-          </Form>
-        </div>
+        <Form form={oppForm} layout="vertical" onFinish={handleSaveOpp}>
+          <Form.Item name="title" label="Título da Oportunidade" rules={[{ required: true, message: 'Informe o título' }]}>
+            <Input placeholder="Ex: Renovação Contrato 2025" size="large" />
+          </Form.Item>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={14}>
+              <Form.Item name="companyId" label="Empresa" rules={[{ required: true, message: 'Selecione a empresa' }]}>
+                <Select placeholder="Empresa" showSearch optionFilterProp="children" size="large" onChange={v => { setSelectedCompanyForContact(v); oppForm.setFieldValue('contactId', null); }}>
+                  {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={10}>
+              <Form.Item name="stage" label="Estágio" rules={[{ required: true, message: 'Selecione' }]} initialValue="LEAD">
+                <Select size="large">
+                  {Object.entries(STAGES).map(([k, v]) => <Option key={k} value={k}><span style={{ color: v.color }}>{v.label}</span></Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="contactId" label="Contato">
+                <Select placeholder="Selecionar contato" allowClear size="large" disabled={!selectedCompanyForContact}>
+                  {companyContacts.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="ownerId" label="Responsável">
+                <Select placeholder="Responsável" allowClear showSearch optionFilterProp="children" size="large">
+                  {users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={12}><Form.Item name="value" label="Valor (R$)"><InputNumber placeholder="0,00" size="large" style={{ width: '100%' }} min={0} precision={2} /></Form.Item></Col>
+            <Col xs={12} sm={6}><Form.Item name="probability" label="Probabilidade (%)" initialValue={0}><InputNumber size="large" style={{ width: '100%' }} min={0} max={100} addonAfter="%" /></Form.Item></Col>
+            <Col xs={12} sm={6}><Form.Item name="expectedClose" label="Fechamento"><DatePicker size="large" style={{ width: '100%' }} format="DD/MM/YYYY" /></Form.Item></Col>
+          </Row>
+          <Form.Item name="description" label="Descrição"><TextArea rows={3} /></Form.Item>
+        </Form>
       </Modal>
 
       {/* ── Activity modal ── */}
@@ -577,64 +575,63 @@ export default function CRM() {
         open={modal?.type === 'act'}
         onCancel={() => setModal(null)}
         centered width={520}
-        styles={{ body: { padding: '20px 0 8px' } }}
+        className="crm-modal"
+        style={{ maxWidth: 'calc(100vw - 16px)' }}
         footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => actForm.submit()} style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Registrar'}</Button></Space>}
       >
-        <div style={{ padding: '0 24px' }}>
-          <Form form={actForm} layout="vertical" onFinish={handleSaveAct}>
-            <Row gutter={12}>
-              <Col span={10}>
-                <Form.Item name="type" label="Tipo" rules={[{ required: true, message: 'Selecione' }]}>
-                  <Select placeholder="Tipo" size="large">
-                    {Object.entries(ACT_TYPES).map(([k, v]) => <Option key={k} value={k}><span style={{ color: v.color }}>{v.icon} {v.label}</span></Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={14}>
-                <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Informe o título' }]}>
-                  <Input placeholder="Assunto da atividade" size="large" />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item name="companyId" label="Empresa">
-                  <Select placeholder="Empresa" allowClear showSearch optionFilterProp="children" size="large">
-                    {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="contactId" label="Contato">
-                  <Select placeholder="Contato" allowClear showSearch optionFilterProp="children" size="large">
-                    {contacts.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col span={14}>
-                <Form.Item name="opportunityId" label="Oportunidade">
-                  <Select placeholder="Oportunidade" allowClear showSearch optionFilterProp="children" size="large">
-                    {opportunities.map(o => <Option key={o.id} value={o.id}>{o.title}</Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={10}>
-                <Form.Item name="status" label="Status" initialValue="PENDING">
-                  <Select size="large">
-                    {Object.entries(ACT_STATUS).map(([k, v]) => <Option key={k} value={k}><span style={{ color: v.color }}>{v.label}</span></Option>)}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={12}>
-              <Col span={12}><Form.Item name="userId" label="Responsável"><Select placeholder="Responsável" allowClear showSearch optionFilterProp="children" size="large">{users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}</Select></Form.Item></Col>
-              <Col span={12}><Form.Item name="scheduledAt" label="Data Agendada"><DatePicker size="large" style={{ width: '100%' }} format="DD/MM/YYYY" /></Form.Item></Col>
-            </Row>
-            <Form.Item name="description" label="Descrição"><TextArea rows={3} /></Form.Item>
-          </Form>
-        </div>
+        <Form form={actForm} layout="vertical" onFinish={handleSaveAct}>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={10}>
+              <Form.Item name="type" label="Tipo" rules={[{ required: true, message: 'Selecione' }]}>
+                <Select placeholder="Tipo" size="large">
+                  {Object.entries(ACT_TYPES).map(([k, v]) => <Option key={k} value={k}><span style={{ color: v.color }}>{v.icon} {v.label}</span></Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={14}>
+              <Form.Item name="title" label="Título" rules={[{ required: true, message: 'Informe o título' }]}>
+                <Input placeholder="Assunto da atividade" size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="companyId" label="Empresa">
+                <Select placeholder="Empresa" allowClear showSearch optionFilterProp="children" size="large">
+                  {companies.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="contactId" label="Contato">
+                <Select placeholder="Contato" allowClear showSearch optionFilterProp="children" size="large">
+                  {contacts.map(c => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={14}>
+              <Form.Item name="opportunityId" label="Oportunidade">
+                <Select placeholder="Oportunidade" allowClear showSearch optionFilterProp="children" size="large">
+                  {opportunities.map(o => <Option key={o.id} value={o.id}>{o.title}</Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={10}>
+              <Form.Item name="status" label="Status" initialValue="PENDING">
+                <Select size="large">
+                  {Object.entries(ACT_STATUS).map(([k, v]) => <Option key={k} value={k}><span style={{ color: v.color }}>{v.label}</span></Option>)}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={{ xs: 8, sm: 12 }}>
+            <Col xs={24} sm={12}><Form.Item name="userId" label="Responsável"><Select placeholder="Responsável" allowClear showSearch optionFilterProp="children" size="large">{users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}</Select></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="scheduledAt" label="Data Agendada"><DatePicker size="large" style={{ width: '100%' }} format="DD/MM/YYYY" /></Form.Item></Col>
+          </Row>
+          <Form.Item name="description" label="Descrição"><TextArea rows={3} /></Form.Item>
+        </Form>
       </Modal>
 
       {/* ── Delete modal ── */}
