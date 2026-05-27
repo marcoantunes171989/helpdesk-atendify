@@ -402,7 +402,6 @@ export default function Implantacoes() {
       companyId: record.companyId,
       responsibleId: record.responsibleId,
       technicianId: record.technicianId,
-      employeeId: record.employeeId || undefined,
       startDate: record.startDate ? record.startDate.slice(0, 10) : '',
       expectedEnd: record.expectedEnd ? record.expectedEnd.slice(0, 10) : '',
       notes: record.notes,
@@ -855,7 +854,6 @@ export default function Implantacoes() {
                 onChange={v => {
                   setSelectedCompanyId(v || null);
                   setSelectedEmployeeId(null);
-                  form.setFieldValue('employeeId', undefined);
                 }}
               >
                 {companies.map(c => (
@@ -877,39 +875,6 @@ export default function Implantacoes() {
                     readOnly
                     size="small"
                     prefix={<span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Fantasia:</span>}
-                    style={{ background: 'var(--cl-bg)', color: 'var(--cl-text-muted)', cursor: 'default', borderRadius: 6 }}
-                  />
-                </div>
-              ) : null;
-            })()}
-
-            <Form.Item name="employeeId" label="Funcionário da empresa">
-              <Select
-                placeholder={selectedCompanyId ? 'Selecione o funcionário' : 'Selecione a empresa primeiro'}
-                allowClear showSearch size="large"
-                disabled={!selectedCompanyId}
-                optionLabelProp="label"
-                filterOption={(input, option) => normalize(option?.label || '').includes(normalize(input))}
-                onChange={v => setSelectedEmployeeId(v || null)}
-              >
-                {allEmployees
-                  .filter(e => e.companyId === selectedCompanyId)
-                  .map(e => (
-                    <Option key={e.id} value={e.id} label={e.name}>
-                      {e.name}
-                    </Option>
-                  ))}
-              </Select>
-            </Form.Item>
-            {(() => {
-              const emp = allEmployees.find(e => e.id === selectedEmployeeId);
-              return emp?.position ? (
-                <div style={{ marginTop: -16, marginBottom: 16 }}>
-                  <Input
-                    value={emp.position}
-                    readOnly
-                    size="small"
-                    prefix={<span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Cargo:</span>}
                     style={{ background: 'var(--cl-bg)', color: 'var(--cl-text-muted)', cursor: 'default', borderRadius: 6 }}
                   />
                 </div>
@@ -940,10 +905,27 @@ export default function Implantacoes() {
                 </Select>
               </Form.Item>
               <Form.Item name="startDate" label="Data de Início">
-                <Input type="date" size="large" />
+                <Input type="date" size="large" onChange={e => {
+                  const start = e.target.value;
+                  const end = form.getFieldValue('expectedEnd');
+                  const today = new Date().toISOString().slice(0, 10);
+                  const cur = form.getFieldValue('status');
+                  if (cur === 'CONCLUIDO' || cur === 'CANCELADO') return;
+                  if (start && start > today) form.setFieldValue('status', 'PENDENTE');
+                  else if (start && start <= today && (!end || end >= today)) form.setFieldValue('status', 'EM_ANDAMENTO');
+                  else if (end && end < today) form.setFieldValue('status', 'EM_ANDAMENTO');
+                }} />
               </Form.Item>
               <Form.Item name="expectedEnd" label="Previsão de Término">
-                <Input type="date" size="large" />
+                <Input type="date" size="large" onChange={e => {
+                  const end = e.target.value;
+                  const start = form.getFieldValue('startDate');
+                  const today = new Date().toISOString().slice(0, 10);
+                  const cur = form.getFieldValue('status');
+                  if (cur === 'CONCLUIDO' || cur === 'CANCELADO') return;
+                  if (start && start <= today && (!end || end >= today)) form.setFieldValue('status', 'EM_ANDAMENTO');
+                  else if (start && start > today) form.setFieldValue('status', 'PENDENTE');
+                }} />
               </Form.Item>
             </div>
 
