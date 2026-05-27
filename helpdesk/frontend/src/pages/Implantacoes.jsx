@@ -880,10 +880,17 @@ export default function Implantacoes() {
               {(() => {
                 const co = companies.find(c => c.id === selectedCompanyId);
                 return co?.fantasia ? (
-                  <div style={{ marginTop: 6 }}>
-                    <Input value={co.fantasia} readOnly size="small"
-                      prefix={<span style={{ fontSize: 11, color: '#94a3b8' }}>Fantasia:</span>}
-                      style={{ background: 'transparent', color: 'var(--cl-text-muted)', cursor: 'default', border: 'none', paddingLeft: 0 }} />
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
+                      Fantasia
+                    </span>
+                    <div style={{
+                      flex: 1, padding: '5px 12px', borderRadius: 6,
+                      background: 'rgba(37,99,235,0.07)', border: '1px solid rgba(37,99,235,0.18)',
+                      fontSize: 13, fontWeight: 600, color: '#3b82f6', letterSpacing: '0.01em',
+                    }}>
+                      {co.fantasia}
+                    </div>
                   </div>
                 ) : null;
               })()}
