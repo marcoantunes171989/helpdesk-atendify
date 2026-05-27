@@ -957,28 +957,36 @@ export default function Implantacoes() {
               )}
             </Divider>
 
-            {/* Etapa Picker — selecione etapas e funcionários juntos */}
-            <div style={{ border: '1px solid var(--cl-border)', borderRadius: 8, overflow: 'hidden', marginBottom: 10 }}>
-              {/* Cabeçalho com pesquisa */}
-              <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--cl-border)', background: 'var(--cl-bg-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Etapa Picker — etapas + funcionários + status */}
+            <div style={{ border: '1px solid var(--cl-border)', borderRadius: 10, overflow: 'hidden', marginBottom: 16 }}>
+
+              {/* Barra de pesquisa */}
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--cl-border)', background: 'var(--cl-bg-secondary)' }}>
                 <Input
-                  prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+                  prefix={<SearchOutlined style={{ color: '#94a3b8', fontSize: 14 }} />}
                   placeholder="Pesquisar etapas ou módulos..."
                   value={faseSearch}
                   onChange={e => setFaseSearch(e.target.value)}
                   allowClear
-                  size="small"
-                  style={{ flex: 1 }}
+                  size="middle"
+                  style={{ fontSize: 13 }}
                 />
                 {fasesForm.length > 0 && (
-                  <span style={{ fontSize: 11, color: '#3b82f6', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    {fasesForm.length} selecionada{fasesForm.length !== 1 ? 's' : ''}
-                  </span>
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>Selecionadas:</span>
+                    <span style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>
+                      {fasesForm.length} etapa{fasesForm.length !== 1 ? 's' : ''}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#64748b', marginLeft: 8 }}>Concluídas:</span>
+                    <span style={{ fontSize: 12, color: '#34d399', fontWeight: 600 }}>
+                      {fasesForm.filter(f => f.status === 'CONCLUIDO').length}/{fasesForm.length}
+                    </span>
+                  </div>
                 )}
               </div>
 
-              {/* Lista de etapas agrupadas por módulo */}
-              <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+              {/* Lista agrupada por módulo */}
+              <div style={{ maxHeight: 420, overflowY: 'auto' }}>
                 {(() => {
                   const search = normalize(faseSearch);
                   const filtered = etapasTemplate.filter(e =>
@@ -992,77 +1000,127 @@ export default function Implantacoes() {
                   });
                   const sortedGroups = Object.values(groups).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'pt-BR'));
                   if (sortedGroups.length === 0) {
-                    return <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
+                    return <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
                   }
                   const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
                   return sortedGroups.map((group, gi) => (
                     <div key={group.name}>
                       {/* Cabeçalho do módulo */}
                       <div style={{
-                        padding: '6px 12px 4px',
-                        fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
-                        color: '#fff', background: '#334155',
-                        borderTop: gi > 0 ? '1px solid var(--cl-border)' : undefined,
+                        padding: '7px 14px 5px',
+                        fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
+                        color: '#e2e8f0', background: '#1e293b',
+                        borderTop: gi > 0 ? '2px solid #0f172a' : undefined,
+                        display: 'flex', alignItems: 'center', gap: 8,
                       }}>
+                        <BuildOutlined style={{ fontSize: 11, opacity: .7 }} />
                         {group.name}
+                        <span style={{ marginLeft: 'auto', fontSize: 10, opacity: .5, fontWeight: 400 }}>
+                          {group.etapas.filter(e => fasesForm.some(f => f.etapaTreinamentoId === e.id)).length}/{group.etapas.length}
+                        </span>
                       </div>
+
                       {group.etapas
                         .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title, 'pt-BR'))
                         .map(etapa => {
                           const faseIdx = fasesForm.findIndex(f => f.etapaTreinamentoId === etapa.id);
                           const isAdded = faseIdx !== -1;
                           const fase = isAdded ? fasesForm[faseIdx] : null;
+                          const statusCfg = { PENDENTE: { color: '#94a3b8', label: 'Pendente' }, EM_ANDAMENTO: { color: '#60a5fa', label: 'Andamento' }, CONCLUIDO: { color: '#34d399', label: 'Concluído' } };
                           return (
                             <div key={etapa.id} style={{
-                              background: isAdded ? 'rgba(37,99,235,0.06)' : 'transparent',
                               borderBottom: '1px solid var(--cl-border)',
+                              background: isAdded ? 'rgba(37,99,235,0.05)' : 'transparent',
                               transition: 'background .12s',
                             }}>
-                              {/* Linha da etapa — clicável para marcar/desmarcar */}
+                              {/* Linha principal — checkbox + título + status (quando selecionado) */}
                               <div
                                 onClick={() => addFaseFromEtapa(etapa)}
-                                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', cursor: 'pointer' }}
-                                onMouseEnter={e => { if (!isAdded) e.currentTarget.style.background = 'rgba(148,163,184,0.07)'; }}
+                                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer', minHeight: 40 }}
+                                onMouseEnter={e => { if (!isAdded) e.currentTarget.style.background = 'rgba(148,163,184,0.06)'; }}
                                 onMouseLeave={e => { if (!isAdded) e.currentTarget.style.background = 'transparent'; }}
                               >
+                                {/* Checkbox visual */}
                                 <div style={{
-                                  width: 17, height: 17, borderRadius: 4, flexShrink: 0,
-                                  border: `2px solid ${isAdded ? '#3b82f6' : '#cbd5e1'}`,
+                                  width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                                  border: `2px solid ${isAdded ? '#3b82f6' : '#94a3b8'}`,
                                   background: isAdded ? '#3b82f6' : 'transparent',
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  transition: 'all .12s',
+                                  transition: 'all .15s',
                                 }}>
-                                  {isAdded && <CheckOutlined style={{ fontSize: 9, color: '#fff' }} />}
+                                  {isAdded && <CheckOutlined style={{ fontSize: 10, color: '#fff' }} />}
                                 </div>
+
+                                {/* Título da etapa */}
                                 <span style={{ fontSize: 13, flex: 1, color: isAdded ? '#3b82f6' : 'var(--cl-text)', fontWeight: isAdded ? 500 : 400 }}>
                                   {etapa.title}
                                 </span>
-                                {isAdded && fase?.employeeIds?.length > 0 && (
-                                  <span style={{ fontSize: 11, color: '#64748b' }}>
-                                    {fase.employeeIds.length} func.
-                                  </span>
+
+                                {/* Status badge (quando selecionado) */}
+                                {isAdded && (
+                                  <div onClick={e => e.stopPropagation()}>
+                                    <Select
+                                      value={fase.status}
+                                      onChange={v => updateFaseField(faseIdx, 'status', v)}
+                                      size="small"
+                                      style={{ width: 130 }}
+                                      onClick={e => e.stopPropagation()}
+                                    >
+                                      {Object.entries(FASE_STATUS).map(([k, v]) => (
+                                        <Option key={k} value={k}>
+                                          <span style={{ color: statusCfg[k]?.color, fontWeight: 500, fontSize: 12 }}>● {v.label}</span>
+                                        </Option>
+                                      ))}
+                                    </Select>
+                                  </div>
+                                )}
+
+                                {/* Botão remover */}
+                                {isAdded && (
+                                  <div onClick={e => e.stopPropagation()}>
+                                    <Button type="text" danger size="small" icon={<DeleteOutlined />}
+                                      onClick={e => { e.stopPropagation(); removeFase(faseIdx); }} />
+                                  </div>
                                 )}
                               </div>
-                              {/* Seletor de funcionários — aparece inline quando etapa está marcada */}
+
+                              {/* Funcionários — chips clicáveis, aparecem quando etapa está marcada */}
                               {isAdded && (
                                 <div
-                                  style={{ padding: '0 12px 8px 39px' }}
+                                  style={{ padding: '4px 14px 10px 42px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}
                                   onClick={e => e.stopPropagation()}
                                 >
-                                  <Select
-                                    mode="multiple"
-                                    size="small"
-                                    value={fase?.employeeIds || []}
-                                    onChange={v => updateFaseField(faseIdx, 'employeeIds', v)}
-                                    placeholder={selectedCompanyId ? 'Selecionar funcionários...' : 'Selecione a empresa primeiro'}
-                                    disabled={!selectedCompanyId}
-                                    showSearch
-                                    filterOption={(input, opt) => normalize(opt?.children || '').includes(normalize(input))}
-                                    style={{ width: '100%' }}
-                                    allowClear
-                                  >
-                                    {companyEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
-                                  </Select>
+                                  <span style={{ fontSize: 11, color: '#64748b', marginRight: 2 }}>
+                                    <TeamOutlined /> Funcionários:
+                                  </span>
+                                  {companyEmployees.length === 0 ? (
+                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>Selecione a empresa primeiro</span>
+                                  ) : (
+                                    companyEmployees.map(emp => {
+                                      const sel = fase?.employeeIds?.includes(emp.id);
+                                      return (
+                                        <span
+                                          key={emp.id}
+                                          onClick={() => {
+                                            const cur = fase?.employeeIds || [];
+                                            updateFaseField(faseIdx, 'employeeIds', sel ? cur.filter(id => id !== emp.id) : [...cur, emp.id]);
+                                          }}
+                                          style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                                            padding: '3px 10px', borderRadius: 20, fontSize: 12,
+                                            cursor: 'pointer', userSelect: 'none', transition: 'all .15s',
+                                            fontWeight: sel ? 600 : 400,
+                                            background: sel ? '#3b82f6' : 'var(--cl-bg-secondary)',
+                                            color: sel ? '#fff' : 'var(--cl-text)',
+                                            border: `1px solid ${sel ? '#3b82f6' : 'var(--cl-border)'}`,
+                                          }}
+                                        >
+                                          {sel && <CheckOutlined style={{ fontSize: 9 }} />}
+                                          {emp.name}
+                                        </span>
+                                      );
+                                    })
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -1073,70 +1131,6 @@ export default function Implantacoes() {
                 })()}
               </div>
             </div>
-
-            {/* Resumo — status por etapa selecionada */}
-            {fasesForm.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Status das etapas
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {fasesForm
-                    .map((f, i) => ({ ...f, _i: i }))
-                    .sort((a, b) => {
-                      const ea = etapasTemplate.find(e => e.id === a.etapaTreinamentoId);
-                      const eb = etapasTemplate.find(e => e.id === b.etapaTreinamentoId);
-                      const moa = ea?.modulo?.order ?? 9999, mob = eb?.modulo?.order ?? 9999;
-                      if (moa !== mob) return moa - mob;
-                      const mna = ea?.modulo?.name || '', mnb = eb?.modulo?.name || '';
-                      if (mna !== mnb) return mna.localeCompare(mnb, 'pt-BR');
-                      const oa = ea?.order ?? 9999, ob = eb?.order ?? 9999;
-                      if (oa !== ob) return oa - ob;
-                      return (a.title || '').localeCompare(b.title || '', 'pt-BR');
-                    })
-                    .map(fase => {
-                      const etapa = etapasTemplate.find(e => e.id === fase.etapaTreinamentoId);
-                      return (
-                        <div key={fase._i} style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          padding: '5px 10px', borderRadius: 6,
-                          background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
-                        }}>
-                          {etapa?.modulo?.name && (
-                            <span style={{
-                              fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 3,
-                              background: 'rgba(37,99,235,0.12)', color: '#3b82f6',
-                              flexShrink: 0, whiteSpace: 'nowrap',
-                            }}>
-                              {etapa.modulo.name}
-                            </span>
-                          )}
-                          <span style={{ fontSize: 12, flex: 1, color: 'var(--cl-text)' }}>
-                            {fase.etapaTreinamentoId ? (etapa?.title || fase.title) : (
-                              <Input value={fase.title} onChange={e => updateFaseField(fase._i, 'title', e.target.value)}
-                                size="small" placeholder="Título..." style={{ fontSize: 12 }} />
-                            )}
-                          </span>
-                          {fase.employeeIds?.length > 0 && (
-                            <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>
-                              {fase.employeeIds.length} func.
-                            </span>
-                          )}
-                          <Select
-                            value={fase.status}
-                            onChange={v => updateFaseField(fase._i, 'status', v)}
-                            size="small"
-                            style={{ width: 138, flexShrink: 0 }}
-                          >
-                            {Object.entries(FASE_STATUS).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
-                          </Select>
-                          <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => removeFase(fase._i)} />
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            )}
 
             <Form.Item name="notes" label="Observações">
               <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
