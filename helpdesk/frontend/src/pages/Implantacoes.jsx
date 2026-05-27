@@ -852,31 +852,29 @@ export default function Implantacoes() {
               <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
                 Identificação
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <Form.Item name="title" label="Título" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
-                  <Input placeholder="Título da implantação" size="large" />
-                </Form.Item>
-                <Form.Item name="companyId" label="Empresa" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
-                  <Select
-                    placeholder="Selecione a empresa" showSearch size="large"
-                    optionLabelProp="label"
-                    filterOption={(input, option) => {
-                      const q = normalize(input);
-                      return normalize(option?.name || '').includes(q) || normalize(option?.fantasia || '').includes(q);
-                    }}
-                    onChange={v => { setSelectedCompanyId(v || null); setSelectedEmployeeId(null); }}
-                  >
-                    {companies.map(c => (
-                      <Option key={c.id} value={c.id} label={c.name} name={c.name} fantasia={c.fantasia || ''}>
-                        <div style={{ lineHeight: 1.35 }}>
-                          <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
-                          {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
-                        </div>
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
+              <Form.Item name="title" label="Título" rules={[{ required: true }]} style={{ marginBottom: 12 }}>
+                <Input placeholder="Título da implantação" size="large" />
+              </Form.Item>
+              <Form.Item name="companyId" label="Empresa" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
+                <Select
+                  placeholder="Selecione a empresa" showSearch size="large"
+                  optionLabelProp="label"
+                  filterOption={(input, option) => {
+                    const q = normalize(input);
+                    return normalize(option?.name || '').includes(q) || normalize(option?.fantasia || '').includes(q);
+                  }}
+                  onChange={v => { setSelectedCompanyId(v || null); setSelectedEmployeeId(null); }}
+                >
+                  {companies.map(c => (
+                    <Option key={c.id} value={c.id} label={c.name} name={c.name} fantasia={c.fantasia || ''}>
+                      <div style={{ lineHeight: 1.35 }}>
+                        <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
+                        {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
               {(() => {
                 const co = companies.find(c => c.id === selectedCompanyId);
                 return co?.fantasia ? (
