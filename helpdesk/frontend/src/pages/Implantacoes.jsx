@@ -8,7 +8,7 @@ import {
   ExclamationCircleOutlined, CheckCircleOutlined, ClockCircleOutlined,
   PauseCircleOutlined, CloseCircleOutlined, SyncOutlined,
   CalendarOutlined, TeamOutlined, ToolOutlined, BuildOutlined, PrinterOutlined,
-  SearchOutlined, CheckOutlined,
+  SearchOutlined, CheckOutlined, RightOutlined,
 } from '@ant-design/icons';
 import { implantacaoService, companyService, userService, technicianService, employeeService, etapaTreinamentoService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -344,6 +344,7 @@ export default function Implantacoes() {
   const [form] = Form.useForm();
   const [fasesForm, setFasesForm] = useState([]);
   const [faseSearch, setFaseSearch] = useState('');
+  const [collapsedModules, setCollapsedModules] = useState({});
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -383,6 +384,7 @@ export default function Implantacoes() {
     setEditing(null);
     setFasesForm([]);
     setFaseSearch('');
+    setCollapsedModules({});
     setSelectedCompanyId(null);
     setSelectedEmployeeId(null);
     form.resetFields();
@@ -1003,24 +1005,39 @@ export default function Implantacoes() {
                     return <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
                   }
                   const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
-                  return sortedGroups.map((group, gi) => (
+                  return sortedGroups.map((group, gi) => {
+                    const isCollapsed = !!collapsedModules[group.name];
+                    const selectedCount = group.etapas.filter(e => fasesForm.some(f => f.etapaTreinamentoId === e.id)).length;
+                    return (
                     <div key={group.name}>
-                      {/* Cabeçalho do módulo */}
-                      <div style={{
-                        padding: '7px 14px 5px',
-                        fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
-                        color: '#e2e8f0', background: '#1e293b',
-                        borderTop: gi > 0 ? '2px solid #0f172a' : undefined,
-                        display: 'flex', alignItems: 'center', gap: 8,
-                      }}>
+                      {/* Cabeçalho do módulo — clicável para recolher/expandir */}
+                      <div
+                        onClick={() => setCollapsedModules(prev => ({ ...prev, [group.name]: !prev[group.name] }))}
+                        style={{
+                          padding: '8px 14px 6px',
+                          fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
+                          color: '#e2e8f0', background: '#1e293b',
+                          borderTop: gi > 0 ? '2px solid #0f172a' : undefined,
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          cursor: 'pointer', userSelect: 'none',
+                        }}
+                      >
+                        <RightOutlined style={{
+                          fontSize: 9, opacity: .7,
+                          transition: 'transform .2s',
+                          transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                        }} />
                         <BuildOutlined style={{ fontSize: 11, opacity: .7 }} />
                         {group.name}
-                        <span style={{ marginLeft: 'auto', fontSize: 10, opacity: .5, fontWeight: 400 }}>
-                          {group.etapas.filter(e => fasesForm.some(f => f.etapaTreinamentoId === e.id)).length}/{group.etapas.length}
+                        <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 400, opacity: .7 }}>
+                          {selectedCount > 0
+                            ? <span style={{ color: '#60a5fa' }}>{selectedCount} selecionada{selectedCount !== 1 ? 's' : ''} · </span>
+                            : null}
+                          {group.etapas.length} etapa{group.etapas.length !== 1 ? 's' : ''}
                         </span>
                       </div>
 
-                      {group.etapas
+                      {!isCollapsed && group.etapas
                         .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title, 'pt-BR'))
                         .map(etapa => {
                           const faseIdx = fasesForm.findIndex(f => f.etapaTreinamentoId === etapa.id);
@@ -1127,7 +1144,8 @@ export default function Implantacoes() {
                           );
                         })}
                     </div>
-                  ));
+                  );
+                  });
                 })()}
               </div>
             </div>
