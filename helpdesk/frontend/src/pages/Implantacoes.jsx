@@ -981,8 +981,8 @@ export default function Implantacoes() {
                   value={faseSearch}
                   onChange={e => setFaseSearch(e.target.value)}
                   allowClear
-                  size="middle"
-                  style={{ fontSize: 13, width: '100%' }}
+                  size="large"
+                  style={{ width: '100%' }}
                 />
               </div>
 
