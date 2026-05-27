@@ -1112,7 +1112,7 @@ export default function Implantacoes() {
                               {/* Funcionários — chips clicáveis, aparecem quando etapa está marcada */}
                               {isAdded && (
                                 <div
-                                  style={{ padding: '4px 14px 10px 42px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}
+                                  style={{ padding: '4px 14px 6px 42px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}
                                   onClick={e => e.stopPropagation()}
                                 >
                                   <span style={{ fontSize: 11, color: '#64748b', marginRight: 2 }}>
@@ -1146,6 +1146,22 @@ export default function Implantacoes() {
                                       );
                                     })
                                   )}
+                                </div>
+                              )}
+
+                              {/* Observação da etapa */}
+                              {isAdded && (
+                                <div
+                                  style={{ padding: '4px 14px 10px 42px' }}
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <TextArea
+                                    value={fase?.description || ''}
+                                    onChange={e => updateFaseField(faseIdx, 'description', e.target.value)}
+                                    placeholder="Observação desta etapa (opcional)..."
+                                    rows={2}
+                                    style={{ fontSize: 12, resize: 'vertical', background: 'var(--cl-bg-secondary)', borderColor: 'var(--cl-border)' }}
+                                  />
                                 </div>
                               )}
                             </div>
