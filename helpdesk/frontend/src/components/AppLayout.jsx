@@ -109,7 +109,7 @@ export default function AppLayout() {
       </div>
 
       {/* Menu */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
+      <div className="sidebar-menu-scroll" style={{ flex: 1, overflowY: 'auto', paddingTop: 8 }}>
         <Menu
           mode="inline"
           selectedKeys={[selectedKey]}
@@ -153,7 +153,7 @@ export default function AppLayout() {
       {!isMobile && (
         <Sider
           collapsible collapsed={collapsed} onCollapse={setCollapsed}
-          trigger={null} width={248}
+          trigger={null} width={264}
           style={{
             background: 'var(--cl-sidebar)',
             borderRight: '1px solid var(--cl-border)',
@@ -180,7 +180,7 @@ export default function AppLayout() {
         </Drawer>
       )}
 
-      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 248), transition: 'margin-left 0.2s', background: 'transparent' }}>
+      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 264), transition: 'margin-left 0.2s', background: 'transparent' }}>
         {/* Header */}
         <Header style={{
           background: 'var(--cl-header)',
