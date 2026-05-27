@@ -1073,7 +1073,12 @@ export default function Implantacoes() {
                     <div key={group.name}>
                       {/* Cabeçalho do módulo — clicável para recolher/expandir */}
                       <div
-                        onClick={() => setCollapsedModules(prev => ({ ...prev, [group.name]: !prev[group.name] }))}
+                        onClick={() => setCollapsedModules(prev => {
+                          const expanding = !!prev[group.name];
+                          if (!expanding) return { ...prev, [group.name]: true };
+                          const allCollapsed = buildCollapsedAll();
+                          return { ...allCollapsed, [group.name]: false };
+                        })}
                         style={{
                           padding: '8px 14px 6px',
                           fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
