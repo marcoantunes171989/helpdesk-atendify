@@ -1005,7 +1005,7 @@ export default function Implantacoes() {
                   }
                   const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
                   return sortedGroups.map((group, gi) => {
-                    const isCollapsed = !!collapsedModules[group.name];
+                    const isCollapsed = faseSearch ? false : !!collapsedModules[group.name];
                     const selectedCount = group.etapas.filter(e => fasesForm.some(f => f.etapaTreinamentoId === e.id)).length;
                     return (
                     <div key={group.name}>
