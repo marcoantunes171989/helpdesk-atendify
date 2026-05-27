@@ -8,6 +8,7 @@ import {
   ExclamationCircleOutlined, CheckCircleOutlined, ClockCircleOutlined,
   PauseCircleOutlined, CloseCircleOutlined, SyncOutlined,
   CalendarOutlined, TeamOutlined, ToolOutlined, BuildOutlined, PrinterOutlined,
+  SearchOutlined, CheckOutlined,
 } from '@ant-design/icons';
 import { implantacaoService, companyService, userService, technicianService, employeeService, etapaTreinamentoService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -342,6 +343,7 @@ export default function Implantacoes() {
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const [fasesForm, setFasesForm] = useState([]);
+  const [faseSearch, setFaseSearch] = useState('');
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -380,6 +382,7 @@ export default function Implantacoes() {
   const openCreate = () => {
     setEditing(null);
     setFasesForm([]);
+    setFaseSearch('');
     setSelectedCompanyId(null);
     setSelectedEmployeeId(null);
     form.resetFields();
@@ -486,6 +489,15 @@ export default function Implantacoes() {
 
   const removeFase = (idx) => {
     setFasesForm(prev => prev.filter((_, i) => i !== idx).map((f, i) => ({ ...f, order: i + 1 })));
+  };
+
+  const addFaseFromEtapa = (etapa) => {
+    const alreadyAdded = fasesForm.some(f => f.etapaTreinamentoId === etapa.id);
+    if (alreadyAdded) {
+      setFasesForm(prev => prev.filter(f => f.etapaTreinamentoId !== etapa.id).map((f, i) => ({ ...f, order: i + 1 })));
+    } else {
+      setFasesForm(prev => [...prev, { id: null, order: prev.length + 1, title: etapa.title, description: '', status: 'PENDENTE', employeeIds: [], etapaTreinamentoId: etapa.id }]);
+    }
   };
 
   const columns = [
@@ -938,94 +950,157 @@ export default function Implantacoes() {
             </Form.Item>
 
             {/* Fases */}
-            <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Fases / Etapas</Divider>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-              {fasesForm.map((fase, idx) => {
-                const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
-                return (
-                  <div key={idx} style={{
-                    padding: '10px 12px', borderRadius: 8,
-                    background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
-                    display: 'flex', flexDirection: 'column', gap: 8,
-                  }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px auto', gap: 8, alignItems: 'center' }}>
-                      <Select
-                        placeholder={`Selecione a etapa de treinamento...`}
-                        value={fase.etapaTreinamentoId || undefined}
-                        onChange={etapaId => {
-                          const etapa = etapasTemplate.find(e => e.id === etapaId);
-                          updateFaseFields(idx, {
-                            etapaTreinamentoId: etapaId || null,
-                            title: etapa ? etapa.title : fase.title,
-                          });
-                        }}
-                        showSearch
-                        allowClear
-                        optionLabelProp="label"
-                        filterOption={(input, option) => normalize(option?.label || '').includes(normalize(input))}
-                      >
-                        {etapasTemplate.map(e => (
-                          <Option key={e.id} value={e.id} label={e.title}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                              <span style={{ fontSize: 13 }}>{e.title}</span>
-                              {e.modulo?.name && <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>{e.modulo.name}</span>}
+            <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>
+              Fases / Etapas
+              {fasesForm.length > 0 && (
+                <Tag color="blue" style={{ marginLeft: 8, fontWeight: 600 }}>{fasesForm.length} selecionada{fasesForm.length !== 1 ? 's' : ''}</Tag>
+              )}
+            </Divider>
+
+            {/* Etapa Picker */}
+            <div style={{ border: '1px solid var(--cl-border)', borderRadius: 8, overflow: 'hidden', marginBottom: 10 }}>
+              <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--cl-border)', background: 'var(--cl-bg-secondary)' }}>
+                <Input
+                  prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+                  placeholder="Pesquisar etapas..."
+                  value={faseSearch}
+                  onChange={e => setFaseSearch(e.target.value)}
+                  allowClear
+                  size="small"
+                />
+              </div>
+              <div style={{ maxHeight: 220, overflowY: 'auto', padding: '6px 0' }}>
+                {(() => {
+                  const search = normalize(faseSearch);
+                  const filtered = etapasTemplate.filter(e =>
+                    !search || normalize(e.title).includes(search) || normalize(e.modulo?.name || '').includes(search)
+                  );
+                  const groups = {};
+                  filtered.forEach(e => {
+                    const mKey = e.modulo?.id || '__none__';
+                    if (!groups[mKey]) groups[mKey] = { name: e.modulo?.name || 'Sem Módulo', order: e.modulo?.order ?? 9999, etapas: [] };
+                    groups[mKey].etapas.push(e);
+                  });
+                  const sortedGroups = Object.values(groups).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'pt-BR'));
+                  if (sortedGroups.length === 0) {
+                    return <div style={{ padding: '14px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
+                  }
+                  return sortedGroups.map(group => (
+                    <div key={group.name}>
+                      <div style={{ padding: '4px 12px 2px', fontSize: 10, fontWeight: 700, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        {group.name}
+                      </div>
+                      {group.etapas
+                        .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title, 'pt-BR'))
+                        .map(etapa => {
+                          const isAdded = fasesForm.some(f => f.etapaTreinamentoId === etapa.id);
+                          return (
+                            <div
+                              key={etapa.id}
+                              onClick={() => addFaseFromEtapa(etapa)}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                padding: '5px 12px', cursor: 'pointer',
+                                background: isAdded ? 'rgba(37,99,235,0.08)' : 'transparent',
+                                transition: 'background .12s',
+                              }}
+                              onMouseEnter={e => { if (!isAdded) e.currentTarget.style.background = 'rgba(148,163,184,0.07)'; }}
+                              onMouseLeave={e => { if (!isAdded) e.currentTarget.style.background = 'transparent'; }}
+                            >
+                              <div style={{
+                                width: 16, height: 16, borderRadius: 3, flexShrink: 0,
+                                border: `2px solid ${isAdded ? '#3b82f6' : '#cbd5e1'}`,
+                                background: isAdded ? '#3b82f6' : 'transparent',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'all .12s',
+                              }}>
+                                {isAdded && <CheckOutlined style={{ fontSize: 9, color: '#fff' }} />}
+                              </div>
+                              <span style={{ fontSize: 13, color: isAdded ? '#3b82f6' : 'var(--cl-text)' }}>{etapa.title}</span>
                             </div>
-                          </Option>
-                        ))}
-                      </Select>
-                      <Select
-                        value={fase.status}
-                        onChange={v => updateFaseField(idx, 'status', v)}
-                        size="middle"
-                      >
-                        {Object.entries(FASE_STATUS).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
-                      </Select>
-                      <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFase(idx)} />
+                          );
+                        })}
                     </div>
-                    {/* Módulo em cinza (read-only, apenas quando etapa selecionada) */}
-                    {fase.etapaTreinamentoId && (() => {
-                      const etapa = etapasTemplate.find(e => e.id === fase.etapaTreinamentoId);
-                      return etapa?.modulo?.name ? (
-                        <div style={{ fontSize: 11, color: 'var(--cl-text-dim)', paddingLeft: 2, marginTop: -2 }}>
-                          <span style={{ opacity: .7 }}>Módulo:</span> {etapa.modulo.name}
-                        </div>
-                      ) : null;
-                    })()}
-                    {/* Título legado — editável quando não há etapa vinculada e existe título salvo */}
-                    {!fase.etapaTreinamentoId && (
-                      <Input
-                        placeholder={`Título da fase ${idx + 1}...`}
-                        value={fase.title}
-                        onChange={e => updateFaseField(idx, 'title', e.target.value)}
-                        size="small"
-                        style={{ fontSize: 12 }}
-                      />
-                    )}
-                    <Select
-                      mode="multiple"
-                      placeholder={selectedCompanyId ? 'Funcionários responsáveis (opcional)' : 'Selecione a empresa primeiro'}
-                      value={fase.employeeIds || []}
-                      onChange={v => updateFaseField(idx, 'employeeIds', v)}
-                      disabled={!selectedCompanyId}
-                      showSearch
-                      filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                      style={{ width: '100%' }}
-                      size="small"
-                      allowClear
-                    >
-                      {companyEmployees.map(e => (
-                        <Option key={e.id} value={e.id}>
-                          {e.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                );
-              })}
+                  ));
+                })()}
+              </div>
             </div>
-            <Button icon={<PlusOutlined />} onClick={addFase} size="small" style={{ marginBottom: 16 }}>
-              Adicionar Fase
-            </Button>
+
+            {/* Fases adicionadas — ordenadas por módulo → etapa */}
+            {fasesForm.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                {fasesForm
+                  .map((f, i) => ({ ...f, _i: i }))
+                  .sort((a, b) => {
+                    const ea = etapasTemplate.find(e => e.id === a.etapaTreinamentoId);
+                    const eb = etapasTemplate.find(e => e.id === b.etapaTreinamentoId);
+                    const moa = ea?.modulo?.order ?? 9999, mob = eb?.modulo?.order ?? 9999;
+                    if (moa !== mob) return moa - mob;
+                    const mna = ea?.modulo?.name || '', mnb = eb?.modulo?.name || '';
+                    if (mna !== mnb) return mna.localeCompare(mnb, 'pt-BR');
+                    const oa = ea?.order ?? 9999, ob = eb?.order ?? 9999;
+                    if (oa !== ob) return oa - ob;
+                    return (a.title || '').localeCompare(b.title || '', 'pt-BR');
+                  })
+                  .map(fase => {
+                    const etapa = etapasTemplate.find(e => e.id === fase.etapaTreinamentoId);
+                    const companyEmployees = allEmployees.filter(e => e.companyId === selectedCompanyId);
+                    return (
+                      <div key={fase._i} style={{
+                        padding: '8px 12px', borderRadius: 8,
+                        background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
+                        display: 'flex', flexDirection: 'column', gap: 6,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {etapa?.modulo?.name && (
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 4,
+                              background: 'rgba(37,99,235,0.12)', color: '#3b82f6',
+                              flexShrink: 0, letterSpacing: '0.03em', whiteSpace: 'nowrap',
+                            }}>
+                              {etapa.modulo.name}
+                            </span>
+                          )}
+                          <span style={{ fontSize: 13, flex: 1, color: 'var(--cl-text)' }}>
+                            {fase.etapaTreinamentoId ? (etapa?.title || fase.title) : (
+                              <Input
+                                value={fase.title}
+                                onChange={e => updateFaseField(fase._i, 'title', e.target.value)}
+                                size="small"
+                                placeholder="Título da fase..."
+                                style={{ fontSize: 12 }}
+                              />
+                            )}
+                          </span>
+                          <Select
+                            value={fase.status}
+                            onChange={v => updateFaseField(fase._i, 'status', v)}
+                            size="small"
+                            style={{ width: 145, flexShrink: 0 }}
+                          >
+                            {Object.entries(FASE_STATUS).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
+                          </Select>
+                          <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => removeFase(fase._i)} />
+                        </div>
+                        <Select
+                          mode="multiple"
+                          placeholder={selectedCompanyId ? 'Funcionários (opcional)' : 'Selecione a empresa primeiro'}
+                          value={fase.employeeIds || []}
+                          onChange={v => updateFaseField(fase._i, 'employeeIds', v)}
+                          disabled={!selectedCompanyId}
+                          showSearch
+                          filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                          style={{ width: '100%' }}
+                          size="small"
+                          allowClear
+                        >
+                          {companyEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
+                        </Select>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
 
             <Form.Item name="notes" label="Observações">
               <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
