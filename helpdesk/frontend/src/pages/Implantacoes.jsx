@@ -114,9 +114,9 @@ function gerarATAImplantacao(imp, allEmployees = [], etapasTemplate = []) {
     });
 
     const modules = [...moduleMap.values()].sort((a, b) =>
-      (a.order - b.order) || (a.name || '').localeCompare(b.name || '', 'pt-BR')
+      (a.name || '').localeCompare(b.name || '', 'pt-BR')
     );
-    modules.forEach(m => m.fases.sort((a, b) => a.etapaOrder - b.etapaOrder));
+    modules.forEach(m => m.fases.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR')));
 
     let seq = 0;
     return modules.map(mod => {
@@ -1009,7 +1009,7 @@ export default function Implantacoes() {
                     if (!groups[mKey]) groups[mKey] = { name: e.modulo?.name || 'Sem Módulo', order: e.modulo?.order ?? 9999, etapas: [] };
                     groups[mKey].etapas.push(e);
                   });
-                  const sortedGroups = Object.values(groups).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'pt-BR'));
+                  const sortedGroups = Object.values(groups).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'));
                   if (sortedGroups.length === 0) {
                     return <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
                   }
@@ -1046,7 +1046,7 @@ export default function Implantacoes() {
                       </div>
 
                       {!isCollapsed && group.etapas
-                        .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999) || a.title.localeCompare(b.title, 'pt-BR'))
+                        .slice().sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'))
                         .map(etapa => {
                           const faseIdx = fasesForm.findIndex(f => f.etapaTreinamentoId === etapa.id);
                           const isAdded = faseIdx !== -1;
@@ -1121,7 +1121,7 @@ export default function Implantacoes() {
                                   {companyEmployees.length === 0 ? (
                                     <span style={{ fontSize: 11, color: '#94a3b8' }}>Selecione a empresa primeiro</span>
                                   ) : (
-                                    companyEmployees.map(emp => {
+                                    companyEmployees.slice().sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(emp => {
                                       const sel = fase?.employeeIds?.includes(emp.id);
                                       return (
                                         <span
