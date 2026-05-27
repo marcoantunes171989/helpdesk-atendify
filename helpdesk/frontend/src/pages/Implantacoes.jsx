@@ -846,99 +846,106 @@ export default function Implantacoes() {
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-              <Input placeholder="Título da implantação" size="large" />
-            </Form.Item>
 
-            <Form.Item name="companyId" label="Empresa" rules={[{ required: true }]}>
-              <Select
-                placeholder="Selecione a empresa" showSearch size="large"
-                optionLabelProp="label"
-                filterOption={(input, option) => {
-                  const q = normalize(input);
-                  return normalize(option?.name || '').includes(q) || normalize(option?.fantasia || '').includes(q);
-                }}
-                onChange={v => {
-                  setSelectedCompanyId(v || null);
-                  setSelectedEmployeeId(null);
-                }}
-              >
-                {companies.map(c => (
-                  <Option key={c.id} value={c.id} label={c.name} name={c.name} fantasia={c.fantasia || ''}>
-                    <div style={{ lineHeight: 1.35 }}>
-                      <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
-                      {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
-                    </div>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            {(() => {
-              const co = companies.find(c => c.id === selectedCompanyId);
-              return co?.fantasia ? (
-                <div style={{ marginTop: -16, marginBottom: 16 }}>
-                  <Input
-                    value={co.fantasia}
-                    readOnly
-                    size="small"
-                    prefix={<span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Fantasia:</span>}
-                    style={{ background: 'var(--cl-bg)', color: 'var(--cl-text-muted)', cursor: 'default', borderRadius: 6 }}
-                  />
-                </div>
-              ) : null;
-            })()}
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <Form.Item name="responsibleId" label="Responsável">
-                <Select placeholder="Selecione" allowClear showSearch
-                  filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                  size="large">
-                  {users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}
-                </Select>
-              </Form.Item>
-              <Form.Item name="technicianId" label="Técnico">
-                <Select placeholder="Selecione" allowClear showSearch
-                  filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                  size="large">
-                  {technicians.map(t => <Option key={t.id} value={t.id}>{t.name}</Option>)}
-                </Select>
-              </Form.Item>
+            {/* Bloco 1 — Identificação */}
+            <div style={{ background: 'var(--cl-bg-secondary)', border: '1px solid var(--cl-border)', borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+                Identificação
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Form.Item name="title" label="Título" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
+                  <Input placeholder="Título da implantação" size="large" />
+                </Form.Item>
+                <Form.Item name="companyId" label="Empresa" rules={[{ required: true }]} style={{ marginBottom: 0 }}>
+                  <Select
+                    placeholder="Selecione a empresa" showSearch size="large"
+                    optionLabelProp="label"
+                    filterOption={(input, option) => {
+                      const q = normalize(input);
+                      return normalize(option?.name || '').includes(q) || normalize(option?.fantasia || '').includes(q);
+                    }}
+                    onChange={v => { setSelectedCompanyId(v || null); setSelectedEmployeeId(null); }}
+                  >
+                    {companies.map(c => (
+                      <Option key={c.id} value={c.id} label={c.name} name={c.name} fantasia={c.fantasia || ''}>
+                        <div style={{ lineHeight: 1.35 }}>
+                          <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
+                          {c.fantasia && <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{c.fantasia}</div>}
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+              {(() => {
+                const co = companies.find(c => c.id === selectedCompanyId);
+                return co?.fantasia ? (
+                  <div style={{ marginTop: 6 }}>
+                    <Input value={co.fantasia} readOnly size="small"
+                      prefix={<span style={{ fontSize: 11, color: '#94a3b8' }}>Fantasia:</span>}
+                      style={{ background: 'transparent', color: 'var(--cl-text-muted)', cursor: 'default', border: 'none', paddingLeft: 0 }} />
+                  </div>
+                ) : null;
+              })()}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-              <Form.Item name="status" label="Status">
-                <Select size="large" defaultValue="PENDENTE">
-                  {Object.entries(STATUS_CONFIG).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
-                </Select>
-              </Form.Item>
-              <Form.Item name="startDate" label="Data de Início">
-                <Input type="date" size="large" onChange={e => {
-                  const start = e.target.value;
-                  const end = form.getFieldValue('expectedEnd');
-                  const today = new Date().toISOString().slice(0, 10);
-                  const cur = form.getFieldValue('status');
-                  if (cur === 'CONCLUIDO' || cur === 'CANCELADO') return;
-                  if (start && start > today) form.setFieldValue('status', 'PENDENTE');
-                  else if (start && start <= today && (!end || end >= today)) form.setFieldValue('status', 'EM_ANDAMENTO');
-                  else if (end && end < today) form.setFieldValue('status', 'EM_ANDAMENTO');
-                }} />
-              </Form.Item>
-              <Form.Item name="expectedEnd" label="Previsão de Término">
-                <Input type="date" size="large" onChange={e => {
-                  const end = e.target.value;
-                  const start = form.getFieldValue('startDate');
-                  const today = new Date().toISOString().slice(0, 10);
-                  const cur = form.getFieldValue('status');
-                  if (cur === 'CONCLUIDO' || cur === 'CANCELADO') return;
-                  if (start && start <= today && (!end || end >= today)) form.setFieldValue('status', 'EM_ANDAMENTO');
-                  else if (start && start > today) form.setFieldValue('status', 'PENDENTE');
-                }} />
-              </Form.Item>
+            {/* Bloco 2 — Equipe e Prazo */}
+            <div style={{ background: 'var(--cl-bg-secondary)', border: '1px solid var(--cl-border)', borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+                Equipe e Prazo
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+                <Form.Item name="responsibleId" label="Responsável" style={{ marginBottom: 0 }}>
+                  <Select placeholder="Selecione" allowClear showSearch size="large"
+                    filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}>
+                    {users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="technicianId" label="Técnico" style={{ marginBottom: 0 }}>
+                  <Select placeholder="Selecione" allowClear showSearch size="large"
+                    filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}>
+                    {technicians.map(t => <Option key={t.id} value={t.id}>{t.name}</Option>)}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="startDate" label="Data de Início" style={{ marginBottom: 0 }}>
+                  <Input type="date" size="large" onChange={e => {
+                    const start = e.target.value;
+                    const end = form.getFieldValue('expectedEnd');
+                    const today = new Date().toISOString().slice(0, 10);
+                    const cur = form.getFieldValue('status');
+                    if (cur === 'CONCLUIDO' || cur === 'CANCELADO') return;
+                    if (start && start > today) form.setFieldValue('status', 'PENDENTE');
+                    else if (start && start <= today && (!end || end >= today)) form.setFieldValue('status', 'EM_ANDAMENTO');
+                    else if (end && end < today) form.setFieldValue('status', 'EM_ANDAMENTO');
+                  }} />
+                </Form.Item>
+                <Form.Item name="expectedEnd" label="Previsão de Término" style={{ marginBottom: 0 }}>
+                  <Input type="date" size="large" onChange={e => {
+                    const end = e.target.value;
+                    const start = form.getFieldValue('startDate');
+                    const today = new Date().toISOString().slice(0, 10);
+                    const cur = form.getFieldValue('status');
+                    if (cur === 'CONCLUIDO' || cur === 'CANCELADO') return;
+                    if (start && start <= today && (!end || end >= today)) form.setFieldValue('status', 'EM_ANDAMENTO');
+                    else if (start && start > today) form.setFieldValue('status', 'PENDENTE');
+                  }} />
+                </Form.Item>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 14, marginTop: 14 }}>
+                <Form.Item name="status" label="Status" style={{ marginBottom: 0 }}>
+                  <Select size="large" defaultValue="PENDENTE">
+                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                      <Option key={k} value={k}>
+                        <span style={{ color: STATUS_CONFIG[k].color, fontWeight: 500 }}>● {v.label}</span>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="description" label="Descrição" style={{ marginBottom: 0 }}>
+                  <Input placeholder="Descreva brevemente o escopo da implantação..." size="large" />
+                </Form.Item>
+              </div>
             </div>
-
-            <Form.Item name="description" label="Descrição">
-              <TextArea rows={3} placeholder="Descreva o escopo da implantação..." style={{ resize: 'vertical' }} />
-            </Form.Item>
 
             {/* Fases */}
             <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>
@@ -1139,8 +1146,8 @@ export default function Implantacoes() {
               </div>
             </div>
 
-            <Form.Item name="notes" label="Observações">
-              <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
+            <Form.Item name="notes" label="Observações Gerais">
+              <TextArea rows={5} placeholder="Registre aqui observações gerais sobre a implantação, ocorrências, pendências ou informações relevantes para o acompanhamento..." style={{ resize: 'vertical', fontSize: 13 }} />
             </Form.Item>
           </Form>
         </div>
