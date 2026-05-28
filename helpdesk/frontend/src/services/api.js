@@ -40,6 +40,42 @@ export const companyService = {
   checkLinks: (id) => api.get(`/companies/${id}/links`).then(r => r.data),
 };
 
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    const idx = typeof result === 'string' ? result.indexOf(',') : -1;
+    resolve(idx >= 0 ? result.slice(idx + 1) : result);
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
+export const companyAttachmentService = {
+  list: (companyId) => api.get(`/companies/${companyId}/attachments`).then(r => r.data),
+  upload: async (companyId, file) => {
+    const data = await fileToBase64(file);
+    return api.post(`/companies/${companyId}/attachments`, {
+      name: file.name,
+      mimeType: file.type,
+      size: file.size,
+      data,
+    }).then(r => r.data);
+  },
+  download: async (companyId, id, filename) => {
+    const res = await api.get(`/companies/${companyId}/attachments/${id}/download`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'download';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+  remove: (companyId, id) => api.delete(`/companies/${companyId}/attachments/${id}`).then(r => r.data),
+};
+
 export const userService = {
   list: (params) => api.get('/users', { params }).then(r => r.data),
   get: (id) => api.get(`/users/${id}`).then(r => r.data),

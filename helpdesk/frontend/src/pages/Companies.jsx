@@ -10,8 +10,9 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { companyService, stateService, cityService } from '../services/api';
+import { companyService, stateService, cityService, companyAttachmentService } from '../services/api';
 import { normalize } from '../utils/constants';
+import CompanyAttachments from '../components/CompanyAttachments';
 
 const { TextArea } = Input;
 
@@ -66,6 +67,7 @@ export default function Companies() {
   const [allCities, setAllCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
   const [selectedStateSigla, setSelectedStateSigla] = useState(null);
+  const [stagedFiles, setStagedFiles] = useState([]);
   const navigate = useNavigate();
 
   const load = () => {
@@ -90,6 +92,7 @@ export default function Companies() {
     setEditing(null);
     form.resetFields();
     setSelectedStateSigla(null);
+    setStagedFiles([]);
     setDrawerOpen(true);
   };
   const openEdit = (record) => {
@@ -101,6 +104,7 @@ export default function Companies() {
       zipCode: maskCEP(record.zipCode || ''),
     });
     setSelectedStateSigla(record.state || null);
+    setStagedFiles([]);
     setDrawerOpen(true);
   };
 
@@ -111,10 +115,25 @@ export default function Companies() {
         await companyService.update(editing.id, values);
         message.success('Empresa atualizada com sucesso');
       } else {
-        await companyService.create(values);
-        message.success('Empresa cadastrada com sucesso');
+        const created = await companyService.create(values);
+        if (stagedFiles.length > 0) {
+          let okCount = 0;
+          for (const file of stagedFiles) {
+            try {
+              await companyAttachmentService.upload(created.id, file);
+              okCount++;
+            } catch {
+              message.warning(`Falha ao anexar ${file.name}`);
+            }
+          }
+          if (okCount > 0) message.success(`Empresa cadastrada · ${okCount} anexo${okCount > 1 ? 's' : ''} enviado${okCount > 1 ? 's' : ''}`);
+          else message.success('Empresa cadastrada com sucesso');
+        } else {
+          message.success('Empresa cadastrada com sucesso');
+        }
       }
       setDrawerOpen(false);
+      setStagedFiles([]);
       load();
     } catch (err) {
       message.error(err.response?.data?.error || 'Erro ao salvar empresa');
@@ -221,6 +240,7 @@ export default function Companies() {
     },
     {
       title: '', key: 'actions', width: 100,
+      onCell: () => ({ onClick: e => e.stopPropagation() }),
       render: (_, record) => (
         <Space size={4}>
           <Tooltip title="Ver detalhes">
@@ -276,6 +296,10 @@ export default function Companies() {
           dataSource={filteredCompanies} columns={columns} rowKey="id"
           loading={loading} scroll={{ x: 900 }} size="middle"
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} empresa${t !== 1 ? 's' : ''}` }}
+          onRow={(record) => ({
+            onClick: () => navigate(`/app/companies/${record.id}`),
+            style: { cursor: 'pointer' },
+          })}
         />
       </div>
 
@@ -435,6 +459,17 @@ export default function Companies() {
           <Form.Item name="notes" style={{ marginBottom: 12 }}>
             <TextArea rows={3} placeholder="Informações adicionais sobre a empresa..." />
           </Form.Item>
+
+          <Divider style={{ margin: '4px 0 20px', borderColor: 'var(--cl-border)' }} />
+
+          <div className="form-section-label">Anexos</div>
+          <div style={{ marginBottom: 16 }}>
+            <CompanyAttachments
+              companyId={editing?.id}
+              stagedFiles={stagedFiles}
+              onStagedChange={setStagedFiles}
+            />
+          </div>
 
           {editing && (
             <>
