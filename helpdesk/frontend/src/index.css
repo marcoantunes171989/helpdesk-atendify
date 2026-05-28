@@ -331,9 +331,12 @@ h1, h2, h3, h4, h5 {
   gap: 8px;
   align-items: center;
   flex-wrap: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 .crm-header-search {
-  width: 220px;
+  flex: 1;
+  min-width: 0;
 }
 
 @media (max-width: 575px) {
