@@ -36,7 +36,15 @@ export default function CompanyAttachments({ companyId, stagedFiles, onStagedCha
     setLoading(true);
     companyAttachmentService.list(companyId)
       .then(setItems)
-      .catch(() => message.error('Erro ao carregar anexos'))
+      .catch((err) => {
+        const status = err.response?.status;
+        if (status === 404) {
+          setItems([]);
+        } else {
+          const detail = err.response?.data?.error || err.message || 'erro desconhecido';
+          message.error(`Erro ao carregar anexos: ${detail}`);
+        }
+      })
       .finally(() => setLoading(false));
   }, [companyId]);
 
