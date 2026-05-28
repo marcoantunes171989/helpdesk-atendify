@@ -9,12 +9,13 @@ import {
 import {
   ArrowLeftOutlined, EditOutlined, PlusOutlined,
   CustomerServiceOutlined, IdcardOutlined, DeleteOutlined, BankOutlined,
-  PhoneOutlined, ExclamationCircleOutlined,
+  PhoneOutlined, ExclamationCircleOutlined, PaperClipOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { companyService, employeeService, ticketService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY } from '../utils/constants';
+import CompanyAttachments from '../components/CompanyAttachments';
 
 const { Option } = Select;
 
@@ -262,6 +263,15 @@ export default function CompanyDetail() {
               children: (
                 <div style={{ padding: '16px 0' }}>
                   <Table dataSource={tickets} columns={ticketColumns} rowKey="id" size="middle" scroll={{ x: 800 }} pagination={{ pageSize: 10 }} />
+                </div>
+              ),
+            },
+            {
+              key: 'attachments',
+              label: <span><PaperClipOutlined /> Anexos</span>,
+              children: (
+                <div style={{ padding: '16px 24px 24px' }}>
+                  <CompanyAttachments companyId={id} />
                 </div>
               ),
             },

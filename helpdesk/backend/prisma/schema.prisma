@@ -38,8 +38,23 @@ model Company {
   implantacoes      Implantacao[]
   treinamentos      Treinamento[]
   visitas           Visita[]
+  attachments       CompanyAttachment[]
 
   @@map("companies")
+}
+
+model CompanyAttachment {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@map("company_attachments")
 }
 
 model User {
