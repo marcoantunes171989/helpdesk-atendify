@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Table, Button, Modal, Form, Input, Select, Space,
   message, Tooltip, Avatar, Row, Col,
@@ -61,15 +61,15 @@ export default function Employees() {
     try {
       if (editing) {
         await employeeService.update(editing.id, values);
-        message.success('FuncionÃ¡rio atualizado com sucesso');
+        message.success('Funcionário atualizado com sucesso');
       } else {
         await employeeService.create(values);
-        message.success('FuncionÃ¡rio cadastrado com sucesso');
+        message.success('Funcionário cadastrado com sucesso');
       }
       setDrawerOpen(false);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao salvar funcionÃ¡rio');
+      message.error(err.response?.data?.error || 'Erro ao salvar funcionário');
     } finally {
       setSaving(false);
     }
@@ -81,7 +81,7 @@ export default function Employees() {
       const links = await employeeService.checkLinks(record.id);
       setDeleteModal({ id: record.id, name: record.name, ...links });
     } catch {
-      message.error('Erro ao verificar vÃ­nculos');
+      message.error('Erro ao verificar vínculos');
     } finally {
       setDeletingId(null);
     }
@@ -91,11 +91,11 @@ export default function Employees() {
     setDeleteLoading(true);
     try {
       await employeeService.remove(deleteModal.id);
-      message.success('FuncionÃ¡rio excluÃ­do com sucesso');
+      message.success('Funcionário excluído com sucesso');
       setDeleteModal(null);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao excluir funcionÃ¡rio');
+      message.error(err.response?.data?.error || 'Erro ao excluir funcionário');
     } finally {
       setDeleteLoading(false);
     }
@@ -107,12 +107,12 @@ export default function Employees() {
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
-          {v ? String(v).padStart(4, '0') : 'â€”'}
+          {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
     },
     {
-      title: 'FuncionÃ¡rio', key: 'name', minWidth: 180,
+      title: 'Funcionário', key: 'name', minWidth: 180,
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => {
         const c = getAvatarColor(r.name);
@@ -129,19 +129,19 @@ export default function Employees() {
     {
       title: 'Cargo', dataIndex: 'position', key: 'position',
       sorter: (a, b) => (a.position || '').localeCompare(b.position || '', 'pt-BR'),
-      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || 'â€”'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Telefone', dataIndex: 'phone', key: 'phone',
       sorter: (a, b) => (a.phone || '').localeCompare(b.phone || ''),
-      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || 'â€”'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Empresa', key: 'company',
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
         <div>
-          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || 'â€”'}</div>
+          <div style={{ color: 'var(--cl-text-sub)', fontSize: 13, fontWeight: 500 }}>{r.company?.name || '—'}</div>
           {r.company?.fantasia && (
             <div style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>{r.company.fantasia}</div>
           )}
@@ -151,7 +151,7 @@ export default function Employees() {
     {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
-        <Space onClick={e => e.stopPropagation()}>
+        <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -171,13 +171,13 @@ export default function Employees() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">FuncionÃ¡rios</h1>
+          <h1 className="page-title">Funcionários</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filteredEmployees.length} funcionÃ¡rio{filteredEmployees.length !== 1 ? 's' : ''} cadastrado{filteredEmployees.length !== 1 ? 's' : ''}
+            {filteredEmployees.length} funcionário{filteredEmployees.length !== 1 ? 's' : ''} cadastrado{filteredEmployees.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-          Novo FuncionÃ¡rio
+          Novo Funcionário
         </Button>
       </div>
 
@@ -195,19 +195,19 @@ export default function Employees() {
         <Table
           dataSource={filteredEmployees} columns={columns} rowKey="id" loading={loading}
           scroll={{ x: 700 }} size="middle"
-          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} funcionÃ¡rio${t !== 1 ? 's' : ''}` }}
+          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} funcionário${t !== 1 ? 's' : ''}` }}
           onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
-      {/* Modal â€” Confirmar exclusÃ£o */}
+      {/* Modal — Confirmar exclusão */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Excluir funcionÃ¡rio</span>
+            <span style={{ fontWeight: 700 }}>Excluir funcionário</span>
           </div>
         }
         footer={
@@ -222,26 +222,26 @@ export default function Employees() {
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ marginBottom: 16 }}>
-              VocÃª estÃ¡ prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+              Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
               <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>AtenÃ§Ã£o:</div>
+                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span>Chamados vinculados (serÃ£o desvinculados)</span>
+                  <span>Chamados vinculados (serão desvinculados)</span>
                   <span style={{ fontWeight: 700, color: '#fbbf24' }}>{deleteModal.tickets}</span>
                 </div>
               </div>
             ) : (
               <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
-                Este funcionÃ¡rio nÃ£o possui chamados vinculados.
+                Este funcionário não possui chamados vinculados.
               </div>
             )}
           </div>
         )}
       </Modal>
 
-      {/* Drawer â€” Cadastro / EdiÃ§Ã£o */}
+      {/* Drawer — Cadastro / Edição */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -249,7 +249,7 @@ export default function Employees() {
               <IdcardOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
-              {editing ? 'Editar FuncionÃ¡rio' : 'Novo FuncionÃ¡rio'}
+              {editing ? 'Editar Funcionário' : 'Novo Funcionário'}
             </span>
           </div>
         }
@@ -259,11 +259,11 @@ export default function Employees() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
         }
@@ -275,7 +275,7 @@ export default function Employees() {
               label="Nome Completo"
               rules={[{ required: true, message: 'Informe o nome' }]}
             >
-              <Input placeholder="Nome completo do funcionÃ¡rio" size="large" />
+              <Input placeholder="Nome completo do funcionário" size="large" />
             </Form.Item>
 
             <Row gutter={16}>

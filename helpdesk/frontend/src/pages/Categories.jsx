@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Modal, Form, Input, InputNumber, Space, Tag, Switch,
@@ -78,7 +78,7 @@ export default function Categories() {
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
-          {v ? String(v).padStart(4, '0') : 'â€”'}
+          {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
     },
@@ -107,7 +107,7 @@ export default function Categories() {
       ),
     },
     {
-      title: 'SituaÃ§Ã£o', dataIndex: 'active', key: 'active',
+      title: 'Situação', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
         <Tag color={v !== false ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
@@ -123,7 +123,7 @@ export default function Categories() {
     {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
-        <Space onClick={e => e.stopPropagation()}>
+        <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -157,7 +157,7 @@ export default function Categories() {
 
       <div className="filter-bar">
         <Input
-          placeholder="Buscar por nome ou descriÃ§Ã£o..."
+          placeholder="Buscar por nome ou descrição..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -173,7 +173,7 @@ export default function Categories() {
         />
       </div>
 
-      {/* Modal â€” Confirmar exclusÃ£o */}
+      {/* Modal — Confirmar exclusão */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -195,22 +195,22 @@ export default function Categories() {
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ marginBottom: 16 }}>
-              VocÃª estÃ¡ prestes a remover <strong>{deleteModal.name}</strong>. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+              Você está prestes a remover <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
               <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
-                AtenÃ§Ã£o: {deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''} perderÃ¡ a categoria ao confirmar.
+                Atenção: {deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''} perderá a categoria ao confirmar.
               </div>
             ) : (
               <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
-                Esta categoria nÃ£o possui chamados vinculados.
+                Esta categoria não possui chamados vinculados.
               </div>
             )}
           </div>
         )}
       </Modal>
 
-      {/* Drawer â€” Cadastro / EdiÃ§Ã£o */}
+      {/* Drawer — Cadastro / Edição */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -226,11 +226,11 @@ export default function Categories() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
         }
@@ -238,9 +238,9 @@ export default function Categories() {
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item name="name" label="Nome da Categoria" rules={[{ required: true, message: 'Informe o nome' }]}>
-              <Input placeholder="Ex: Suporte TÃ©cnico, Financeiro..." size="large" />
+              <Input placeholder="Ex: Suporte Técnico, Financeiro..." size="large" />
             </Form.Item>
-            <Form.Item name="description" label="DescriÃ§Ã£o">
+            <Form.Item name="description" label="Descrição">
               <Input.TextArea rows={3} placeholder="Descreva o tipo de atendimento..." style={{ resize: 'none' }} />
             </Form.Item>
             <Form.Item
@@ -248,13 +248,13 @@ export default function Categories() {
               label="Prazo SLA (horas)"
               initialValue={24}
               rules={[{ required: true, message: 'Informe o prazo' }]}
-              extra="Tempo mÃ¡ximo para resolver chamados desta categoria"
+              extra="Tempo máximo para resolver chamados desta categoria"
             >
               <InputNumber min={1} max={8760} size="large" style={{ width: '100%' }}
                 addonAfter="horas" placeholder="24" />
             </Form.Item>
             {editing && (
-              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
+              <Form.Item name="active" label="Situação" valuePropName="checked">
                 <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
               </Form.Item>
             )}

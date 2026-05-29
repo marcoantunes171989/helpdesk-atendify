@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Button, Modal, Form, Input, Select, Space, Tag, Tooltip,
   message, Table, Drawer, Divider, Checkbox, Badge,
@@ -20,13 +20,13 @@ const { Option } = Select;
 const TIPO_CONFIG = {
   PRESENCIAL: { label: 'Presencial',  color: '#34d399', bg: 'rgba(16,185,129,0.12)',  icon: <EnvironmentOutlined /> },
   REMOTO:     { label: 'Remoto',      color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',   icon: <LaptopOutlined /> },
-  HIBRIDO:    { label: 'HÃ­brido',     color: '#a78bfa', bg: 'rgba(124,58,237,0.12)',  icon: <TeamOutlined /> },
+  HIBRIDO:    { label: 'Híbrido',     color: '#a78bfa', bg: 'rgba(124,58,237,0.12)',  icon: <TeamOutlined /> },
 };
 
 const STATUS_CONFIG = {
   AGENDADO:     { label: 'Agendado',      color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',  icon: <ClockCircleOutlined /> },
   EM_ANDAMENTO: { label: 'Em Andamento',  color: '#fbbf24', bg: 'rgba(217,119,6,0.12)',  icon: <SyncOutlined spin /> },
-  CONCLUIDO:    { label: 'ConcluÃ­do',     color: '#34d399', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircleOutlined /> },
+  CONCLUIDO:    { label: 'Concluído',     color: '#34d399', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircleOutlined /> },
   CANCELADO:    { label: 'Cancelado',     color: '#f87171', bg: 'rgba(220,38,38,0.12)',  icon: <CloseCircleOutlined /> },
 };
 
@@ -68,14 +68,14 @@ function fmtDuration(min) {
 }
 
 function gerarATATreinamento(t) {
-  const fmt = d => d ? new Date(d).toLocaleString('pt-BR') : 'â€”';
+  const fmt = d => d ? new Date(d).toLocaleString('pt-BR') : '—';
   const participantesRows = (t.participantes || []).map(p => {
-    const nome = p.employee?.name || p.name || 'â€”';
-    const cargo = p.employee?.position || p.email || 'â€”';
+    const nome = p.employee?.name || p.name || '—';
+    const cargo = p.employee?.position || p.email || '—';
     return `<tr>
       <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${nome}</td>
       <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${cargo}</td>
-      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">${p.attended ? 'âœ“ Presente' : 'Ausente'}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">${p.attended ? '✓ Presente' : 'Ausente'}</td>
     </tr>`;
   }).join('');
 
@@ -86,27 +86,27 @@ function gerarATATreinamento(t) {
         <p style="margin:4px 0;color:#555;font-size:14px">Documento gerado em ${new Date().toLocaleString('pt-BR')}</p>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÃTULO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.title}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.company?.name || 'â€”'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÍTULO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.title}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.company?.name || '—'}</td></tr>
         <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">TIPO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${TIPO_CONFIG[t.tipo]?.label || t.tipo}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">INSTRUTOR</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.trainer?.name || 'â€”'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">INSTRUTOR</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.trainer?.name || '—'}</td></tr>
         <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DATA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmt(t.scheduledAt)}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DURAÃ‡ÃƒO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmtDuration(t.duration) || 'â€”'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DURAÇÃO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmtDuration(t.duration) || '—'}</td></tr>
         ${t.location ? `<tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">LOCAL</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.location}</td></tr>` : ''}
         <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">STATUS</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${STATUS_CONFIG[t.status]?.label || t.status}</td></tr>
       </table>
-      ${t.description ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">DESCRIÃ‡ÃƒO / CONTEÃšDO</h3><p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${t.description}</p>` : ''}
+      ${t.description ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">DESCRIÇÃO / CONTEÚDO</h3><p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${t.description}</p>` : ''}
       ${participantesRows ? `
       <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">PARTICIPANTES</h3>
       <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
         <thead><tr>
           <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Nome</th>
           <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Cargo / E-mail</th>
-          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:center;width:120px">PresenÃ§a</th>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:center;width:120px">Presença</th>
         </tr></thead>
         <tbody>${participantesRows}</tbody>
       </table>` : ''}
-      ${t.notes ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">OBSERVAÃ‡Ã•ES</h3><p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${t.notes}</p>` : ''}
+      ${t.notes ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">OBSERVAÇÕES</h3><p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${t.notes}</p>` : ''}
       <div style="margin-top:60px;display:flex;gap:80px">
         <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${t.trainer?.name || 'Instrutor'}</b><br>Instrutor</div></div>
         <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${t.company?.name || 'Empresa'}</b><br>Cliente</div></div>
@@ -257,7 +257,7 @@ export default function Treinamentos() {
     setDeleteLoading(true);
     try {
       await treinamentoService.remove(deleteModal.id);
-      message.success('Treinamento excluÃ­do');
+      message.success('Treinamento excluído');
       if (selected?.id === deleteModal.id) { setDetailOpen(false); setSelected(null); }
       setDeleteModal(null);
       load();
@@ -294,12 +294,12 @@ export default function Treinamentos() {
       render: v => <span style={{ fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>#{String(v).padStart(4, '0')}</span>,
     },
     {
-      title: 'TÃ­tulo',
+      title: 'Título',
       dataIndex: 'title',
       render: (title, record) => (
         <div>
           <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{title}</div>
-          <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{record.company?.fantasia || record.company?.name || 'â€”'}</div>
+          <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{record.company?.fantasia || record.company?.name || '—'}</div>
         </div>
       ),
     },
@@ -323,13 +323,13 @@ export default function Treinamentos() {
         <span style={{ fontSize: 12 }}>
           {new Date(v).toLocaleDateString('pt-BR')} {new Date(v).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
         </span>
-      ) : 'â€”',
+      ) : '—',
     },
     {
-      title: 'DuraÃ§Ã£o',
+      title: 'Duração',
       dataIndex: 'duration',
       width: 90,
-      render: v => <span style={{ fontSize: 12 }}>{fmtDuration(v) || 'â€”'}</span>,
+      render: v => <span style={{ fontSize: 12 }}>{fmtDuration(v) || '—'}</span>,
     },
     {
       title: 'Participantes',
@@ -344,14 +344,14 @@ export default function Treinamentos() {
       title: 'Instrutor',
       dataIndex: 'trainer',
       width: 130,
-      render: v => v ? <span style={{ fontSize: 12 }}>{v.name}</span> : 'â€”',
+      render: v => v ? <span style={{ fontSize: 12 }}>{v.name}</span> : '—',
     },
     {
       title: '',
       key: 'actions',
       width: 100,
       render: (_, record) => (
-        <Space size={4} onClick={e => e.stopPropagation()}>
+        <Space size={4}>
           <Tooltip title="Detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
@@ -433,7 +433,7 @@ export default function Treinamentos() {
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
         <Input
-          placeholder="Buscar por tÃ­tulo, empresa ou instrutor..."
+          placeholder="Buscar por título, empresa ou instrutor..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -457,12 +457,11 @@ export default function Treinamentos() {
           loading={loading}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} registros` }}
           size="middle"
-          onRow={record => ({ onClick: () => openDetail(record), style: { cursor: 'pointer' } })}
           locale={{ emptyText: 'Nenhum treinamento encontrado' }}
         />
       </div>
 
-      {/* Drawer â€” Detalhes */}
+      {/* Drawer — Detalhes */}
       <Drawer
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
@@ -484,7 +483,7 @@ export default function Treinamentos() {
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{selected.title}</div>
               </div>
-              <Space onClick={e => e.stopPropagation()}>
+              <Space>
                 <TipoBadge tipo={selected.tipo} />
                 <StatusBadge status={selected.status} />
               </Space>
@@ -501,7 +500,7 @@ export default function Treinamentos() {
                 { label: 'Empresa', value: selected.company?.fantasia || selected.company?.name },
                 { label: 'Instrutor', value: selected.trainer?.name },
                 { label: 'Data', value: selected.scheduledAt ? new Date(selected.scheduledAt).toLocaleString('pt-BR') : null },
-                { label: 'DuraÃ§Ã£o', value: fmtDuration(selected.duration) },
+                { label: 'Duração', value: fmtDuration(selected.duration) },
                 { label: 'Local', value: selected.location },
                 { label: 'Link', value: selected.meetingLink, link: true },
               ].filter(i => i.value).map(item => (
@@ -522,7 +521,7 @@ export default function Treinamentos() {
               <>
                 <Divider style={{ margin: '16px 0' }} />
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 12 }}>
-                  Participantes â€” {selected.participantes.filter(p => p.attended).length}/{selected.participantes.length} presentes
+                  Participantes — {selected.participantes.filter(p => p.attended).length}/{selected.participantes.length} presentes
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {selected.participantes.map(p => {
@@ -561,7 +560,7 @@ export default function Treinamentos() {
             {selected.notes && (
               <>
                 <Divider style={{ margin: '16px 0' }} />
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 8 }}>ObservaÃ§Ãµes</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 8 }}>Observações</div>
                 <p style={{ fontSize: 13, color: 'var(--cl-text)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selected.notes}</p>
               </>
             )}
@@ -584,7 +583,7 @@ export default function Treinamentos() {
         )}
       </Drawer>
 
-      {/* Modal â€” Criar / Editar */}
+      {/* Modal — Criar / Editar */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -599,19 +598,19 @@ export default function Treinamentos() {
         centered width={720}
         styles={{ body: { padding: '24px 0 8px', maxHeight: '70vh', overflowY: 'auto' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
         }
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="title" label="TÃ­tulo" rules={[{ required: true }]}>
-              <Input placeholder="TÃ­tulo do treinamento" size="large" />
+            <Form.Item name="title" label="Título" rules={[{ required: true }]}>
+              <Input placeholder="Título do treinamento" size="large" />
             </Form.Item>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -649,7 +648,7 @@ export default function Treinamentos() {
               <Form.Item name="scheduledAt" label="Data e Hora">
                 <Input type="datetime-local" size="large" />
               </Form.Item>
-              <Form.Item name="duration" label="DuraÃ§Ã£o (minutos)">
+              <Form.Item name="duration" label="Duração (minutos)">
                 <Input type="number" min={1} placeholder="Ex: 60" size="large" />
               </Form.Item>
             </div>
@@ -661,11 +660,11 @@ export default function Treinamentos() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     {tipo !== 'REMOTO' && (
                       <Form.Item name="location" label="Local">
-                        <Input placeholder="EndereÃ§o ou sala" size="large" />
+                        <Input placeholder="Endereço ou sala" size="large" />
                       </Form.Item>
                     )}
                     {tipo !== 'PRESENCIAL' && (
-                      <Form.Item name="meetingLink" label="Link da ReuniÃ£o">
+                      <Form.Item name="meetingLink" label="Link da Reunião">
                         <Input placeholder="https://meet.google.com/..." size="large" />
                       </Form.Item>
                     )}
@@ -674,15 +673,15 @@ export default function Treinamentos() {
               }}
             </Form.Item>
 
-            <Form.Item name="description" label="DescriÃ§Ã£o">
-              <TextArea rows={3} placeholder="Objetivos e conteÃºdo programÃ¡tico..." style={{ resize: 'vertical' }} />
+            <Form.Item name="description" label="Descrição">
+              <TextArea rows={3} placeholder="Objetivos e conteúdo programático..." style={{ resize: 'vertical' }} />
             </Form.Item>
 
             {/* Participantes */}
             <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Participantes</Divider>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
               {participantesForm.map((p, idx) => {
-                const nome = employees.find(e => e.id === p.employeeId)?.name || p.name || 'â€”';
+                const nome = employees.find(e => e.id === p.employeeId)?.name || p.name || '—';
                 return (
                   <div key={idx} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -704,12 +703,12 @@ export default function Treinamentos() {
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 16 }}>
                     <Select
-                      placeholder={selectedCompanyId ? 'FuncionÃ¡rio da empresa' : 'FuncionÃ¡rio (opcional)'}
+                      placeholder={selectedCompanyId ? 'Funcionário da empresa' : 'Funcionário (opcional)'}
                       allowClear showSearch
                       value={newParticipante.employeeId || undefined}
                       onChange={v => setNewParticipante(prev => ({ ...prev, employeeId: v || '' }))}
                       filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                      notFoundContent={selectedCompanyId ? 'Nenhum funcionÃ¡rio nesta empresa' : 'Nenhum funcionÃ¡rio encontrado'}
+                      notFoundContent={selectedCompanyId ? 'Nenhum funcionário nesta empresa' : 'Nenhum funcionário encontrado'}
                     >
                       {filteredEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
                     </Select>
@@ -725,14 +724,14 @@ export default function Treinamentos() {
               }}
             </Form.Item>
 
-            <Form.Item name="notes" label="ObservaÃ§Ãµes">
+            <Form.Item name="notes" label="Observações">
               <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
             </Form.Item>
           </Form>
         </div>
       </Modal>
 
-      {/* Modal â€” Excluir */}
+      {/* Modal — Excluir */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -754,7 +753,7 @@ export default function Treinamentos() {
         {deleteModal && (
           <p style={{ padding: '8px 0' }}>
             Deseja excluir o treinamento <strong>"{deleteModal.title}"</strong>?
-            Todos os participantes vinculados serÃ£o removidos. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+            Todos os participantes vinculados serão removidos. Esta ação não pode ser desfeita.
           </p>
         )}
       </Modal>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Modal, Form, Input, Select, Tag, Space,
@@ -55,10 +55,10 @@ export default function Users() {
     try {
       if (editing) {
         await userService.update(editing.id, values);
-        message.success('UsuÃ¡rio atualizado');
+        message.success('Usuário atualizado');
       } else {
         await userService.create(values);
-        message.success('UsuÃ¡rio criado');
+        message.success('Usuário criado');
       }
       setDrawerOpen(false);
       load();
@@ -75,7 +75,7 @@ export default function Users() {
       const links = await userService.checkLinks(record.id);
       setDeleteModal({ id: record.id, name: record.name, ...links });
     } catch {
-      message.error('Erro ao verificar vÃ­nculos');
+      message.error('Erro ao verificar vínculos');
     } finally {
       setDeletingId(null);
     }
@@ -85,11 +85,11 @@ export default function Users() {
     setDeleteLoading(true);
     try {
       await userService.remove(deleteModal.id);
-      message.success('UsuÃ¡rio excluÃ­do com sucesso');
+      message.success('Usuário excluído com sucesso');
       setDeleteModal(null);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao excluir usuÃ¡rio');
+      message.error(err.response?.data?.error || 'Erro ao excluir usuário');
     } finally {
       setDeleteLoading(false);
     }
@@ -122,10 +122,10 @@ export default function Users() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : 'â€”'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
-      title: 'UsuÃ¡rio', key: 'name',
+      title: 'Usuário', key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -169,7 +169,7 @@ export default function Users() {
     {
       title: '', key: 'actions', width: 110,
       render: (_, record) => (
-        <Space onClick={e => e.stopPropagation()}>
+        <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
           </Tooltip>
@@ -191,13 +191,13 @@ export default function Users() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">UsuÃ¡rios</h1>
+          <h1 className="page-title">Usuários</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filteredUsers.length} usuÃ¡rio{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}
+            {filteredUsers.length} usuário{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-          Novo UsuÃ¡rio
+          Novo Usuário
         </Button>
       </div>
 
@@ -222,19 +222,19 @@ export default function Users() {
 
       <div className="page-table-wrap">
         <Table dataSource={filteredUsers} columns={columns} rowKey="id" loading={loading} scroll={{ x: 700 }} size="middle"
-          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} usuÃ¡rio${t !== 1 ? 's' : ''}` }}
+          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} usuário${t !== 1 ? 's' : ''}` }}
           onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
-      {/* Modal â€” Confirmar exclusÃ£o */}
+      {/* Modal — Confirmar exclusão */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Excluir usuÃ¡rio</span>
+            <span style={{ fontWeight: 700 }}>Excluir usuário</span>
           </div>
         }
         footer={
@@ -251,56 +251,56 @@ export default function Users() {
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ marginBottom: 16 }}>
-              VocÃª estÃ¡ prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+              Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
             {(deleteModal.createdTickets > 0 || deleteModal.comments > 0) ? (
               <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
                 <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
-                  ExclusÃ£o bloqueada â€” vÃ­nculos existentes:
+                  Exclusão bloqueada — vínculos existentes:
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {deleteModal.createdTickets > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                      <span>Chamados criados pelo usuÃ¡rio</span>
+                      <span>Chamados criados pelo usuário</span>
                       <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.createdTickets}</span>
                     </div>
                   )}
                   {deleteModal.comments > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                      <span>ComentÃ¡rios em chamados</span>
+                      <span>Comentários em chamados</span>
                       <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.comments}</span>
                     </div>
                   )}
                 </div>
                 <p style={{ fontSize: 12, color: 'var(--cl-text-muted)', marginTop: 10, marginBottom: 0 }}>
-                  Exclua ou transfira os chamados antes de remover este usuÃ¡rio.
+                  Exclua ou transfira os chamados antes de remover este usuário.
                 </p>
               </div>
             ) : deleteModal.assignedTickets > 0 ? (
               <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>AtenÃ§Ã£o:</div>
+                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span>Chamados atribuÃ­dos (serÃ£o desvinculados)</span>
+                  <span>Chamados atribuídos (serão desvinculados)</span>
                   <span style={{ fontWeight: 700, color: '#fbbf24' }}>{deleteModal.assignedTickets}</span>
                 </div>
               </div>
             ) : (
               <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
-                Este usuÃ¡rio nÃ£o possui vÃ­nculos com chamados.
+                Este usuário não possui vínculos com chamados.
               </div>
             )}
           </div>
         )}
       </Modal>
 
-      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
+      {/* Modal — Cadastro / Edição */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <TeamOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar UsuÃ¡rio' : 'Novo UsuÃ¡rio'}</span>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Usuário' : 'Novo Usuário'}</span>
           </div>
         }
         open={drawerOpen}
@@ -309,11 +309,11 @@ export default function Users() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
         }
@@ -323,12 +323,12 @@ export default function Users() {
             <Form.Item name="name" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
               <Input placeholder="Nome completo" size="large" />
             </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail invÃ¡lido' }]}>
+            <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail inválido' }]}>
               <Input placeholder="email@exemplo.com" size="large" />
             </Form.Item>
             {!editing && (
-              <Form.Item name="password" label="Senha" rules={[{ required: true, min: 6, message: 'MÃ­nimo 6 caracteres' }]}>
-                <Input.Password placeholder="MÃ­nimo 6 caracteres" size="large" />
+              <Form.Item name="password" label="Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
+                <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
               </Form.Item>
             )}
             <Form.Item name="role" label="Perfil" rules={[{ required: true, message: 'Selecione o perfil' }]}>
@@ -343,7 +343,7 @@ export default function Users() {
         </div>
       </Modal>
 
-      {/* Modal â€” Redefinir Senha */}
+      {/* Modal — Redefinir Senha */}
       <Modal
         title={<span style={{ fontWeight: 700 }}>Redefinir Senha</span>}
         open={!!pwdModal}
@@ -355,8 +355,8 @@ export default function Users() {
         width={400}
       >
         <Form form={pwdForm} layout="vertical" onFinish={handleResetPassword} style={{ marginTop: 16 }}>
-          <Form.Item name="password" label="Nova Senha" rules={[{ required: true, min: 6, message: 'MÃ­nimo 6 caracteres' }]}>
-            <Input.Password placeholder="MÃ­nimo 6 caracteres" size="large" />
+          <Form.Item name="password" label="Nova Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
+            <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
           </Form.Item>
         </Form>
       </Modal>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Modal, Form, Input, Select, Space, Tag, Switch,
@@ -26,10 +26,10 @@ const STATUS_MAP = {
 };
 
 function gerarATA(visita) {
-  const fmt = (d) => d ? dayjs(d).format('DD/MM/YYYY HH:mm') : 'â€”';
+  const fmt = (d) => d ? dayjs(d).format('DD/MM/YYYY HH:mm') : '—';
   const topics = [];
   if (visita.topicConfig) {
-    topics.push(`<b>ConfiguraÃ§Ã£o</b><br>${visita.topicConfigDesc || ''}`);
+    topics.push(`<b>Configuração</b><br>${visita.topicConfigDesc || ''}`);
   }
   if (visita.topicTreino) {
     let treinoEtapas = [], treinoEmps = [];
@@ -37,7 +37,7 @@ function gerarATA(visita) {
     try { treinoEmps   = JSON.parse(visita.topicTreinoEmps  || '[]'); if (!Array.isArray(treinoEmps))   treinoEmps   = []; } catch {}
 
     const byMod = treinoEtapas.reduce((acc, e) => {
-      const k = e.moduloName || 'â€”';
+      const k = e.moduloName || '—';
       if (!acc[k]) acc[k] = [];
       acc[k].push(e.title || e.id || '');
       return acc;
@@ -51,7 +51,7 @@ function gerarATA(visita) {
         ).join('') + `</ul>`;
     }
     if (treinoEmps.length > 0) {
-      t += `<br><i>FuncionÃ¡rios:</i> ${treinoEmps.map(e => e.name || e.id).join(', ')}`;
+      t += `<br><i>Funcionários:</i> ${treinoEmps.map(e => e.name || e.id).join(', ')}`;
     }
     if (visita.topicTreinoDesc) t += `<br>${visita.topicTreinoDesc}`;
     topics.push(t);
@@ -63,25 +63,25 @@ function gerarATA(visita) {
   const html = `
     <div style="font-family:Arial,sans-serif;color:#111;max-width:800px;margin:0 auto;padding:40px">
       <div style="text-align:center;margin-bottom:32px">
-        <h1 style="font-size:22px;margin:0">ATA DE VISITA TÃ‰CNICA</h1>
+        <h1 style="font-size:22px;margin:0">ATA DE VISITA TÉCNICA</h1>
         <p style="margin:4px 0;color:#555;font-size:14px">Documento gerado em ${dayjs().format('DD/MM/YYYY HH:mm')}</p>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
         <tr>
-          <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÃTULO</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÍTULO</td>
           <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.title}</td>
         </tr>
         <tr>
           <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td>
-          <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.company?.name || 'â€”'}</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.company?.name || '—'}</td>
         </tr>
         <tr>
-          <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">CONTATO / FUNCIONÃRIO</td>
-          <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.employee ? `${visita.employee.name}${visita.employee.position ? ' â€” ' + visita.employee.position : ''}` : 'â€”'}</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">CONTATO / FUNCIONÁRIO</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.employee ? `${visita.employee.name}${visita.employee.position ? ' — ' + visita.employee.position : ''}` : '—'}</td>
         </tr>
         <tr>
-          <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">TÃ‰CNICO RESPONSÃVEL</td>
-          <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.technician?.name || 'â€”'}</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">TÉCNICO RESPONSÁVEL</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${visita.technician?.name || '—'}</td>
         </tr>
         <tr>
           <td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DATA DA VISITA</td>
@@ -106,24 +106,24 @@ function gerarATA(visita) {
       ` : ''}
 
       ${visita.conclusions ? `
-      <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">CONCLUSÃ•ES</h3>
+      <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">CONCLUSÕES</h3>
       <p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${visita.conclusions}</p>
       ` : ''}
 
       ${visita.nextSteps ? `
-      <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">PRÃ“XIMOS PASSOS</h3>
+      <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">PRÓXIMOS PASSOS</h3>
       <p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${visita.nextSteps}</p>
       ` : ''}
 
       <div style="margin-top:60px;display:flex;gap:80px">
         <div style="flex:1;text-align:center">
           <div style="border-top:1px solid #333;padding-top:8px;font-size:12px">
-            <b>${visita.technician?.name || 'TÃ©cnico ResponsÃ¡vel'}</b><br>TÃ©cnico
+            <b>${visita.technician?.name || 'Técnico Responsável'}</b><br>Técnico
           </div>
         </div>
         <div style="flex:1;text-align:center">
           <div style="border-top:1px solid #333;padding-top:8px;font-size:12px">
-            <b>${visita.employee?.name || 'ResponsÃ¡vel do Cliente'}</b><br>${visita.company?.name || 'Cliente'}
+            <b>${visita.employee?.name || 'Responsável do Cliente'}</b><br>${visita.company?.name || 'Cliente'}
           </div>
         </div>
       </div>
@@ -314,10 +314,10 @@ export default function Visitas() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : 'â€”'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
-      title: 'TÃ­tulo / Empresa', key: 'title',
+      title: 'Título / Empresa', key: 'title',
       render: (_, r) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--cl-text-hi)' }}>{r.title}</div>
@@ -326,13 +326,13 @@ export default function Visitas() {
       ),
     },
     {
-      title: 'TÃ©cnico', key: 'technician',
-      render: (_, r) => <span style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{r.technician?.name || 'â€”'}</span>,
+      title: 'Técnico', key: 'technician',
+      render: (_, r) => <span style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{r.technician?.name || '—'}</span>,
     },
     {
       title: 'Data', dataIndex: 'visitDate', key: 'visitDate', width: 130,
       sorter: (a, b) => new Date(a.visitDate) - new Date(b.visitDate),
-      render: v => <span style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{v ? dayjs(v).format('DD/MM/YYYY HH:mm') : 'â€”'}</span>,
+      render: v => <span style={{ fontSize: 13, color: 'var(--cl-text-soft)' }}>{v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'}</span>,
     },
     {
       title: 'Status', dataIndex: 'status', key: 'status', width: 110,
@@ -354,7 +354,7 @@ export default function Visitas() {
     {
       title: '', key: 'actions', width: 110,
       render: (_, record) => (
-        <Space onClick={e => e.stopPropagation()}>
+        <Space>
           <Tooltip title="Visualizar">
             <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openDetail(record)} />
           </Tooltip>
@@ -402,7 +402,7 @@ export default function Visitas() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Visitas TÃ©cnicas</h1>
+          <h1 className="page-title">Visitas Técnicas</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filtered.length} visita{filtered.length !== 1 ? 's' : ''} encontrada{filtered.length !== 1 ? 's' : ''}
           </p>
@@ -428,7 +428,7 @@ export default function Visitas() {
       {/* Filtros */}
       <div className="filter-bar" style={{ display: 'flex', gap: 10 }}>
         <Input
-          placeholder="Buscar por tÃ­tulo, empresa, tÃ©cnico..."
+          placeholder="Buscar por título, empresa, técnico..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -460,7 +460,7 @@ export default function Visitas() {
           </div>
         }
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setDetailOpen(false)}>Fechar</Button>
             <Button icon={<PrinterOutlined />} onClick={() => gerarATA(selected)} style={{ borderRadius: 6 }}>
               Gerar ATA
@@ -483,14 +483,14 @@ export default function Visitas() {
             <Row gutter={[24, 0]}>
               <Col xs={24} sm={12}>
                 <DetailField label="Empresa"    value={selected.company?.name} />
-                <DetailField label="TÃ©cnico"    value={selected.technician?.name} />
-                <DetailField label="Contato"    value={selected.employee ? `${selected.employee.name}${selected.employee.position ? ' â€” ' + selected.employee.position : ''}` : null} />
+                <DetailField label="Técnico"    value={selected.technician?.name} />
+                <DetailField label="Contato"    value={selected.employee ? `${selected.employee.name}${selected.employee.position ? ' — ' + selected.employee.position : ''}` : null} />
                 <DetailField label="Data"       value={selected.visitDate ? dayjs(selected.visitDate).format('DD/MM/YYYY HH:mm') : null} />
               </Col>
               <Col xs={24} sm={12}>
                 <div style={LABEL}>Temas Abordados</div>
                 <Space wrap style={{ marginBottom: 16 }}>
-                  {selected.topicConfig  && <Tag color="blue">ConfiguraÃ§Ã£o</Tag>}
+                  {selected.topicConfig  && <Tag color="blue">Configuração</Tag>}
                   {selected.topicTreino  && <Tag color="purple">Treinamento</Tag>}
                   {selected.topicOutros  && <Tag color="default">Outros</Tag>}
                   {!selected.topicConfig && !selected.topicTreino && !selected.topicOutros && <span style={{ fontSize: 13, color: 'var(--cl-text-faint)' }}>Nenhum tema registrado</span>}
@@ -500,7 +500,7 @@ export default function Visitas() {
                   try { etapas = JSON.parse(selected.topicTreinoMods || '[]'); if (!Array.isArray(etapas)) etapas = []; } catch {}
                   try { emps   = JSON.parse(selected.topicTreinoEmps  || '[]'); if (!Array.isArray(emps))   emps   = []; } catch {}
                   const byMod = etapas.reduce((acc, e) => {
-                    const k = e.moduloName || 'â€”';
+                    const k = e.moduloName || '—';
                     if (!acc[k]) acc[k] = [];
                     acc[k].push(e);
                     return acc;
@@ -522,11 +522,11 @@ export default function Visitas() {
                       )}
                       {emps.length > 0 && (
                         <div>
-                          <div style={LABEL}>FuncionÃ¡rios Treinados</div>
+                          <div style={LABEL}>Funcionários Treinados</div>
                           <Space wrap>
                             {emps.map((e, i) => (
                               <Tag key={i} color="blue" style={{ borderRadius: 4, fontSize: 11 }}>
-                                {e.name || e.id}{e.position ? ` â€” ${e.position}` : ''}
+                                {e.name || e.id}{e.position ? ` — ${e.position}` : ''}
                               </Tag>
                             ))}
                           </Space>
@@ -539,16 +539,16 @@ export default function Visitas() {
             </Row>
             <Divider style={{ margin: '8px 0 16px' }} />
             <DetailField label="Objetivos"          value={selected.objectives} />
-            {selected.topicConfig  && <DetailField label="ConfiguraÃ§Ã£o â€” Detalhes"  value={selected.topicConfigDesc} />}
-            {selected.topicTreino  && <DetailField label="Treinamento â€” Detalhes"   value={selected.topicTreinoDesc} />}
-            {selected.topicOutros  && <DetailField label="Outros â€” Detalhes"        value={selected.topicOutrosDesc} />}
-            <DetailField label="ConclusÃµes"          value={selected.conclusions} />
-            <DetailField label="PrÃ³ximos Passos"     value={selected.nextSteps} />
+            {selected.topicConfig  && <DetailField label="Configuração — Detalhes"  value={selected.topicConfigDesc} />}
+            {selected.topicTreino  && <DetailField label="Treinamento — Detalhes"   value={selected.topicTreinoDesc} />}
+            {selected.topicOutros  && <DetailField label="Outros — Detalhes"        value={selected.topicOutrosDesc} />}
+            <DetailField label="Conclusões"          value={selected.conclusions} />
+            <DetailField label="Próximos Passos"     value={selected.nextSteps} />
           </div>
         )}
       </Modal>
 
-      {/* Modal confirmaÃ§Ã£o exclusÃ£o */}
+      {/* Modal confirmação exclusão */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -560,17 +560,17 @@ export default function Visitas() {
           </div>
         }
       >
-        <p style={{ padding: '8px 0' }}>Deseja remover a visita <strong>"{deleteModal?.title}"</strong>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.</p>
+        <p style={{ padding: '8px 0' }}>Deseja remover a visita <strong>"{deleteModal?.title}"</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
 
-      {/* Modal cadastro / ediÃ§Ã£o */}
+      {/* Modal cadastro / edição */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CarOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Visita' : 'Nova Visita TÃ©cnica'}</span>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Visita' : 'Nova Visita Técnica'}</span>
           </div>
         }
         open={modalOpen}
@@ -579,10 +579,10 @@ export default function Visitas() {
         width={720}
         styles={{ body: { padding: '24px 0 8px', maxHeight: '78vh', overflowY: 'auto' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()} style={{ fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Registrar Visita'}
+              {editing ? 'Salvar Alterações' : 'Registrar Visita'}
             </Button>
           </Space>
         }
@@ -591,8 +591,8 @@ export default function Visitas() {
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Row gutter={16}>
               <Col xs={24}>
-                <Form.Item name="title" label="TÃ­tulo da Visita" rules={[{ required: true, message: 'Informe o tÃ­tulo' }]}>
-                  <Input placeholder="Ex: Visita de implantaÃ§Ã£o â€” mÃ³dulo financeiro" size="large" />
+                <Form.Item name="title" label="Título da Visita" rules={[{ required: true, message: 'Informe o título' }]}>
+                  <Input placeholder="Ex: Visita de implantação — módulo financeiro" size="large" />
                 </Form.Item>
               </Col>
             </Row>
@@ -619,9 +619,9 @@ export default function Visitas() {
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item name="employeeId" label="Contato / FuncionÃ¡rio">
+                <Form.Item name="employeeId" label="Contato / Funcionário">
                   <Select allowClear showSearch optionFilterProp="children" placeholder="Selecione o contato" size="large" loading={loadingEmpl}>
-                    {employees.map(e => <Option key={e.id} value={e.id}>{e.name}{e.position ? ` â€” ${e.position}` : ''}</Option>)}
+                    {employees.map(e => <Option key={e.id} value={e.id}>{e.name}{e.position ? ` — ${e.position}` : ''}</Option>)}
                   </Select>
                 </Form.Item>
               </Col>
@@ -629,8 +629,8 @@ export default function Visitas() {
 
             <Row gutter={16}>
               <Col xs={24} sm={10}>
-                <Form.Item name="technicianId" label="TÃ©cnico ResponsÃ¡vel">
-                  <Select allowClear showSearch optionFilterProp="children" placeholder="Selecione o tÃ©cnico" size="large">
+                <Form.Item name="technicianId" label="Técnico Responsável">
+                  <Select allowClear showSearch optionFilterProp="children" placeholder="Selecione o técnico" size="large">
                     {technicians.map(t => <Option key={t.id} value={t.id}>{t.name}</Option>)}
                   </Select>
                 </Form.Item>
@@ -655,10 +655,10 @@ export default function Visitas() {
 
             <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Temas Abordados</Divider>
 
-            {/* ConfiguraÃ§Ã£o */}
+            {/* Configuração */}
             <div style={{ marginBottom: 16 }}>
               <Checkbox checked={topicConfig} onChange={e => setTopicConfig(e.target.checked)} style={{ fontWeight: 600, fontSize: 13 }}>
-                ConfiguraÃ§Ã£o
+                Configuração
               </Checkbox>
               {topicConfig && (
                 <Form.Item name="topicConfigDesc" style={{ marginTop: 8, marginBottom: 0 }}>
@@ -701,21 +701,21 @@ export default function Visitas() {
                     </Select>
                   </div>
 
-                  {/* FuncionÃ¡rios treinados */}
+                  {/* Funcionários treinados */}
                   <div>
-                    <div style={{ fontSize: 12, color: 'var(--cl-text-muted)', fontWeight: 600, marginBottom: 6 }}>FuncionÃ¡rios Treinados</div>
+                    <div style={{ fontSize: 12, color: 'var(--cl-text-muted)', fontWeight: 600, marginBottom: 6 }}>Funcionários Treinados</div>
                     <Select
                       mode="multiple"
                       value={treinoEmpIds}
                       onChange={setTreinoEmpIds}
-                      placeholder="Selecione os funcionÃ¡rios..."
+                      placeholder="Selecione os funcionários..."
                       showSearch
                       allowClear
                       style={{ width: '100%' }}
                       optionLabelProp="label"
                       loading={loadingEmpl}
                       filterOption={(input, opt) => normalize(opt?.label || '').includes(normalize(input))}
-                      notFoundContent={employees.length === 0 ? 'Selecione uma empresa primeiro' : 'Nenhum funcionÃ¡rio encontrado'}
+                      notFoundContent={employees.length === 0 ? 'Selecione uma empresa primeiro' : 'Nenhum funcionário encontrado'}
                     >
                       {employees.map(e => (
                         <Option key={e.id} value={e.id} label={e.name}>
@@ -728,9 +728,9 @@ export default function Visitas() {
                     </Select>
                   </div>
 
-                  {/* ObservaÃ§Ãµes do treinamento */}
+                  {/* Observações do treinamento */}
                   <Form.Item name="topicTreinoDesc" style={{ marginBottom: 0 }}>
-                    <TextArea rows={2} placeholder="ObservaÃ§Ãµes sobre o treinamento..." style={{ resize: 'none' }} />
+                    <TextArea rows={2} placeholder="Observações sobre o treinamento..." style={{ resize: 'none' }} />
                   </Form.Item>
                 </div>
               )}
@@ -748,14 +748,14 @@ export default function Visitas() {
               )}
             </div>
 
-            <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>ConclusÃ£o</Divider>
+            <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Conclusão</Divider>
 
-            <Form.Item name="conclusions" label="ConclusÃµes">
-              <TextArea rows={3} placeholder="ConclusÃµes da visita..." style={{ resize: 'none' }} />
+            <Form.Item name="conclusions" label="Conclusões">
+              <TextArea rows={3} placeholder="Conclusões da visita..." style={{ resize: 'none' }} />
             </Form.Item>
 
-            <Form.Item name="nextSteps" label="PrÃ³ximos Passos">
-              <TextArea rows={2} placeholder="AÃ§Ãµes a serem tomadas apÃ³s a visita..." style={{ resize: 'none' }} />
+            <Form.Item name="nextSteps" label="Próximos Passos">
+              <TextArea rows={2} placeholder="Ações a serem tomadas após a visita..." style={{ resize: 'none' }} />
             </Form.Item>
           </Form>
         </div>

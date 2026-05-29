@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Modal, Form, Input, Space, Tag,
@@ -56,15 +56,15 @@ export default function Technicians() {
     try {
       if (editing) {
         await technicianService.update(editing.id, values);
-        message.success('TÃ©cnico atualizado com sucesso');
+        message.success('Técnico atualizado com sucesso');
       } else {
         await technicianService.create(values);
-        message.success('TÃ©cnico cadastrado com sucesso');
+        message.success('Técnico cadastrado com sucesso');
       }
       setDrawerOpen(false);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao salvar tÃ©cnico');
+      message.error(err.response?.data?.error || 'Erro ao salvar técnico');
     } finally {
       setSaving(false);
     }
@@ -74,11 +74,11 @@ export default function Technicians() {
     setDeleteLoading(true);
     try {
       await technicianService.remove(deleteModal.id);
-      message.success('TÃ©cnico removido com sucesso');
+      message.success('Técnico removido com sucesso');
       setDeleteModal(null);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao remover tÃ©cnico');
+      message.error(err.response?.data?.error || 'Erro ao remover técnico');
     } finally {
       setDeleteLoading(false);
     }
@@ -95,7 +95,7 @@ export default function Technicians() {
       ),
     },
     {
-      title: 'TÃ©cnico', key: 'name',
+      title: 'Técnico', key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div>
@@ -107,9 +107,9 @@ export default function Technicians() {
       ),
     },
     {
-      title: 'ObservaÃ§Ã£o', dataIndex: 'observation', key: 'observation',
+      title: 'Observação', dataIndex: 'observation', key: 'observation',
       sorter: (a, b) => (a.observation || '').localeCompare(b.observation || '', 'pt-BR'),
-      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || 'â€”'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
@@ -119,7 +119,7 @@ export default function Technicians() {
       ),
     },
     {
-      title: 'SituaÃ§Ã£o', dataIndex: 'active', key: 'active',
+      title: 'Situação', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
         <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
@@ -135,7 +135,7 @@ export default function Technicians() {
     {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
-        <Space onClick={e => e.stopPropagation()}>
+        <Space>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -157,20 +157,20 @@ export default function Technicians() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">TÃ©cnicos</h1>
+          <h1 className="page-title">Técnicos</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filteredTechnicians.length} tÃ©cnico{filteredTechnicians.length !== 1 ? 's' : ''} cadastrado{filteredTechnicians.length !== 1 ? 's' : ''}
+            {filteredTechnicians.length} técnico{filteredTechnicians.length !== 1 ? 's' : ''} cadastrado{filteredTechnicians.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
           style={{ borderRadius: 8, fontWeight: 600 }}>
-          Novo TÃ©cnico
+          Novo Técnico
         </Button>
       </div>
 
       <div className="filter-bar">
         <Input
-          placeholder="Buscar por nome, descriÃ§Ã£o ou observaÃ§Ã£o..."
+          placeholder="Buscar por nome, descrição ou observação..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -182,19 +182,19 @@ export default function Technicians() {
         <Table
           dataSource={filteredTechnicians} columns={columns} rowKey="id"
           loading={loading} size="middle" scroll={{ x: 700 }}
-          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} tÃ©cnico${t !== 1 ? 's' : ''}` }}
+          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} técnico${t !== 1 ? 's' : ''}` }}
           onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
-      {/* Modal â€” Confirmar exclusÃ£o */}
+      {/* Modal — Confirmar exclusão */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Remover tÃ©cnico</span>
+            <span style={{ fontWeight: 700 }}>Remover técnico</span>
           </div>
         }
         footer={
@@ -210,22 +210,22 @@ export default function Technicians() {
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ marginBottom: 16 }}>
-              VocÃª estÃ¡ prestes a remover o tÃ©cnico <strong>{deleteModal.name}</strong>. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+              Você está prestes a remover o técnico <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
               <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
-                Este tÃ©cnico estÃ¡ vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e nÃ£o pode ser removido.
+                Este técnico está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
               </div>
             ) : (
               <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
-                Este tÃ©cnico nÃ£o possui chamados vinculados e pode ser removido com seguranÃ§a.
+                Este técnico não possui chamados vinculados e pode ser removido com segurança.
               </div>
             )}
           </div>
         )}
       </Modal>
 
-      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
+      {/* Modal — Cadastro / Edição */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -233,7 +233,7 @@ export default function Technicians() {
               <ToolOutlined style={{ color: '#4ade80', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
-              {editing ? 'Editar TÃ©cnico' : 'Novo TÃ©cnico'}
+              {editing ? 'Editar Técnico' : 'Novo Técnico'}
             </span>
           </div>
         }
@@ -243,25 +243,25 @@ export default function Technicians() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
         }
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="name" label="Nome do TÃ©cnico" rules={[{ required: true, message: 'Informe o nome do tÃ©cnico' }]}>
-              <Input placeholder="Ex: JoÃ£o Silva, Carlos Ramos..." size="large" />
+            <Form.Item name="name" label="Nome do Técnico" rules={[{ required: true, message: 'Informe o nome do técnico' }]}>
+              <Input placeholder="Ex: João Silva, Carlos Ramos..." size="large" />
             </Form.Item>
-            <Form.Item name="description" label="DescriÃ§Ã£o">
-              <TextArea rows={3} placeholder="Ãrea de atuaÃ§Ã£o, especialidade..." style={{ resize: 'none' }} />
+            <Form.Item name="description" label="Descrição">
+              <TextArea rows={3} placeholder="Área de atuação, especialidade..." style={{ resize: 'none' }} />
             </Form.Item>
             {editing && (
-              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
+              <Form.Item name="active" label="Situação" valuePropName="checked">
                 <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
               </Form.Item>
             )}

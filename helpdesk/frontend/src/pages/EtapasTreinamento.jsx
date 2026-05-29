@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Table, Button, Modal, Form, Input, Space, Tag, Switch,
   Select, message, Tooltip,
@@ -109,10 +109,10 @@ export default function EtapasTreinamento() {
       sorter: (a, b) => (a.order ?? 999) - (b.order ?? 999),
       render: v => v != null
         ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa' }}>{String(v).padStart(2, '0')}</span>
-        : <span style={{ color: 'var(--cl-text-dim)' }}>â€”</span>,
+        : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
-      title: 'Etapa / MÃ³dulo',
+      title: 'Etapa / Módulo',
       dataIndex: 'title',
       sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
       render: (title, r) => (
@@ -128,16 +128,16 @@ export default function EtapasTreinamento() {
       ),
     },
     {
-      title: 'MÃ³dulo',
+      title: 'Módulo',
       dataIndex: ['modulo', 'name'],
       width: 180,
       sorter: (a, b) => (a.modulo?.name || '').localeCompare(b.modulo?.name || '', 'pt-BR'),
       render: (name) => name
         ? <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>{name}</Tag>
-        : <span style={{ color: 'var(--cl-text-dim)', fontSize: 12 }}>â€”</span>,
+        : <span style={{ color: 'var(--cl-text-dim)', fontSize: 12 }}>—</span>,
     },
     {
-      title: 'SituaÃ§Ã£o',
+      title: 'Situação',
       dataIndex: 'active',
       width: 100,
       render: v => (
@@ -151,7 +151,7 @@ export default function EtapasTreinamento() {
       key: 'actions',
       width: 80,
       render: (_, record) => (
-        <Space size={4} onClick={e => e.stopPropagation()}>
+        <Space size={4}>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -185,14 +185,14 @@ export default function EtapasTreinamento() {
       <div className="filter-bar" style={{ display: 'flex', gap: 12 }}>
         <Input
           prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
-          placeholder="Buscar por tÃ­tulo, descriÃ§Ã£o ou mÃ³dulo..."
+          placeholder="Buscar por título, descrição ou módulo..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ flex: 1 }}
         />
         <Select
-          placeholder="Filtrar por mÃ³dulo"
+          placeholder="Filtrar por módulo"
           allowClear
           value={filterModulo || undefined}
           onChange={v => setFilterModulo(v || '')}
@@ -217,7 +217,7 @@ export default function EtapasTreinamento() {
         />
       </div>
 
-      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
+      {/* Modal — Cadastro / Edição */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -236,25 +236,25 @@ export default function EtapasTreinamento() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+              {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
         }
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="title" label="TÃ­tulo da Etapa"
-              rules={[{ required: true, message: 'Informe o tÃ­tulo' }]}>
-              <Input placeholder="Ex: Cadastro de Produtos, ProgramaÃ§Ã£o de Oferta..." size="large" />
+            <Form.Item name="title" label="Título da Etapa"
+              rules={[{ required: true, message: 'Informe o título' }]}>
+              <Input placeholder="Ex: Cadastro de Produtos, Programação de Oferta..." size="large" />
             </Form.Item>
 
-            <Form.Item name="moduloId" label="MÃ³dulo">
+            <Form.Item name="moduloId" label="Módulo">
               <Select
-                placeholder="Selecione o mÃ³dulo"
+                placeholder="Selecione o módulo"
                 allowClear
                 showSearch
                 size="large"
@@ -264,13 +264,13 @@ export default function EtapasTreinamento() {
               </Select>
             </Form.Item>
 
-            <Form.Item name="description" label="DescriÃ§Ã£o / ObservaÃ§Ã£o">
-              <Input.TextArea rows={3} placeholder="Descreva o que Ã© realizado nesta etapa..."
+            <Form.Item name="description" label="Descrição / Observação">
+              <Input.TextArea rows={3} placeholder="Descreva o que é realizado nesta etapa..."
                 style={{ resize: 'none' }} />
             </Form.Item>
 
             {editing && (
-              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
+              <Form.Item name="active" label="Situação" valuePropName="checked">
                 <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
               </Form.Item>
             )}
@@ -278,7 +278,7 @@ export default function EtapasTreinamento() {
         </div>
       </Modal>
 
-      {/* Modal â€” Confirmar exclusÃ£o */}
+      {/* Modal — Confirmar exclusão */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -289,7 +289,7 @@ export default function EtapasTreinamento() {
           </div>
         }
         footer={
-          <Space onClick={e => e.stopPropagation()}>
+          <Space>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
             <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>Remover</Button>
           </Space>
@@ -297,7 +297,7 @@ export default function EtapasTreinamento() {
       >
         {deleteModal && (
           <p style={{ padding: '8px 0', margin: 0 }}>
-            Remover <strong>{deleteModal.title}</strong>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+            Remover <strong>{deleteModal.title}</strong>? Esta ação não pode ser desfeita.
           </p>
         )}
       </Modal>

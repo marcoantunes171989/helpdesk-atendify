@@ -651,7 +651,6 @@ export default function AgendaTecnica() {
               pagination={{ pageSize:20, showSizeChanger:false }}
               locale={{ emptyText: <EmptyImport text="Nenhuma visita. Importe uma planilha para começar." /> }}
               footer={() => <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{visitasFilt.length} registro{visitasFilt.length !== 1 ? 's' : ''}</span>}
-              onRow={r => ({ onClick: () => openForm({ ...r, tipoRegistro:'visita' }, 'visita'), style: { cursor: 'pointer' } })}
             />
           </div>
         </div>
@@ -675,7 +674,6 @@ export default function AgendaTecnica() {
               pagination={{ pageSize:20, showSizeChanger:false }}
               locale={{ emptyText: <EmptyImport text="Nenhum plantão. Importe uma planilha para começar." /> }}
               footer={() => <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{plantoessFilt.length} registro{plantoessFilt.length !== 1 ? 's' : ''}</span>}
-              onRow={r => ({ onClick: () => openForm({ ...r, tipoRegistro:'plantao' }, 'plantao'), style: { cursor: 'pointer' } })}
             />
           </div>
         </div>
@@ -697,7 +695,6 @@ export default function AgendaTecnica() {
               pagination={{ pageSize:20, showSizeChanger:false }}
               locale={{ emptyText: <EmptyImport text="Nenhum registro de férias ou licença." /> }}
               footer={() => <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{feriasFilt.length} registro{feriasFilt.length !== 1 ? 's' : ''}</span>}
-              onRow={r => ({ onClick: () => openForm({ ...r, tipoRegistro:'ferias' }, 'ferias'), style: { cursor: 'pointer' } })}
             />
           </div>
         </div>
