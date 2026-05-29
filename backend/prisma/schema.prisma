@@ -1,0 +1,641 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Company {
+  id                String     @id @default(cuid())
+  code              Int?       @unique
+  name              String
+  fantasia          String?
+  cnpj              String     @unique
+  stateRegistration String?
+  email             String
+  phone             String?
+  website           String?
+  zipCode           String?
+  street            String?
+  addressNumber     String?
+  complement        String?
+  neighborhood      String?
+  city              String?
+  state             String?
+  notes             String?
+  active            Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  tickets           Ticket[]
+  categories        Category[]
+  employees         Employee[]
+  crmContacts       CrmContact[]
+  crmOpportunities  CrmOpportunity[]
+  crmActivities     CrmActivity[]
+  implantacoes      Implantacao[]
+  treinamentos      Treinamento[]
+  visitas           Visita[]
+  attachments       CompanyAttachment[]
+
+  @@map("companies")
+}
+
+model CompanyAttachment {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@map("company_attachments")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  code      Int?     @unique
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tickets          Ticket[]         @relation("CreatedTickets")
+  assigned         Ticket[]         @relation("AssignedTickets")
+  comments         TicketComment[]
+  crmOpportunities CrmOpportunity[] @relation("CrmOppOwner")
+  crmActivities    CrmActivity[]    @relation("CrmActUser")
+  implantacoes     Implantacao[]    @relation("ImplantacaoResponsavel")
+  treinamentos     Treinamento[]    @relation("TreinamentoTrainer")
+  visitas          Visita[]         @relation("VisitaCreatedBy")
+
+  @@map("users")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  AGENT
+  CLIENT
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  code        Int?      @unique
+  name        String    @unique
+  description String?
+  slaHours    Int       @default(24)
+  active      Boolean   @default(true)
+  companyId   String?
+  company     Company?  @relation(fields: [companyId], references: [id])
+  tickets     Ticket[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  code        Int?         @unique
+  title       String
+  description String
+  status      TicketStatus @default(OPEN)
+  priority    Priority     @default(MEDIUM)
+  statusId    String?
+  ticketStatus TicketStatusRef? @relation(fields: [statusId], references: [id])
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id])
+  categoryId  String?
+  category    Category?    @relation(fields: [categoryId], references: [id])
+  userId      String
+  user        User         @relation("CreatedTickets", fields: [userId], references: [id])
+  assignedTo  String?
+  assignee    User?        @relation("AssignedTickets", fields: [assignedTo], references: [id])
+  employeeId    String?
+  employee      Employee?       @relation(fields: [employeeId], references: [id])
+  technicianId  String?
+  technician    Technician?     @relation(fields: [technicianId], references: [id])
+  slaDeadline DateTime?
+  resolvedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  comments    TicketComment[]
+  attachments TicketAttachment[]
+
+  @@map("tickets")
+}
+
+model TicketStatusRef {
+  id            String        @id @default(cuid())
+  code          Int           @unique
+  name          String
+  description   String?
+  observation   String?
+  color         String        @default("#6b7280")
+  active        Boolean       @default(true)
+  builtinStatus String?       @map("builtin_status")
+  tickets       Ticket[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("ticket_statuses")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model TicketComment {
+  id          String                   @id @default(cuid())
+  message     String
+  ticketId    String
+  ticket      Ticket                   @relation(fields: [ticketId], references: [id])
+  userId      String
+  user        User                     @relation(fields: [userId], references: [id])
+  attachments TicketCommentAttachment[]
+  createdAt   DateTime                 @default(now())
+
+  @@map("ticket_comments")
+}
+
+model TicketCommentAttachment {
+  id        String        @id @default(cuid())
+  commentId String
+  comment   TicketComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String        @db.Text
+  createdAt DateTime      @default(now())
+
+  @@map("ticket_comment_attachments")
+}
+
+model TicketAttachment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("ticket_attachments")
+}
+
+model Technician {
+  id           String        @id @default(cuid())
+  code         Int?          @unique
+  name         String
+  description  String?
+  observation  String?
+  active       Boolean       @default(true)
+  tickets      Ticket[]
+  implantacoes Implantacao[]
+  visitas      Visita[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("technicians")
+}
+
+model Employee {
+  id           String    @id @default(cuid())
+  code         Int?      @unique
+  name         String
+  email        String?   @unique
+  phone        String?
+  cpf          String?   @unique
+  position     String
+  department   String?
+  salary       Decimal?  @db.Decimal(10, 2)
+  hireDate     DateTime?
+  active       Boolean   @default(true)
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id])
+  tickets      Ticket[]
+  treinamentoParticipacoes TreinamentoParticipante[]
+  visitaContatos   Visita[]        @relation("VisitaEmployee")
+  implantacoes     Implantacao[]   @relation("ImplantacaoEmployee")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("employees")
+}
+
+model State {
+  id        String   @id @default(cuid())
+  code      Int?     @unique
+  name      String
+  sigla     String   @unique
+  ibgeCode  Int?     @unique
+  region    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cities    City[]
+
+  @@map("states")
+}
+
+model City {
+  id        String   @id @default(cuid())
+  code      Int?     @unique
+  name      String
+  ibgeCode  Int?     @unique
+  stateId   String
+  state     State    @relation(fields: [stateId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cities")
+}
+
+enum KbCategory {
+  DUVIDA
+  ERRO
+  CONFIGURACAO
+}
+
+model KbArticle {
+  id          String        @id @default(cuid())
+  code        Int?          @unique
+  title       String
+  content     String        @db.Text
+  category    KbCategory
+  tags        String?
+  active      Boolean       @default(true)
+  attachments KbAttachment[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("kb_articles")
+}
+
+model KbAttachment {
+  id        String    @id @default(cuid())
+  articleId String
+  article   KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  data      String    @db.Text
+  createdAt DateTime  @default(now())
+
+  @@map("kb_attachments")
+}
+
+model KbQuery {
+  id        String   @id @default(cuid())
+  question  String   @db.Text
+  aiAnswer  String?  @db.Text
+  helpful   Boolean?
+  createdAt DateTime @default(now())
+
+  @@map("kb_queries")
+}
+
+// ─── CRM ────────────────────────────────────────────────────────────────────
+
+enum CrmStage {
+  LEAD
+  PROSPECT
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum CrmActivityType {
+  CALL
+  EMAIL
+  MEETING
+  VISIT
+  TASK
+  NOTE
+}
+
+enum CrmActivityStatus {
+  PENDING
+  DONE
+  CANCELLED
+}
+
+model CrmContact {
+  id           String           @id @default(cuid())
+  code         Int?             @unique
+  name         String
+  email        String?
+  phone        String?
+  position     String?
+  department   String?
+  notes        String?          @db.Text
+  active       Boolean          @default(true)
+  companyId    String
+  company      Company          @relation(fields: [companyId], references: [id])
+  opportunities CrmOpportunity[]
+  activities    CrmActivity[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@map("crm_contacts")
+}
+
+model CrmOpportunity {
+  id            String       @id @default(cuid())
+  code          Int?         @unique
+  title         String
+  description   String?      @db.Text
+  stage         CrmStage     @default(LEAD)
+  value         Decimal?     @db.Decimal(12, 2)
+  probability   Int          @default(0)
+  companyId     String
+  company       Company      @relation(fields: [companyId], references: [id])
+  contactId     String?
+  contact       CrmContact?  @relation(fields: [contactId], references: [id])
+  ownerId       String?
+  owner         User?        @relation("CrmOppOwner", fields: [ownerId], references: [id])
+  expectedClose DateTime?
+  closedAt      DateTime?
+  notes         String?      @db.Text
+  activities    CrmActivity[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("crm_opportunities")
+}
+
+model CrmActivity {
+  id             String            @id @default(cuid())
+  code           Int?              @unique
+  type           CrmActivityType
+  title          String
+  description    String?           @db.Text
+  status         CrmActivityStatus @default(PENDING)
+  companyId      String?
+  company        Company?          @relation(fields: [companyId], references: [id])
+  contactId      String?
+  contact        CrmContact?       @relation(fields: [contactId], references: [id])
+  opportunityId  String?
+  opportunity    CrmOpportunity?   @relation(fields: [opportunityId], references: [id])
+  userId         String?
+  user           User?             @relation("CrmActUser", fields: [userId], references: [id])
+  scheduledAt    DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@map("crm_activities")
+}
+
+// ─── IMPLANTAÇÕES ────────────────────────────────────────────────────────────
+
+enum ImplantacaoStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  PAUSADO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum ImplantacaoFaseStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+}
+
+model Implantacao {
+  id              String              @id @default(cuid())
+  code            Int?                @unique
+  title           String
+  description     String?             @db.Text
+  status          ImplantacaoStatus   @default(PENDENTE)
+  companyId       String
+  company         Company             @relation(fields: [companyId], references: [id])
+  responsibleId   String?
+  responsible     User?               @relation("ImplantacaoResponsavel", fields: [responsibleId], references: [id])
+  technicianId    String?
+  technician      Technician?         @relation(fields: [technicianId], references: [id])
+  employeeId      String?
+  employee        Employee?           @relation("ImplantacaoEmployee", fields: [employeeId], references: [id])
+  startDate       DateTime?
+  expectedEnd     DateTime?
+  completedAt     DateTime?
+  notes           String?             @db.Text
+  fases           ImplantacaoFase[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("implantacoes")
+}
+
+model ImplantacaoFase {
+  id             String                @id @default(cuid())
+  implantacaoId  String
+  implantacao    Implantacao           @relation(fields: [implantacaoId], references: [id], onDelete: Cascade)
+  order          Int
+  title          String
+  description    String?               @db.Text
+  status         ImplantacaoFaseStatus @default(PENDENTE)
+  employeeIds         String?               @db.Text
+  etapaTreinamentoId  String?               @db.Text
+  completedAt         DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@map("implantacao_fases")
+}
+
+// ─── TREINAMENTOS ─────────────────────────────────────────────────────────────
+
+enum TreinamentoTipo {
+  PRESENCIAL
+  REMOTO
+  HIBRIDO
+}
+
+enum TreinamentoStatus {
+  AGENDADO
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Treinamento {
+  id           String                    @id @default(cuid())
+  code         Int?                      @unique
+  title        String
+  description  String?                   @db.Text
+  tipo         TreinamentoTipo           @default(PRESENCIAL)
+  status       TreinamentoStatus         @default(AGENDADO)
+  companyId    String?
+  company      Company?                  @relation(fields: [companyId], references: [id])
+  trainerId    String?
+  trainer      User?                     @relation("TreinamentoTrainer", fields: [trainerId], references: [id])
+  scheduledAt  DateTime?
+  duration     Int?
+  location     String?
+  meetingLink  String?
+  notes        String?                   @db.Text
+  completedAt  DateTime?
+  participantes TreinamentoParticipante[]
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@map("treinamentos")
+}
+
+model TreinamentoParticipante {
+  id             String      @id @default(cuid())
+  treinamentoId  String
+  treinamento    Treinamento @relation(fields: [treinamentoId], references: [id], onDelete: Cascade)
+  employeeId     String?
+  employee       Employee?   @relation(fields: [employeeId], references: [id])
+  name           String?
+  email          String?
+  attended       Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  @@map("treinamento_participantes")
+}
+
+enum VisitaStatus {
+  AGENDADA
+  REALIZADA
+  CANCELADA
+}
+
+// ─── AGENDA TÉCNICA ──────────────────────────────────────────────────────────
+
+model AgendaVisita {
+  id        String   @id @default(cuid())
+  tecnico   String
+  cliente   String
+  tipo      String?
+  data      String?
+  mes       String?
+  obs       String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agenda_visitas")
+}
+
+model AgendaPlantao {
+  id        String   @id @default(cuid())
+  data      String?
+  tecnico   String
+  tipo      String?
+  aba       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agenda_plantoes")
+}
+
+model AgendaFerias {
+  id          String   @id @default(cuid())
+  colaborador String
+  mes         String?
+  periodo     String?
+  tipo        String?
+  equipe      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("agenda_ferias")
+}
+
+model AgendaTecnico {
+  id         String   @id @default(cuid())
+  nome       String
+  equipe     String?
+  modalidade String?
+  horario    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("agenda_tecnicos")
+}
+
+// ─── MÓDULOS E ETAPAS DE TREINAMENTO ─────────────────────────────────────────
+
+model ModuloTreinamento {
+  id          String             @id @default(cuid())
+  name        String
+  description String?            @db.Text
+  order       Int?
+  active      Boolean            @default(true)
+  etapas      EtapaTreinamento[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("modulos_treinamento")
+}
+
+model EtapaTreinamento {
+  id          String             @id @default(cuid())
+  title       String
+  description String?            @db.Text
+  moduloId    String?
+  modulo      ModuloTreinamento? @relation(fields: [moduloId], references: [id])
+  order       Int?
+  active      Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("etapas_treinamento")
+}
+
+model Visita {
+  id              String       @id @default(cuid())
+  code            Int?         @unique @default(autoincrement())
+  title           String
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id])
+  technicianId    String?
+  technician      Technician?  @relation(fields: [technicianId], references: [id])
+  employeeId      String?
+  employee        Employee?    @relation("VisitaEmployee", fields: [employeeId], references: [id])
+  visitDate       DateTime
+  status          VisitaStatus @default(REALIZADA)
+  objectives      String?      @db.Text
+  topicConfig     Boolean      @default(false)
+  topicConfigDesc String?      @db.Text
+  topicTreino     Boolean      @default(false)
+  topicTreinoDesc String?      @db.Text
+  topicTreinoMods String?      @db.Text
+  topicTreinoEmps String?      @db.Text
+  topicOutros     Boolean      @default(false)
+  topicOutrosDesc String?      @db.Text
+  conclusions     String?      @db.Text
+  nextSteps       String?      @db.Text
+  createdById     String
+  createdBy       User         @relation("VisitaCreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("visitas")
+}
