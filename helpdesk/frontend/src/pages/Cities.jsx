@@ -377,21 +377,7 @@ export default function Cities() {
     </div>
   );
 }
-, ' onClick={e => e.stopPropagation()}<Space size={4}' }
-    else { $m.Value }
-  
-          <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(r)} />
-          </Tooltip>
-          <Tooltip title="Excluir">
-            <Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={() => setDeleteModal(r)} />
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ].filter(Boolean);
 
-  return (
     <div className="page-wrap">
       <div className="page-header">
         <div>
