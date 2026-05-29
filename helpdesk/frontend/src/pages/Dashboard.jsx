@@ -424,7 +424,7 @@ export default function Dashboard() {
           {loadV ? <Skeleton active paragraph={{ rows: 6 }} /> : volume.length === 0 ? (
             <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cl-text-dim)', fontSize: 13 }}>Sem dados no período</div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={260} style={{ outline: 'none' }}>
               <LineChart data={volume} margin={{ top: 4, right: 8, bottom: 0, left: -20 }} style={{ outline: 'none' }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={cc.grid} />
                 <XAxis dataKey="date" tickFormatter={v => dayjs(v).format('DD/MM')} tick={{ fill: cc.text, fontSize: 11 }} tickLine={false} axisLine={false} />
@@ -544,7 +544,7 @@ export default function Dashboard() {
           )}
         </div>
         {loadP ? <Skeleton active paragraph={{ rows: 5 }} /> : (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={200} style={{ outline: 'none' }}>
             <BarChart data={peakHours} margin={{ top: 4, right: 8, bottom: 0, left: -20 }} barCategoryGap="25%" style={{ outline: 'none' }}>
               <CartesianGrid strokeDasharray="3 3" stroke={cc.grid} vertical={false} />
               <XAxis dataKey="hour" tick={{ fill: cc.text, fontSize: 10 }} tickLine={false} axisLine={false} interval={1} />

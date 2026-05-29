@@ -776,6 +776,21 @@ input:-webkit-autofill { animation-name: none !important; background-color: tran
 /* Arredondar bordas de todos os campos textarea (TextArea do Ant Design) */
 textarea.ant-input { border-radius: 8px !important; }
 
-/* Remove focus outline on Recharts SVG elements */
+/* Remove ALL outlines/borders from Recharts chart elements */
+.recharts-wrapper,
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-wrapper svg,
 .recharts-wrapper svg:focus,
-.recharts-wrapper:focus { outline: none; }
+.recharts-wrapper svg:focus-visible,
+.recharts-surface,
+.recharts-surface:focus,
+.recharts-layer,
+.recharts-layer:focus {
+  outline: none !important;
+  border: none !important;
+}
+/* Remove filled rectangle cursor overlay on BarCharts (keep line cursor on LineCharts) */
+.recharts-rectangle.recharts-tooltip-cursor {
+  display: none !important;
+}

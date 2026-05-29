@@ -123,11 +123,11 @@ function Dashboard({ contacts, opportunities, activities }) {
           <div style={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 10, padding: '16px' }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text-soft)', marginBottom: 12 }}>Oportunidades por Estágio</div>
             {opportunities.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sem oportunidades" /> : (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stageData} barSize={28}>
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--cl-text-muted)' }} />
-                  <YAxis tick={{ fontSize: 11, fill: 'var(--cl-text-muted)' }} allowDecimals={false} />
-                  <RTooltip contentStyle={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 8, fontSize: 12 }} />
+              <ResponsiveContainer width="100%" height={200} style={{ outline: 'none' }}>
+                <BarChart data={stageData} barSize={28} style={{ outline: 'none' }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--cl-text-muted)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--cl-text-muted)' }} allowDecimals={false} axisLine={false} tickLine={false} />
+                  <RTooltip contentStyle={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 8, fontSize: 12 }} cursor={false} />
                   <Bar dataKey="count" name="Qtd." radius={[4, 4, 0, 0]}>
                     {stageData.map((e, i) => <Cell key={i} fill={e.fill} />)}
                   </Bar>
@@ -140,9 +140,9 @@ function Dashboard({ contacts, opportunities, activities }) {
           <div style={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 10, padding: '16px', height: '100%' }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text-soft)', marginBottom: 12 }}>Atividades por Tipo</div>
             {actData.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sem atividades" /> : (
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={actData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+              <ResponsiveContainer width="100%" height={200} style={{ outline: 'none' }}>
+                <PieChart style={{ outline: 'none' }}>
+                  <Pie data={actData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} strokeWidth={0}>
                     {actData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                   <RTooltip contentStyle={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 8, fontSize: 12 }} />
