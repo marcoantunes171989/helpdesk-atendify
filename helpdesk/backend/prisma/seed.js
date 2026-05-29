@@ -12,7 +12,10 @@ async function main() {
       cnpj: '00.000.000/0001-00',
       email: 'contato@empresademo.com.br',
       phone: '(11) 99999-9999',
-      address: 'Rua das Flores, 123 - São Paulo/SP',
+      street: 'Rua das Flores',
+      addressNumber: '123',
+      city: 'São Paulo',
+      state: 'SP',
     },
   });
 
@@ -26,7 +29,6 @@ async function main() {
       email: 'superadmin@helpdesk.com',
       password: hash,
       role: 'SUPER_ADMIN',
-      companyId: company.id,
     },
   });
 
@@ -38,7 +40,6 @@ async function main() {
       email: 'admin@empresademo.com.br',
       password: hash,
       role: 'ADMIN',
-      companyId: company.id,
     },
   });
 
@@ -50,7 +51,6 @@ async function main() {
       email: 'agente@empresademo.com.br',
       password: hash,
       role: 'AGENT',
-      companyId: company.id,
     },
   });
 
@@ -62,7 +62,6 @@ async function main() {
       email: 'cliente@empresademo.com.br',
       password: hash,
       role: 'CLIENT',
-      companyId: company.id,
     },
   });
 
@@ -73,9 +72,9 @@ async function main() {
     { name: 'RH', description: 'Recursos humanos e benefícios', slaHours: 48 },
   ];
   for (const cat of cats) {
-    const existing = await prisma.category.findFirst({ where: { name: cat.name, companyId: company.id } });
+    const existing = await prisma.category.findFirst({ where: { name: cat.name } });
     if (!existing) {
-      await prisma.category.create({ data: { ...cat, companyId: company.id } });
+      await prisma.category.create({ data: cat });
     }
   }
 

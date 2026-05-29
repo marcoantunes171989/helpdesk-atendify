@@ -630,7 +630,8 @@ export default function Treinamentos() {
               <Form.Item name="companyId" label="Empresa">
                 <Select placeholder="Selecione (opcional)" allowClear showSearch
                   filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                  size="large">
+                  size="large"
+                  onChange={() => setNewParticipante(prev => ({ ...prev, employeeId: '' }))}>
                   {companies.map(c => <Option key={c.id} value={c.id}>{c.fantasia || c.name}</Option>)}
                 </Select>
               </Form.Item>
@@ -693,24 +694,35 @@ export default function Treinamentos() {
                 );
               })}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 16 }}>
-              <Select
-                placeholder="Funcionário (opcional)"
-                allowClear showSearch
-                value={newParticipante.employeeId || undefined}
-                onChange={v => setNewParticipante(prev => ({ ...prev, employeeId: v || '' }))}
-                filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-              >
-                {employees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
-              </Select>
-              <Input
-                placeholder="Ou nome livre"
-                value={newParticipante.name}
-                onChange={e => setNewParticipante(prev => ({ ...prev, name: e.target.value }))}
-                disabled={!!newParticipante.employeeId}
-              />
-              <Button icon={<UserAddOutlined />} onClick={addParticipante}>Adicionar</Button>
-            </div>
+            <Form.Item noStyle shouldUpdate={(prev, cur) => prev.companyId !== cur.companyId}>
+              {({ getFieldValue }) => {
+                const selectedCompanyId = getFieldValue('companyId');
+                const filteredEmployees = selectedCompanyId
+                  ? employees.filter(e => e.companyId === selectedCompanyId)
+                  : employees;
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 16 }}>
+                    <Select
+                      placeholder={selectedCompanyId ? 'Funcionário da empresa' : 'Funcionário (opcional)'}
+                      allowClear showSearch
+                      value={newParticipante.employeeId || undefined}
+                      onChange={v => setNewParticipante(prev => ({ ...prev, employeeId: v || '' }))}
+                      filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                      notFoundContent={selectedCompanyId ? 'Nenhum funcionário nesta empresa' : 'Nenhum funcionário encontrado'}
+                    >
+                      {filteredEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
+                    </Select>
+                    <Input
+                      placeholder="Ou nome livre"
+                      value={newParticipante.name}
+                      onChange={e => setNewParticipante(prev => ({ ...prev, name: e.target.value }))}
+                      disabled={!!newParticipante.employeeId}
+                    />
+                    <Button icon={<UserAddOutlined />} onClick={addParticipante}>Adicionar</Button>
+                  </div>
+                );
+              }}
+            </Form.Item>
 
             <Form.Item name="notes" label="Observações">
               <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
