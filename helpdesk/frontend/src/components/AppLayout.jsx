@@ -88,11 +88,15 @@ export default function AppLayout() {
   const SidebarContent = (
     <div className="app-sidebar" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Logo */}
-      <div style={{
-        height: 64, display: 'flex', alignItems: 'center',
-        padding: collapsed && !isMobile ? '0 24px' : '0 20px',
-        borderBottom: '1px solid var(--cl-border)', gap: 10, flexShrink: 0,
-      }}>
+      <div
+        onClick={() => navigate('/app')}
+        style={{
+          height: 64, display: 'flex', alignItems: 'center',
+          padding: collapsed && !isMobile ? '0 24px' : '0 20px',
+          borderBottom: '1px solid var(--cl-border)', gap: 10, flexShrink: 0,
+          cursor: 'pointer',
+        }}
+      >
         <div style={{
           width: 32, height: 32, borderRadius: 8,
           background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
