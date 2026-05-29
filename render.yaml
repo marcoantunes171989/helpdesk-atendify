@@ -5,7 +5,7 @@ services:
     rootDir: backend
     plan: free
     buildCommand: npm install && npx prisma generate
-    startCommand: npx prisma migrate deploy && node prisma/setup-triggers.js && node prisma/seed.js && node src/app.js
+    startCommand: npx prisma migrate deploy && node prisma/setup-triggers.js && (node prisma/seed.js || true) && node src/app.js
     envVars:
       - key: DATABASE_URL
         sync: false
