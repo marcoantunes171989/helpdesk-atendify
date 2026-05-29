@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import {
   Table, Button, Modal, Form, Input, Space, Tag, Switch,
   Select, message, Tooltip,
@@ -109,10 +109,10 @@ export default function EtapasTreinamento() {
       sorter: (a, b) => (a.order ?? 999) - (b.order ?? 999),
       render: v => v != null
         ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa' }}>{String(v).padStart(2, '0')}</span>
-        : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
+        : <span style={{ color: 'var(--cl-text-dim)' }}>â€”</span>,
     },
     {
-      title: 'Etapa / Módulo',
+      title: 'Etapa / MÃ³dulo',
       dataIndex: 'title',
       sorter: (a, b) => a.title.localeCompare(b.title, 'pt-BR'),
       render: (title, r) => (
@@ -128,16 +128,16 @@ export default function EtapasTreinamento() {
       ),
     },
     {
-      title: 'Módulo',
+      title: 'MÃ³dulo',
       dataIndex: ['modulo', 'name'],
       width: 180,
       sorter: (a, b) => (a.modulo?.name || '').localeCompare(b.modulo?.name || '', 'pt-BR'),
       render: (name) => name
         ? <Tag color="blue" style={{ borderRadius: 6, fontWeight: 600, fontSize: 11 }}>{name}</Tag>
-        : <span style={{ color: 'var(--cl-text-dim)', fontSize: 12 }}>—</span>,
+        : <span style={{ color: 'var(--cl-text-dim)', fontSize: 12 }}>â€”</span>,
     },
     {
-      title: 'Situação',
+      title: 'SituaÃ§Ã£o',
       dataIndex: 'active',
       width: 100,
       render: v => (
@@ -151,7 +151,7 @@ export default function EtapasTreinamento() {
       key: 'actions',
       width: 80,
       render: (_, record) => (
-        <Space size={4}>
+        <Space size={4} onClick={e => e.stopPropagation()}>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -185,14 +185,14 @@ export default function EtapasTreinamento() {
       <div className="filter-bar" style={{ display: 'flex', gap: 12 }}>
         <Input
           prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
-          placeholder="Buscar por título, descrição ou módulo..."
+          placeholder="Buscar por tÃ­tulo, descriÃ§Ã£o ou mÃ³dulo..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ flex: 1 }}
         />
         <Select
-          placeholder="Filtrar por módulo"
+          placeholder="Filtrar por mÃ³dulo"
           allowClear
           value={filterModulo || undefined}
           onChange={v => setFilterModulo(v || '')}
@@ -213,10 +213,11 @@ export default function EtapasTreinamento() {
           size="middle"
           scroll={{ x: 600 }}
           pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} etapa${t !== 1 ? 's' : ''}` }}
+          onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
-      {/* Modal — Cadastro / Edição */}
+      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -235,25 +236,25 @@ export default function EtapasTreinamento() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space>
+          <Space onClick={e => e.stopPropagation()}>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
             </Button>
           </Space>
         }
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="title" label="Título da Etapa"
-              rules={[{ required: true, message: 'Informe o título' }]}>
-              <Input placeholder="Ex: Cadastro de Produtos, Programação de Oferta..." size="large" />
+            <Form.Item name="title" label="TÃ­tulo da Etapa"
+              rules={[{ required: true, message: 'Informe o tÃ­tulo' }]}>
+              <Input placeholder="Ex: Cadastro de Produtos, ProgramaÃ§Ã£o de Oferta..." size="large" />
             </Form.Item>
 
-            <Form.Item name="moduloId" label="Módulo">
+            <Form.Item name="moduloId" label="MÃ³dulo">
               <Select
-                placeholder="Selecione o módulo"
+                placeholder="Selecione o mÃ³dulo"
                 allowClear
                 showSearch
                 size="large"
@@ -263,13 +264,13 @@ export default function EtapasTreinamento() {
               </Select>
             </Form.Item>
 
-            <Form.Item name="description" label="Descrição / Observação">
-              <Input.TextArea rows={3} placeholder="Descreva o que é realizado nesta etapa..."
+            <Form.Item name="description" label="DescriÃ§Ã£o / ObservaÃ§Ã£o">
+              <Input.TextArea rows={3} placeholder="Descreva o que Ã© realizado nesta etapa..."
                 style={{ resize: 'none' }} />
             </Form.Item>
 
             {editing && (
-              <Form.Item name="active" label="Situação" valuePropName="checked">
+              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
                 <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
               </Form.Item>
             )}
@@ -277,7 +278,7 @@ export default function EtapasTreinamento() {
         </div>
       </Modal>
 
-      {/* Modal — Confirmar exclusão */}
+      {/* Modal â€” Confirmar exclusÃ£o */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -288,7 +289,7 @@ export default function EtapasTreinamento() {
           </div>
         }
         footer={
-          <Space>
+          <Space onClick={e => e.stopPropagation()}>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
             <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>Remover</Button>
           </Space>
@@ -296,7 +297,162 @@ export default function EtapasTreinamento() {
       >
         {deleteModal && (
           <p style={{ padding: '8px 0', margin: 0 }}>
-            Remover <strong>{deleteModal.title}</strong>? Esta ação não pode ser desfeita.
+            Remover <strong>{deleteModal.title}</strong>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+          </p>
+        )}
+      </Modal>
+    </div>
+  );
+}
+, ' onClick={e => e.stopPropagation()}<Space size={4}' }
+    else { $m.Value }
+  
+          <Tooltip title="Editar">
+            <Button type="text" icon={<EditOutlined />} size="small"
+              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+          </Tooltip>
+          <Tooltip title="Remover">
+            <Button type="text" icon={<DeleteOutlined />} size="small" danger
+              onClick={() => setDeleteModal({ id: record.id, title: record.title })} />
+          </Tooltip>
+        </Space>
+      ),
+    }] : []),
+  ];
+
+  return (
+    <div className="page-wrap">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Etapas de Treinamento</h1>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
+            {filtered.length} etapa{filtered.length !== 1 ? 's' : ''} cadastrada{filtered.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        {canEdit && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
+            style={{ borderRadius: 8, fontWeight: 600 }}>
+            Nova Etapa
+          </Button>
+        )}
+      </div>
+
+      <div className="filter-bar" style={{ display: 'flex', gap: 12 }}>
+        <Input
+          prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
+          placeholder="Buscar por tÃ­tulo, descriÃ§Ã£o ou mÃ³dulo..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <Select
+          placeholder="Filtrar por mÃ³dulo"
+          allowClear
+          value={filterModulo || undefined}
+          onChange={v => setFilterModulo(v || '')}
+          style={{ width: 220 }}
+          showSearch
+          filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+        >
+          {modulos.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
+        </Select>
+      </div>
+
+      <div className="page-table-wrap">
+        <Table
+          dataSource={filtered}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          size="middle"
+          scroll={{ x: 600 }}
+          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} etapa${t !== 1 ? 's' : ''}` }}
+          onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
+        />
+      </div>
+
+      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.12)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <UnorderedListOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>
+              {editing ? 'Editar Etapa' : 'Nova Etapa de Treinamento'}
+            </span>
+          </div>
+        }
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        centered
+        width={560}
+        styles={{ body: { padding: '24px 0 8px' } }}
+        footer={
+          <Space onClick={e => e.stopPropagation()}>
+            <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} onClick={() => form.submit()}
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+            </Button>
+          </Space>
+        }
+      >
+        <div style={{ padding: '0 24px' }}>
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item name="title" label="TÃ­tulo da Etapa"
+              rules={[{ required: true, message: 'Informe o tÃ­tulo' }]}>
+              <Input placeholder="Ex: Cadastro de Produtos, ProgramaÃ§Ã£o de Oferta..." size="large" />
+            </Form.Item>
+
+            <Form.Item name="moduloId" label="MÃ³dulo">
+              <Select
+                placeholder="Selecione o mÃ³dulo"
+                allowClear
+                showSearch
+                size="large"
+                filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+              >
+                {modulos.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="description" label="DescriÃ§Ã£o / ObservaÃ§Ã£o">
+              <Input.TextArea rows={3} placeholder="Descreva o que Ã© realizado nesta etapa..."
+                style={{ resize: 'none' }} />
+            </Form.Item>
+
+            {editing && (
+              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
+                <Switch checkedChildren="Ativa" unCheckedChildren="Inativa" />
+              </Form.Item>
+            )}
+          </Form>
+        </div>
+      </Modal>
+
+      {/* Modal â€” Confirmar exclusÃ£o */}
+      <Modal
+        open={!!deleteModal}
+        onCancel={() => setDeleteModal(null)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Remover etapa</span>
+          </div>
+        }
+        footer={
+          <Space onClick={e => e.stopPropagation()}>
+            <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>Remover</Button>
+          </Space>
+        }
+      >
+        {deleteModal && (
+          <p style={{ padding: '8px 0', margin: 0 }}>
+            Remover <strong>{deleteModal.title}</strong>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.
           </p>
         )}
       </Modal>

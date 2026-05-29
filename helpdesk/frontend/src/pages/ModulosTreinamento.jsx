@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import {
   Table, Button, Modal, Form, Input, Space, Tag, Switch,
   message, Tooltip,
@@ -60,10 +60,10 @@ export default function ModulosTreinamento() {
     try {
       if (editing) {
         await moduloTreinamentoService.update(editing.id, values);
-        message.success('Módulo atualizado');
+        message.success('MÃ³dulo atualizado');
       } else {
         await moduloTreinamentoService.create(values);
-        message.success('Módulo cadastrado');
+        message.success('MÃ³dulo cadastrado');
       }
       setModalOpen(false);
       load();
@@ -78,7 +78,7 @@ export default function ModulosTreinamento() {
     setDeleteLoading(true);
     try {
       await moduloTreinamentoService.remove(deleteModal.id);
-      message.success('Módulo removido');
+      message.success('MÃ³dulo removido');
       setDeleteModal(null);
       load();
     } catch (err) {
@@ -96,10 +96,10 @@ export default function ModulosTreinamento() {
       sorter: (a, b) => (a.order ?? 999) - (b.order ?? 999),
       render: v => v != null
         ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa' }}>{String(v).padStart(2, '0')}</span>
-        : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
+        : <span style={{ color: 'var(--cl-text-dim)' }}>â€”</span>,
     },
     {
-      title: 'Módulo',
+      title: 'MÃ³dulo',
       dataIndex: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (name, r) => (
@@ -119,7 +119,7 @@ export default function ModulosTreinamento() {
       render: v => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{v ?? 0}</span>,
     },
     {
-      title: 'Situação',
+      title: 'SituaÃ§Ã£o',
       dataIndex: 'active',
       width: 100,
       render: v => (
@@ -133,7 +133,7 @@ export default function ModulosTreinamento() {
       key: 'actions',
       width: 80,
       render: (_, record) => (
-        <Space size={4}>
+        <Space size={4} onClick={e => e.stopPropagation()}>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -151,15 +151,15 @@ export default function ModulosTreinamento() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Módulos de Treinamento</h1>
+          <h1 className="page-title">MÃ³dulos de Treinamento</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filtered.length} módulo{filtered.length !== 1 ? 's' : ''} cadastrado{filtered.length !== 1 ? 's' : ''}
+            {filtered.length} mÃ³dulo{filtered.length !== 1 ? 's' : ''} cadastrado{filtered.length !== 1 ? 's' : ''}
           </p>
         </div>
         {canEdit && (
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
             style={{ borderRadius: 8, fontWeight: 600 }}>
-            Novo Módulo
+            Novo MÃ³dulo
           </Button>
         )}
       </div>
@@ -167,7 +167,7 @@ export default function ModulosTreinamento() {
       <div className="filter-bar">
         <Input
           prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
-          placeholder="Buscar por nome ou descrição..."
+          placeholder="Buscar por nome ou descriÃ§Ã£o..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -183,11 +183,12 @@ export default function ModulosTreinamento() {
           loading={loading}
           size="middle"
           scroll={{ x: 500 }}
-          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} módulo${t !== 1 ? 's' : ''}` }}
+          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} mÃ³dulo${t !== 1 ? 's' : ''}` }}
+          onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
-      {/* Modal — Cadastro / Edição */}
+      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -196,7 +197,7 @@ export default function ModulosTreinamento() {
               <AppstoreAddOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
-              {editing ? 'Editar Módulo' : 'Novo Módulo de Treinamento'}
+              {editing ? 'Editar MÃ³dulo' : 'Novo MÃ³dulo de Treinamento'}
             </span>
           </div>
         }
@@ -206,27 +207,27 @@ export default function ModulosTreinamento() {
         width={520}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space>
+          <Space onClick={e => e.stopPropagation()}>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
             </Button>
           </Space>
         }
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="name" label="Nome do Módulo"
+            <Form.Item name="name" label="Nome do MÃ³dulo"
               rules={[{ required: true, message: 'Informe o nome' }]}>
               <Input placeholder="Ex: PDV, Estoque, Financeiro..." size="large" />
             </Form.Item>
-            <Form.Item name="description" label="Descrição">
-              <Input.TextArea rows={3} placeholder="Descreva o conteúdo deste módulo..."
+            <Form.Item name="description" label="DescriÃ§Ã£o">
+              <Input.TextArea rows={3} placeholder="Descreva o conteÃºdo deste mÃ³dulo..."
                 style={{ resize: 'none' }} />
             </Form.Item>
             {editing && (
-              <Form.Item name="active" label="Situação" valuePropName="checked">
+              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
                 <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
               </Form.Item>
             )}
@@ -234,18 +235,18 @@ export default function ModulosTreinamento() {
         </div>
       </Modal>
 
-      {/* Modal — Confirmar exclusão */}
+      {/* Modal â€” Confirmar exclusÃ£o */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
-            <span style={{ fontWeight: 700 }}>Remover módulo</span>
+            <span style={{ fontWeight: 700 }}>Remover mÃ³dulo</span>
           </div>
         }
         footer={
-          <Space>
+          <Space onClick={e => e.stopPropagation()}>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
             <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
               Remover
@@ -256,12 +257,152 @@ export default function ModulosTreinamento() {
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ marginBottom: deleteModal.etapas > 0 ? 12 : 0 }}>
-              Remover o módulo <strong>{deleteModal.name}</strong>? Esta ação não pode ser desfeita.
+              Remover o mÃ³dulo <strong>{deleteModal.name}</strong>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.
             </p>
             {deleteModal.etapas > 0 && (
               <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
                 borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
-                Atenção: {deleteModal.etapas} etapa{deleteModal.etapas !== 1 ? 's' : ''} perderá o vínculo com este módulo.
+                AtenÃ§Ã£o: {deleteModal.etapas} etapa{deleteModal.etapas !== 1 ? 's' : ''} perderÃ¡ o vÃ­nculo com este mÃ³dulo.
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
+, ' onClick={e => e.stopPropagation()}<Space size={4}' }
+    else { $m.Value }
+  
+          <Tooltip title="Editar">
+            <Button type="text" icon={<EditOutlined />} size="small"
+              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+          </Tooltip>
+          <Tooltip title="Remover">
+            <Button type="text" icon={<DeleteOutlined />} size="small" danger
+              onClick={() => setDeleteModal({ id: record.id, name: record.name, etapas: record._count?.etapas ?? 0 })} />
+          </Tooltip>
+        </Space>
+      ),
+    }] : []),
+  ];
+
+  return (
+    <div className="page-wrap">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">MÃ³dulos de Treinamento</h1>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
+            {filtered.length} mÃ³dulo{filtered.length !== 1 ? 's' : ''} cadastrado{filtered.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        {canEdit && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
+            style={{ borderRadius: 8, fontWeight: 600 }}>
+            Novo MÃ³dulo
+          </Button>
+        )}
+      </div>
+
+      <div className="filter-bar">
+        <Input
+          prefix={<SearchOutlined style={{ color: 'var(--cl-text-dim)' }} />}
+          placeholder="Buscar por nome ou descriÃ§Ã£o..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: '100%' }}
+        />
+      </div>
+
+      <div className="page-table-wrap">
+        <Table
+          dataSource={filtered}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          size="middle"
+          scroll={{ x: 500 }}
+          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: t => `${t} mÃ³dulo${t !== 1 ? 's' : ''}` }}
+          onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
+        />
+      </div>
+
+      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.12)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AppstoreAddOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>
+              {editing ? 'Editar MÃ³dulo' : 'Novo MÃ³dulo de Treinamento'}
+            </span>
+          </div>
+        }
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        centered
+        width={520}
+        styles={{ body: { padding: '24px 0 8px' } }}
+        footer={
+          <Space onClick={e => e.stopPropagation()}>
+            <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} onClick={() => form.submit()}
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+            </Button>
+          </Space>
+        }
+      >
+        <div style={{ padding: '0 24px' }}>
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item name="name" label="Nome do MÃ³dulo"
+              rules={[{ required: true, message: 'Informe o nome' }]}>
+              <Input placeholder="Ex: PDV, Estoque, Financeiro..." size="large" />
+            </Form.Item>
+            <Form.Item name="description" label="DescriÃ§Ã£o">
+              <Input.TextArea rows={3} placeholder="Descreva o conteÃºdo deste mÃ³dulo..."
+                style={{ resize: 'none' }} />
+            </Form.Item>
+            {editing && (
+              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
+                <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
+              </Form.Item>
+            )}
+          </Form>
+        </div>
+      </Modal>
+
+      {/* Modal â€” Confirmar exclusÃ£o */}
+      <Modal
+        open={!!deleteModal}
+        onCancel={() => setDeleteModal(null)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Remover mÃ³dulo</span>
+          </div>
+        }
+        footer={
+          <Space onClick={e => e.stopPropagation()}>
+            <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+              Remover
+            </Button>
+          </Space>
+        }
+      >
+        {deleteModal && (
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ marginBottom: deleteModal.etapas > 0 ? 12 : 0 }}>
+              Remover o mÃ³dulo <strong>{deleteModal.name}</strong>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+            </p>
+            {deleteModal.etapas > 0 && (
+              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
+                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+                AtenÃ§Ã£o: {deleteModal.etapas} etapa{deleteModal.etapas !== 1 ? 's' : ''} perderÃ¡ o vÃ­nculo com este mÃ³dulo.
               </div>
             )}
           </div>

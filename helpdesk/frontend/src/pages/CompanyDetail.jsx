@@ -253,7 +253,9 @@ export default function CompanyDetail() {
                       </Button>
                     </div>
                   )}
-                  <Table dataSource={employees} columns={empColumns} rowKey="id" size="middle" scroll={{ x: 700 }} pagination={{ pageSize: 10 }} />
+                  <Table dataSource={employees} columns={empColumns} rowKey="id" size="middle" scroll={{ x: 700 }} pagination={{ pageSize: 10 }}
+                    onRow={r => ({ onClick: () => openEditEmp(r), style: { cursor: 'pointer' } })}
+                  />
                 </div>
               ),
             },
@@ -262,7 +264,9 @@ export default function CompanyDetail() {
               label: <span><CustomerServiceOutlined /> Chamados ({tickets.length})</span>,
               children: (
                 <div style={{ padding: '16px 0' }}>
-                  <Table dataSource={tickets} columns={ticketColumns} rowKey="id" size="middle" scroll={{ x: 800 }} pagination={{ pageSize: 10 }} />
+                  <Table dataSource={tickets} columns={ticketColumns} rowKey="id" size="middle" scroll={{ x: 800 }} pagination={{ pageSize: 10 }}
+                    onRow={r => ({ onClick: () => navigate(`/app/tickets/${r.id}`), style: { cursor: 'pointer' } })}
+                  />
                 </div>
               ),
             },

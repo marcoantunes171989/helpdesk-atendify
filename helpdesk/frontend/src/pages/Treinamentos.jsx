@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import {
   Button, Modal, Form, Input, Select, Space, Tag, Tooltip,
   message, Table, Drawer, Divider, Checkbox, Badge,
@@ -20,13 +20,13 @@ const { Option } = Select;
 const TIPO_CONFIG = {
   PRESENCIAL: { label: 'Presencial',  color: '#34d399', bg: 'rgba(16,185,129,0.12)',  icon: <EnvironmentOutlined /> },
   REMOTO:     { label: 'Remoto',      color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',   icon: <LaptopOutlined /> },
-  HIBRIDO:    { label: 'Híbrido',     color: '#a78bfa', bg: 'rgba(124,58,237,0.12)',  icon: <TeamOutlined /> },
+  HIBRIDO:    { label: 'HÃ­brido',     color: '#a78bfa', bg: 'rgba(124,58,237,0.12)',  icon: <TeamOutlined /> },
 };
 
 const STATUS_CONFIG = {
   AGENDADO:     { label: 'Agendado',      color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',  icon: <ClockCircleOutlined /> },
   EM_ANDAMENTO: { label: 'Em Andamento',  color: '#fbbf24', bg: 'rgba(217,119,6,0.12)',  icon: <SyncOutlined spin /> },
-  CONCLUIDO:    { label: 'Concluído',     color: '#34d399', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircleOutlined /> },
+  CONCLUIDO:    { label: 'ConcluÃ­do',     color: '#34d399', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircleOutlined /> },
   CANCELADO:    { label: 'Cancelado',     color: '#f87171', bg: 'rgba(220,38,38,0.12)',  icon: <CloseCircleOutlined /> },
 };
 
@@ -68,14 +68,14 @@ function fmtDuration(min) {
 }
 
 function gerarATATreinamento(t) {
-  const fmt = d => d ? new Date(d).toLocaleString('pt-BR') : '—';
+  const fmt = d => d ? new Date(d).toLocaleString('pt-BR') : 'â€”';
   const participantesRows = (t.participantes || []).map(p => {
-    const nome = p.employee?.name || p.name || '—';
-    const cargo = p.employee?.position || p.email || '—';
+    const nome = p.employee?.name || p.name || 'â€”';
+    const cargo = p.employee?.position || p.email || 'â€”';
     return `<tr>
       <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${nome}</td>
       <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">${cargo}</td>
-      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">${p.attended ? '✓ Presente' : 'Ausente'}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">${p.attended ? 'âœ“ Presente' : 'Ausente'}</td>
     </tr>`;
   }).join('');
 
@@ -86,27 +86,27 @@ function gerarATATreinamento(t) {
         <p style="margin:4px 0;color:#555;font-size:14px">Documento gerado em ${new Date().toLocaleString('pt-BR')}</p>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÍTULO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.title}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.company?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;width:35%;font-size:13px">TÃTULO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.title}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">EMPRESA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.company?.name || 'â€”'}</td></tr>
         <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">TIPO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${TIPO_CONFIG[t.tipo]?.label || t.tipo}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">INSTRUTOR</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.trainer?.name || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">INSTRUTOR</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.trainer?.name || 'â€”'}</td></tr>
         <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DATA</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmt(t.scheduledAt)}</td></tr>
-        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DURAÇÃO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmtDuration(t.duration) || '—'}</td></tr>
+        <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">DURAÃ‡ÃƒO</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${fmtDuration(t.duration) || 'â€”'}</td></tr>
         ${t.location ? `<tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">LOCAL</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${t.location}</td></tr>` : ''}
         <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f7f7f7;font-size:13px">STATUS</td><td style="padding:8px 12px;border:1px solid #ddd;font-size:13px">${STATUS_CONFIG[t.status]?.label || t.status}</td></tr>
       </table>
-      ${t.description ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">DESCRIÇÃO / CONTEÚDO</h3><p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${t.description}</p>` : ''}
+      ${t.description ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">DESCRIÃ‡ÃƒO / CONTEÃšDO</h3><p style="font-size:13px;line-height:1.7;margin-bottom:24px;white-space:pre-wrap">${t.description}</p>` : ''}
       ${participantesRows ? `
       <h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">PARTICIPANTES</h3>
       <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
         <thead><tr>
           <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Nome</th>
           <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:left">Cargo / E-mail</th>
-          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:center;width:120px">Presença</th>
+          <th style="padding:8px 10px;border:1px solid #ddd;background:#f7f7f7;font-size:12px;text-align:center;width:120px">PresenÃ§a</th>
         </tr></thead>
         <tbody>${participantesRows}</tbody>
       </table>` : ''}
-      ${t.notes ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">OBSERVAÇÕES</h3><p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${t.notes}</p>` : ''}
+      ${t.notes ? `<h3 style="font-size:14px;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:10px">OBSERVAÃ‡Ã•ES</h3><p style="font-size:13px;line-height:1.7;margin-bottom:40px;white-space:pre-wrap">${t.notes}</p>` : ''}
       <div style="margin-top:60px;display:flex;gap:80px">
         <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${t.trainer?.name || 'Instrutor'}</b><br>Instrutor</div></div>
         <div style="flex:1;text-align:center"><div style="border-top:1px solid #333;padding-top:8px;font-size:12px"><b>${t.company?.name || 'Empresa'}</b><br>Cliente</div></div>
@@ -257,7 +257,7 @@ export default function Treinamentos() {
     setDeleteLoading(true);
     try {
       await treinamentoService.remove(deleteModal.id);
-      message.success('Treinamento excluído');
+      message.success('Treinamento excluÃ­do');
       if (selected?.id === deleteModal.id) { setDetailOpen(false); setSelected(null); }
       setDeleteModal(null);
       load();
@@ -294,12 +294,12 @@ export default function Treinamentos() {
       render: v => <span style={{ fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>#{String(v).padStart(4, '0')}</span>,
     },
     {
-      title: 'Título',
+      title: 'TÃ­tulo',
       dataIndex: 'title',
       render: (title, record) => (
         <div>
           <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{title}</div>
-          <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{record.company?.fantasia || record.company?.name || '—'}</div>
+          <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{record.company?.fantasia || record.company?.name || 'â€”'}</div>
         </div>
       ),
     },
@@ -323,13 +323,13 @@ export default function Treinamentos() {
         <span style={{ fontSize: 12 }}>
           {new Date(v).toLocaleDateString('pt-BR')} {new Date(v).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
         </span>
-      ) : '—',
+      ) : 'â€”',
     },
     {
-      title: 'Duração',
+      title: 'DuraÃ§Ã£o',
       dataIndex: 'duration',
       width: 90,
-      render: v => <span style={{ fontSize: 12 }}>{fmtDuration(v) || '—'}</span>,
+      render: v => <span style={{ fontSize: 12 }}>{fmtDuration(v) || 'â€”'}</span>,
     },
     {
       title: 'Participantes',
@@ -344,14 +344,14 @@ export default function Treinamentos() {
       title: 'Instrutor',
       dataIndex: 'trainer',
       width: 130,
-      render: v => v ? <span style={{ fontSize: 12 }}>{v.name}</span> : '—',
+      render: v => v ? <span style={{ fontSize: 12 }}>{v.name}</span> : 'â€”',
     },
     {
       title: '',
       key: 'actions',
       width: 100,
       render: (_, record) => (
-        <Space size={4}>
+        <Space size={4} onClick={e => e.stopPropagation()}>
           <Tooltip title="Detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
@@ -433,7 +433,7 @@ export default function Treinamentos() {
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
         <Input
-          placeholder="Buscar por título, empresa ou instrutor..."
+          placeholder="Buscar por tÃ­tulo, empresa ou instrutor..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -457,11 +457,12 @@ export default function Treinamentos() {
           loading={loading}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} registros` }}
           size="middle"
+          onRow={record => ({ onClick: () => openDetail(record), style: { cursor: 'pointer' } })}
           locale={{ emptyText: 'Nenhum treinamento encontrado' }}
         />
       </div>
 
-      {/* Drawer — Detalhes */}
+      {/* Drawer â€” Detalhes */}
       <Drawer
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
@@ -483,7 +484,7 @@ export default function Treinamentos() {
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{selected.title}</div>
               </div>
-              <Space>
+              <Space onClick={e => e.stopPropagation()}>
                 <TipoBadge tipo={selected.tipo} />
                 <StatusBadge status={selected.status} />
               </Space>
@@ -500,7 +501,7 @@ export default function Treinamentos() {
                 { label: 'Empresa', value: selected.company?.fantasia || selected.company?.name },
                 { label: 'Instrutor', value: selected.trainer?.name },
                 { label: 'Data', value: selected.scheduledAt ? new Date(selected.scheduledAt).toLocaleString('pt-BR') : null },
-                { label: 'Duração', value: fmtDuration(selected.duration) },
+                { label: 'DuraÃ§Ã£o', value: fmtDuration(selected.duration) },
                 { label: 'Local', value: selected.location },
                 { label: 'Link', value: selected.meetingLink, link: true },
               ].filter(i => i.value).map(item => (
@@ -521,7 +522,7 @@ export default function Treinamentos() {
               <>
                 <Divider style={{ margin: '16px 0' }} />
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 12 }}>
-                  Participantes — {selected.participantes.filter(p => p.attended).length}/{selected.participantes.length} presentes
+                  Participantes â€” {selected.participantes.filter(p => p.attended).length}/{selected.participantes.length} presentes
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {selected.participantes.map(p => {
@@ -560,7 +561,7 @@ export default function Treinamentos() {
             {selected.notes && (
               <>
                 <Divider style={{ margin: '16px 0' }} />
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 8 }}>Observações</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 8 }}>ObservaÃ§Ãµes</div>
                 <p style={{ fontSize: 13, color: 'var(--cl-text)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selected.notes}</p>
               </>
             )}
@@ -583,7 +584,7 @@ export default function Treinamentos() {
         )}
       </Drawer>
 
-      {/* Modal — Criar / Editar */}
+      {/* Modal â€” Criar / Editar */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -598,19 +599,19 @@ export default function Treinamentos() {
         centered width={720}
         styles={{ body: { padding: '24px 0 8px', maxHeight: '70vh', overflowY: 'auto' } }}
         footer={
-          <Space>
+          <Space onClick={e => e.stopPropagation()}>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
             </Button>
           </Space>
         }
       >
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-              <Input placeholder="Título do treinamento" size="large" />
+            <Form.Item name="title" label="TÃ­tulo" rules={[{ required: true }]}>
+              <Input placeholder="TÃ­tulo do treinamento" size="large" />
             </Form.Item>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -648,7 +649,7 @@ export default function Treinamentos() {
               <Form.Item name="scheduledAt" label="Data e Hora">
                 <Input type="datetime-local" size="large" />
               </Form.Item>
-              <Form.Item name="duration" label="Duração (minutos)">
+              <Form.Item name="duration" label="DuraÃ§Ã£o (minutos)">
                 <Input type="number" min={1} placeholder="Ex: 60" size="large" />
               </Form.Item>
             </div>
@@ -660,11 +661,11 @@ export default function Treinamentos() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     {tipo !== 'REMOTO' && (
                       <Form.Item name="location" label="Local">
-                        <Input placeholder="Endereço ou sala" size="large" />
+                        <Input placeholder="EndereÃ§o ou sala" size="large" />
                       </Form.Item>
                     )}
                     {tipo !== 'PRESENCIAL' && (
-                      <Form.Item name="meetingLink" label="Link da Reunião">
+                      <Form.Item name="meetingLink" label="Link da ReuniÃ£o">
                         <Input placeholder="https://meet.google.com/..." size="large" />
                       </Form.Item>
                     )}
@@ -673,15 +674,15 @@ export default function Treinamentos() {
               }}
             </Form.Item>
 
-            <Form.Item name="description" label="Descrição">
-              <TextArea rows={3} placeholder="Objetivos e conteúdo programático..." style={{ resize: 'vertical' }} />
+            <Form.Item name="description" label="DescriÃ§Ã£o">
+              <TextArea rows={3} placeholder="Objetivos e conteÃºdo programÃ¡tico..." style={{ resize: 'vertical' }} />
             </Form.Item>
 
             {/* Participantes */}
             <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Participantes</Divider>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
               {participantesForm.map((p, idx) => {
-                const nome = employees.find(e => e.id === p.employeeId)?.name || p.name || '—';
+                const nome = employees.find(e => e.id === p.employeeId)?.name || p.name || 'â€”';
                 return (
                   <div key={idx} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -703,12 +704,12 @@ export default function Treinamentos() {
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 16 }}>
                     <Select
-                      placeholder={selectedCompanyId ? 'Funcionário da empresa' : 'Funcionário (opcional)'}
+                      placeholder={selectedCompanyId ? 'FuncionÃ¡rio da empresa' : 'FuncionÃ¡rio (opcional)'}
                       allowClear showSearch
                       value={newParticipante.employeeId || undefined}
                       onChange={v => setNewParticipante(prev => ({ ...prev, employeeId: v || '' }))}
                       filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
-                      notFoundContent={selectedCompanyId ? 'Nenhum funcionário nesta empresa' : 'Nenhum funcionário encontrado'}
+                      notFoundContent={selectedCompanyId ? 'Nenhum funcionÃ¡rio nesta empresa' : 'Nenhum funcionÃ¡rio encontrado'}
                     >
                       {filteredEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
                     </Select>
@@ -724,14 +725,14 @@ export default function Treinamentos() {
               }}
             </Form.Item>
 
-            <Form.Item name="notes" label="Observações">
+            <Form.Item name="notes" label="ObservaÃ§Ãµes">
               <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
             </Form.Item>
           </Form>
         </div>
       </Modal>
 
-      {/* Modal — Excluir */}
+      {/* Modal â€” Excluir */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -753,7 +754,419 @@ export default function Treinamentos() {
         {deleteModal && (
           <p style={{ padding: '8px 0' }}>
             Deseja excluir o treinamento <strong>"{deleteModal.title}"</strong>?
-            Todos os participantes vinculados serão removidos. Esta ação não pode ser desfeita.
+            Todos os participantes vinculados serÃ£o removidos. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
+          </p>
+        )}
+      </Modal>
+    </div>
+  );
+}
+, ' onClick={e => e.stopPropagation()}<Space size={4}' }
+    else { $m.Value }
+  
+          <Tooltip title="Detalhes">
+            <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
+          </Tooltip>
+          <Tooltip title="Gerar ATA">
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATATreinamento(record)} />
+          </Tooltip>
+          {canEdit && (
+            <>
+              <Tooltip title="Editar">
+                <Button type="text" icon={<EditOutlined />} size="small" onClick={() => openEdit(record)} />
+              </Tooltip>
+              <Tooltip title="Excluir">
+                <Button type="text" icon={<DeleteOutlined />} size="small" danger
+                  onClick={() => setDeleteModal({ id: record.id, title: record.title })} />
+              </Tooltip>
+            </>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <div className="page-wrap">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Treinamentos</h1>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
+            {items.length} treinamento{items.length !== 1 ? 's' : ''} cadastrado{items.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        {canEdit && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
+            style={{ borderRadius: 8, fontWeight: 600 }}>
+            Novo Treinamento
+          </Button>
+        )}
+      </div>
+
+      {/* KPI cards */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
+          const count = items.filter(i => i.status === key).length;
+          return (
+            <div
+              key={key}
+              onClick={() => setFilterStatus(filterStatus === key ? '' : key)}
+              style={{
+                flex: '1 1 140px', minWidth: 130, padding: '12px 16px', borderRadius: 10, cursor: 'pointer',
+                background: filterStatus === key ? cfg.bg : 'var(--cl-bg-card)',
+                border: `1px solid ${filterStatus === key ? cfg.color + '60' : 'var(--cl-border)'}`,
+                transition: 'all 0.15s',
+              }}
+            >
+              <div style={{ fontSize: 11, color: cfg.color, fontWeight: 600, marginBottom: 4 }}>{cfg.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{count}</div>
+            </div>
+          );
+        })}
+        {Object.entries(TIPO_CONFIG).map(([key, cfg]) => {
+          const count = items.filter(i => i.tipo === key).length;
+          return (
+            <div
+              key={key}
+              onClick={() => setFilterTipo(filterTipo === key ? '' : key)}
+              style={{
+                flex: '1 1 120px', minWidth: 110, padding: '12px 16px', borderRadius: 10, cursor: 'pointer',
+                background: filterTipo === key ? cfg.bg : 'var(--cl-bg-card)',
+                border: `1px solid ${filterTipo === key ? cfg.color + '60' : 'var(--cl-border)'}`,
+                transition: 'all 0.15s',
+              }}
+            >
+              <div style={{ fontSize: 11, color: cfg.color, fontWeight: 600, marginBottom: 4 }}>{cfg.icon} {cfg.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{count}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="filter-bar" style={{ marginBottom: 16 }}>
+        <Input
+          placeholder="Buscar por tÃ­tulo, empresa ou instrutor..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ flex: 1 }}
+        />
+        <Select placeholder="Status" allowClear value={filterStatus || undefined}
+          onChange={v => setFilterStatus(v || '')} style={{ width: 160 }}>
+          {Object.entries(STATUS_CONFIG).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
+        </Select>
+        <Select placeholder="Tipo" allowClear value={filterTipo || undefined}
+          onChange={v => setFilterTipo(v || '')} style={{ width: 140 }}>
+          {Object.entries(TIPO_CONFIG).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
+        </Select>
+      </div>
+
+      <div style={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 12, overflow: 'hidden' }}>
+        <Table
+          dataSource={filtered}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} registros` }}
+          size="middle"
+          onRow={record => ({ onClick: () => openDetail(record), style: { cursor: 'pointer' } })}
+          locale={{ emptyText: 'Nenhum treinamento encontrado' }}
+        />
+      </div>
+
+      {/* Drawer â€” Detalhes */}
+      <Drawer
+        open={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        width={520}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <TeamOutlined style={{ color: '#60a5fa' }} />
+            <span>Detalhes do Treinamento</span>
+          </div>
+        }
+        loading={detailLoading}
+      >
+        {selected && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace', fontWeight: 700, marginBottom: 4 }}>
+                  #{String(selected.code).padStart(4, '0')}
+                </div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{selected.title}</div>
+              </div>
+              <Space onClick={e => e.stopPropagation()}>
+                <TipoBadge tipo={selected.tipo} />
+                <StatusBadge status={selected.status} />
+              </Space>
+            </div>
+
+            {selected.description && (
+              <p style={{ fontSize: 13, color: 'var(--cl-text)', lineHeight: 1.7, marginBottom: 16 }}>
+                {selected.description}
+              </p>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+              {[
+                { label: 'Empresa', value: selected.company?.fantasia || selected.company?.name },
+                { label: 'Instrutor', value: selected.trainer?.name },
+                { label: 'Data', value: selected.scheduledAt ? new Date(selected.scheduledAt).toLocaleString('pt-BR') : null },
+                { label: 'DuraÃ§Ã£o', value: fmtDuration(selected.duration) },
+                { label: 'Local', value: selected.location },
+                { label: 'Link', value: selected.meetingLink, link: true },
+              ].filter(i => i.value).map(item => (
+                <div key={item.label} style={{
+                  padding: '10px 14px', borderRadius: 8,
+                  background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
+                }}>
+                  <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', marginBottom: 3 }}>{item.label}</div>
+                  {item.link
+                    ? <a href={item.value} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>{item.value}</a>
+                    : <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--cl-text-hi)' }}>{item.value}</div>
+                  }
+                </div>
+              ))}
+            </div>
+
+            {selected.participantes?.length > 0 && (
+              <>
+                <Divider style={{ margin: '16px 0' }} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 12 }}>
+                  Participantes â€” {selected.participantes.filter(p => p.attended).length}/{selected.participantes.length} presentes
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {selected.participantes.map(p => {
+                    const nome = p.employee?.name || p.name || 'Sem nome';
+                    const cargo = p.employee?.position;
+                    return (
+                      <div key={p.id} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 12px', borderRadius: 8,
+                        background: p.attended ? 'rgba(16,185,129,0.06)' : 'var(--cl-bg)',
+                        border: `1px solid ${p.attended ? 'rgba(16,185,129,0.25)' : 'var(--cl-border)'}`,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <UserOutlined style={{ color: p.attended ? '#34d399' : 'var(--cl-text-dim)' }} />
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--cl-text-hi)' }}>{nome}</div>
+                            {cargo && <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{cargo}</div>}
+                          </div>
+                        </div>
+                        {canEdit && (
+                          <Checkbox
+                            checked={p.attended}
+                            onChange={e => toggleAttended(selected.id, p.id, e.target.checked)}
+                            disabled={updatingP === p.id}
+                          >
+                            <span style={{ fontSize: 11 }}>Presente</span>
+                          </Checkbox>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {selected.notes && (
+              <>
+                <Divider style={{ margin: '16px 0' }} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--cl-text-soft)', marginBottom: 8 }}>ObservaÃ§Ãµes</div>
+                <p style={{ fontSize: 13, color: 'var(--cl-text)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selected.notes}</p>
+              </>
+            )}
+
+            <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button icon={<PrinterOutlined />} onClick={() => gerarATATreinamento(selected)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
+                Gerar ATA
+              </Button>
+              {canEdit && (
+                <>
+                  <Button icon={<EditOutlined />} onClick={() => openEdit(selected)}>Editar</Button>
+                  <Button danger icon={<DeleteOutlined />}
+                    onClick={() => setDeleteModal({ id: selected.id, title: selected.title })}>
+                    Excluir
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </Drawer>
+
+      {/* Modal â€” Criar / Editar */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TeamOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Treinamento' : 'Novo Treinamento'}</span>
+          </div>
+        }
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        centered width={720}
+        styles={{ body: { padding: '24px 0 8px', maxHeight: '70vh', overflowY: 'auto' } }}
+        footer={
+          <Space onClick={e => e.stopPropagation()}>
+            <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} onClick={() => form.submit()}
+              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
+            </Button>
+          </Space>
+        }
+      >
+        <div style={{ padding: '0 24px' }}>
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item name="title" label="TÃ­tulo" rules={[{ required: true }]}>
+              <Input placeholder="TÃ­tulo do treinamento" size="large" />
+            </Form.Item>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Form.Item name="tipo" label="Tipo" rules={[{ required: true }]}>
+                <Select size="large" placeholder="Selecione">
+                  {Object.entries(TIPO_CONFIG).map(([k, v]) => <Option key={k} value={k}>{v.icon} {v.label}</Option>)}
+                </Select>
+              </Form.Item>
+              <Form.Item name="status" label="Status">
+                <Select size="large" defaultValue="AGENDADO">
+                  {Object.entries(STATUS_CONFIG).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
+                </Select>
+              </Form.Item>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Form.Item name="companyId" label="Empresa">
+                <Select placeholder="Selecione (opcional)" allowClear showSearch
+                  filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                  size="large"
+                  onChange={() => setNewParticipante(prev => ({ ...prev, employeeId: '' }))}>
+                  {companies.map(c => <Option key={c.id} value={c.id}>{c.fantasia || c.name}</Option>)}
+                </Select>
+              </Form.Item>
+              <Form.Item name="trainerId" label="Instrutor">
+                <Select placeholder="Selecione" allowClear showSearch
+                  filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                  size="large">
+                  {users.map(u => <Option key={u.id} value={u.id}>{u.name}</Option>)}
+                </Select>
+              </Form.Item>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <Form.Item name="scheduledAt" label="Data e Hora">
+                <Input type="datetime-local" size="large" />
+              </Form.Item>
+              <Form.Item name="duration" label="DuraÃ§Ã£o (minutos)">
+                <Input type="number" min={1} placeholder="Ex: 60" size="large" />
+              </Form.Item>
+            </div>
+
+            <Form.Item noStyle shouldUpdate={(prev, cur) => prev.tipo !== cur.tipo}>
+              {({ getFieldValue }) => {
+                const tipo = getFieldValue('tipo');
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    {tipo !== 'REMOTO' && (
+                      <Form.Item name="location" label="Local">
+                        <Input placeholder="EndereÃ§o ou sala" size="large" />
+                      </Form.Item>
+                    )}
+                    {tipo !== 'PRESENCIAL' && (
+                      <Form.Item name="meetingLink" label="Link da ReuniÃ£o">
+                        <Input placeholder="https://meet.google.com/..." size="large" />
+                      </Form.Item>
+                    )}
+                  </div>
+                );
+              }}
+            </Form.Item>
+
+            <Form.Item name="description" label="DescriÃ§Ã£o">
+              <TextArea rows={3} placeholder="Objetivos e conteÃºdo programÃ¡tico..." style={{ resize: 'vertical' }} />
+            </Form.Item>
+
+            {/* Participantes */}
+            <Divider orientation="left" style={{ fontSize: 13, fontWeight: 700 }}>Participantes</Divider>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+              {participantesForm.map((p, idx) => {
+                const nome = employees.find(e => e.id === p.employeeId)?.name || p.name || 'â€”';
+                return (
+                  <div key={idx} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '8px 12px', borderRadius: 8,
+                    background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
+                  }}>
+                    <span style={{ fontSize: 13 }}><UserOutlined style={{ marginRight: 6 }} />{nome}</span>
+                    <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => removeParticipante(idx)} />
+                  </div>
+                );
+              })}
+            </div>
+            <Form.Item noStyle shouldUpdate={(prev, cur) => prev.companyId !== cur.companyId}>
+              {({ getFieldValue }) => {
+                const selectedCompanyId = getFieldValue('companyId');
+                const filteredEmployees = selectedCompanyId
+                  ? employees.filter(e => e.companyId === selectedCompanyId)
+                  : employees;
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 16 }}>
+                    <Select
+                      placeholder={selectedCompanyId ? 'FuncionÃ¡rio da empresa' : 'FuncionÃ¡rio (opcional)'}
+                      allowClear showSearch
+                      value={newParticipante.employeeId || undefined}
+                      onChange={v => setNewParticipante(prev => ({ ...prev, employeeId: v || '' }))}
+                      filterOption={(input, option) => normalize(option?.children || '').includes(normalize(input))}
+                      notFoundContent={selectedCompanyId ? 'Nenhum funcionÃ¡rio nesta empresa' : 'Nenhum funcionÃ¡rio encontrado'}
+                    >
+                      {filteredEmployees.map(e => <Option key={e.id} value={e.id}>{e.name}</Option>)}
+                    </Select>
+                    <Input
+                      placeholder="Ou nome livre"
+                      value={newParticipante.name}
+                      onChange={e => setNewParticipante(prev => ({ ...prev, name: e.target.value }))}
+                      disabled={!!newParticipante.employeeId}
+                    />
+                    <Button icon={<UserAddOutlined />} onClick={addParticipante}>Adicionar</Button>
+                  </div>
+                );
+              }}
+            </Form.Item>
+
+            <Form.Item name="notes" label="ObservaÃ§Ãµes">
+              <TextArea rows={2} placeholder="Notas adicionais..." style={{ resize: 'vertical' }} />
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
+
+      {/* Modal â€” Excluir */}
+      <Modal
+        open={!!deleteModal}
+        onCancel={() => setDeleteModal(null)}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <span style={{ fontWeight: 700 }}>Excluir Treinamento</span>
+          </div>
+        }
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
+            <Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>
+              Excluir permanentemente
+            </Button>
+          </div>
+        }
+      >
+        {deleteModal && (
+          <p style={{ padding: '8px 0' }}>
+            Deseja excluir o treinamento <strong>"{deleteModal.title}"</strong>?
+            Todos os participantes vinculados serÃ£o removidos. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
           </p>
         )}
       </Modal>

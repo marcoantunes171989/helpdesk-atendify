@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Modal, Form, Input, Space, Tag, Select,
@@ -154,9 +154,9 @@ export default function Status() {
       ),
     },
     {
-      title: 'Observação', dataIndex: 'observation', key: 'observation',
+      title: 'ObservaÃ§Ã£o', dataIndex: 'observation', key: 'observation',
       sorter: (a, b) => (a.observation || '').localeCompare(b.observation || '', 'pt-BR'),
-      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || 'â€”'}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
@@ -170,10 +170,10 @@ export default function Status() {
       sorter: (a, b) => (a.builtinStatus || '').localeCompare(b.builtinStatus || ''),
       render: v => v ? (
         <Tag style={{ borderRadius: 6, fontSize: 11, fontFamily: 'monospace' }}>{v}</Tag>
-      ) : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
+      ) : <span style={{ color: 'var(--cl-text-dim)' }}>â€”</span>,
     },
     {
-      title: 'Situação', dataIndex: 'active', key: 'active',
+      title: 'SituaÃ§Ã£o', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
       render: v => (
         <Tag color={v ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 600, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>
@@ -189,7 +189,7 @@ export default function Status() {
     {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
-        <Space>
+        <Space onClick={e => e.stopPropagation()}>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
               style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -224,7 +224,7 @@ export default function Status() {
 
       <div className="filter-bar">
         <Input
-          placeholder="Buscar por nome, descrição ou observação..."
+          placeholder="Buscar por nome, descriÃ§Ã£o ou observaÃ§Ã£o..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -237,10 +237,11 @@ export default function Status() {
           dataSource={filteredStatuses} columns={columns} rowKey="id"
           loading={loading} size="middle" scroll={{ x: 700 }}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} status` }}
+          onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
-      {/* Modal — Confirmar exclusão */}
+      {/* Modal â€” Confirmar exclusÃ£o */}
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
@@ -263,22 +264,22 @@ export default function Status() {
         {deleteModal && (
           <div style={{ padding: '8px 0' }}>
             <p style={{ marginBottom: 16 }}>
-              Você está prestes a remover o status <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
+              VocÃª estÃ¡ prestes a remover o status <strong>{deleteModal.name}</strong>. Esta aÃ§Ã£o nÃ£o pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
               <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
-                Este status está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
+                Este status estÃ¡ vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e nÃ£o pode ser removido.
               </div>
             ) : (
               <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
-                Este status não possui chamados vinculados e pode ser removido com segurança.
+                Este status nÃ£o possui chamados vinculados e pode ser removido com seguranÃ§a.
               </div>
             )}
           </div>
         )}
       </Modal>
 
-      {/* Modal — Cadastro / Edição */}
+      {/* Modal â€” Cadastro / EdiÃ§Ã£o */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -296,11 +297,11 @@ export default function Status() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space>
+          <Space onClick={e => e.stopPropagation()}>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
               style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
-              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+              {editing ? 'Salvar AlteraÃ§Ãµes' : 'Cadastrar'}
             </Button>
           </Space>
         }
@@ -308,19 +309,19 @@ export default function Status() {
         <div style={{ padding: '0 24px' }}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item name="name" label="Nome do Status" rules={[{ required: true, message: 'Informe o nome do status' }]}>
-              <Input placeholder="Ex: Aguardando Cliente, Em Análise..." size="large" />
+              <Input placeholder="Ex: Aguardando Cliente, Em AnÃ¡lise..." size="large" />
             </Form.Item>
 
-            <Form.Item name="color" label="Cor de identificação">
+            <Form.Item name="color" label="Cor de identificaÃ§Ã£o">
               <ColorPicker />
             </Form.Item>
 
             <Form.Item
               name="builtinStatus"
               label="Comportamento do sistema"
-              tooltip="Define qual estado interno do sistema este status representa. Determina filtros, SLA e ações automáticas."
+              tooltip="Define qual estado interno do sistema este status representa. Determina filtros, SLA e aÃ§Ãµes automÃ¡ticas."
             >
-              <Select allowClear placeholder="Nenhum (status neutro — mantém estado atual)">
+              <Select allowClear placeholder="Nenhum (status neutro â€” mantÃ©m estado atual)">
                 {BUILTIN_STATUS_OPTIONS.map(o => (
                   <Option key={o.value} value={o.value}>{o.label}</Option>
                 ))}
@@ -328,7 +329,7 @@ export default function Status() {
             </Form.Item>
 
             {editing && (
-              <Form.Item name="active" label="Situação" valuePropName="checked">
+              <Form.Item name="active" label="SituaÃ§Ã£o" valuePropName="checked">
                 <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
               </Form.Item>
             )}
