@@ -13,6 +13,23 @@ import { normalize } from '../utils/constants';
 
 const { Option } = Select;
 
+// ─── Máscara de telefone ──────────────────────────────────────────────────────
+// Formata conforme digitação: (99) 9999-9999 ou (99) 99999-9999
+function maskPhone(value = '') {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2)  return `(${digits}`;
+  if (digits.length <= 6)  return `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+}
+
+// Formata para exibição na lista (aceita dígitos crus ou já mascarados)
+function formatPhone(value = '') {
+  if (!value) return '—';
+  return maskPhone(value);
+}
+
 const avatarColors = [
   { bg: 'rgba(37,99,235,0.25)', color: '#60a5fa' },
   { bg: 'rgba(29,78,216,0.25)', color: '#93c5fd' },
@@ -52,7 +69,11 @@ export default function Employees() {
 
   const openEdit = (record) => {
     setEditing(record);
-    form.setFieldsValue({ name: record.name, phone: record.phone, position: record.position });
+    form.setFieldsValue({
+      name: record.name,
+      phone: record.phone ? maskPhone(record.phone) : '',
+      position: record.position,
+    });
     setDrawerOpen(true);
   };
 
@@ -134,7 +155,11 @@ export default function Employees() {
     {
       title: 'Telefone', dataIndex: 'phone', key: 'phone',
       sorter: (a, b) => (a.phone || '').localeCompare(b.phone || ''),
-      render: v => <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>{v || '—'}</span>,
+      render: v => (
+        <span style={{ color: 'var(--cl-text-soft)', fontSize: 13 }}>
+          {formatPhone(v)}
+        </span>
+      ),
     },
     {
       title: 'Empresa', key: 'company',
@@ -294,6 +319,11 @@ export default function Employees() {
                     prefix={<PhoneOutlined style={{ color: 'var(--cl-text-faint)' }} />}
                     placeholder="(11) 99999-9999"
                     size="large"
+                    maxLength={15}
+                    onChange={e => {
+                      const masked = maskPhone(e.target.value);
+                      form.setFieldValue('phone', masked);
+                    }}
                   />
                 </Form.Item>
               </Col>
