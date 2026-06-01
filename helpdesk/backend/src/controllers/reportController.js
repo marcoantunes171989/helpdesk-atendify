@@ -1,6 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+﻿const prisma = require('../prisma');
 
 exports.tickets = async (req, res) => {
   const { dateFrom, dateTo, companyId, categoryId, priority, status, employeeId, technicianId } = req.query;

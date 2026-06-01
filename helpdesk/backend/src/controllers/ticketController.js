@@ -1,7 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+﻿const prisma = require('../prisma');
 
-const prisma = new PrismaClient();
-
+// Include completo para detail/update — sem data dos attachments na listagem
 const ticketInclude = {
   user: { select: { id: true, name: true, email: true } },
   assignee: { select: { id: true, name: true, email: true } },
@@ -13,6 +12,7 @@ const ticketInclude = {
   comments: {
     include: {
       user: { select: { id: true, name: true, role: true } },
+      // data (base64) carregado apenas no detalhe do ticket
       attachments: {
         select: { id: true, name: true, mimeType: true, size: true, data: true, createdAt: true },
         orderBy: { createdAt: 'asc' },

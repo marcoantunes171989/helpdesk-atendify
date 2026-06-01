@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+﻿const prisma = require('../prisma');
 
 const include = {
   company: { select: { id: true, name: true, fantasia: true, city: true, state: true } },

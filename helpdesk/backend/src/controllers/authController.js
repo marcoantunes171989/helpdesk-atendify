@@ -1,8 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-const prisma = new PrismaClient();
+const prisma = require('../prisma');
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -10,9 +8,7 @@ exports.login = async (req, res) => {
     return res.status(400).json({ error: 'Email e senha são obrigatórios' });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user || !user.active) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
@@ -23,8 +19,9 @@ exports.login = async (req, res) => {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
 
+  // Inclui name e email no payload para que o middleware não precise ir ao banco
   const token = jwt.sign(
-    { id: user.id, role: user.role },
+    { id: user.id, role: user.role, name: user.name, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -34,7 +31,12 @@ exports.login = async (req, res) => {
 };
 
 exports.me = async (req, res) => {
-  const { password: _, ...user } = req.user;
+  // Busca dados completos apenas neste endpoint (chamado uma vez no boot do app)
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: { id: true, code: true, name: true, email: true, role: true, active: true, createdAt: true, updatedAt: true },
+  });
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
   res.json(user);
 };
 

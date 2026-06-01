@@ -10,6 +10,21 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 dayjs.locale('pt-br');
 
+// Keepalive do backend Render (plano free hiberna após 15min)
+// Faz um ping a cada 10 minutos para manter o servidor acordado
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const BACKEND_BASE = API_URL.replace('/api', '');
+
+function startKeepAlive() {
+  // Ping imediato ao carregar o app
+  fetch(`${BACKEND_BASE}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {});
+  // Ping periódico a cada 10 minutos
+  setInterval(() => {
+    fetch(`${BACKEND_BASE}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {});
+  }, 10 * 60 * 1000);
+}
+startKeepAlive();
+
 // Disable browser autofill/autocomplete popups globally on all inputs
 const patchAutocomplete = (root = document) => {
   root.querySelectorAll('input:not([autocomplete="nope"])').forEach(el => {
