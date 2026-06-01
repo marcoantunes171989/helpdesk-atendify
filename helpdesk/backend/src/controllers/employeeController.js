@@ -60,14 +60,17 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id } = req.params;
-  const { name, phone, position } = req.body;
+  const { name, phone, position, active } = req.body;
 
   const existing = await prisma.employee.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ error: 'Funcionário não encontrado' });
 
+  const data = { name, phone: phone || null, position };
+  if (active !== undefined) data.active = active;
+
   const employee = await prisma.employee.update({
     where: { id },
-    data: { name, phone: phone || null, position },
+    data,
     include: { company: { select: { id: true, name: true, fantasia: true } } },
   });
 

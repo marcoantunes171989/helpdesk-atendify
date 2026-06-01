@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
   Table, Button, Modal, Form, Input, Select, Space,
-  message, Tooltip, Avatar, Row, Col,
+  message, Tooltip, Avatar, Row, Col, Switch, Tag, Segmented,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined,
   PhoneOutlined, IdcardOutlined, ExclamationCircleOutlined,
+  CheckCircleOutlined, StopOutlined,
 } from '@ant-design/icons';
 import { employeeService, companyService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -52,18 +53,23 @@ export default function Employees() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');
+  const [filterActive, setFilterActive] = useState('true'); // 'true' | 'false' | 'all'
   const [form] = Form.useForm();
   const { user } = useAuth();
 
-  const load = (params = {}) => {
+  const load = () => {
     setLoading(true);
+    const params = filterActive === 'all' ? {} : { active: filterActive };
     employeeService.list(params).then(setEmployees).finally(() => setLoading(false));
   };
 
   useEffect(() => {
     load();
+  }, [filterActive]);
+
+  useEffect(() => {
     companyService.list().then(setCompanies);
-  }, [user]);
+  }, []);
 
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
 
@@ -73,6 +79,7 @@ export default function Employees() {
       name: record.name,
       phone: record.phone ? maskPhone(record.phone) : '',
       position: record.position,
+      active: record.active !== false,
     });
     setDrawerOpen(true);
   };
@@ -162,6 +169,13 @@ export default function Employees() {
       ),
     },
     {
+      title: 'Situação', dataIndex: 'active', key: 'active', width: 100,
+      sorter: (a, b) => Number(b.active) - Number(a.active),
+      render: v => v !== false
+        ? <Tag icon={<CheckCircleOutlined />} color="success" style={{ borderRadius: 6, fontWeight: 600 }}>Ativo</Tag>
+        : <Tag icon={<StopOutlined />} color="default" style={{ borderRadius: 6, fontWeight: 600 }}>Inativo</Tag>,
+    },
+    {
       title: 'Empresa', key: 'company',
       sorter: (a, b) => (a.company?.name || '').localeCompare(b.company?.name || '', 'pt-BR'),
       render: (_, r) => (
@@ -206,13 +220,22 @@ export default function Employees() {
         </Button>
       </div>
 
-      <div className="filter-bar">
+      <div className="filter-bar" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <Input
           placeholder="Buscar por nome, cargo, telefone, empresa ou fantasia..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ width: '100%' }}
+          style={{ flex: 1 }}
+        />
+        <Segmented
+          value={filterActive}
+          onChange={setFilterActive}
+          options={[
+            { label: 'Ativos', value: 'true' },
+            { label: 'Inativos', value: 'false' },
+            { label: 'Todos', value: 'all' },
+          ]}
         />
       </div>
 
@@ -328,6 +351,15 @@ export default function Employees() {
                 </Form.Item>
               </Col>
             </Row>
+
+            {editing && (
+              <Form.Item name="active" label="Situação" valuePropName="checked">
+                <Switch
+                  checkedChildren={<><CheckCircleOutlined /> Ativo</>}
+                  unCheckedChildren={<><StopOutlined /> Inativo</>}
+                />
+              </Form.Item>
+            )}
 
             {!editing && (
               <Form.Item
