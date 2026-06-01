@@ -328,6 +328,11 @@ async function main() {
     CREATE OR REPLACE FUNCTION trg_fn_employee_update()
     RETURNS TRIGGER AS $$
     BEGIN
+      -- Quando a desativação vem de uma cascata da empresa, preserva o código
+      -- (a empresa está apenas temporariamente inativa; ao reativar tudo volta)
+      IF current_setting('app.cascade_active', true) = 'true' THEN
+        RETURN NEW;
+      END IF;
       IF OLD.active = TRUE AND NEW.active = FALSE AND NEW.code IS NOT NULL THEN
         PERFORM fn_recycle_code('employee', NEW.code);
         NEW.code = NULL;
@@ -343,6 +348,33 @@ async function main() {
       FOR EACH ROW EXECUTE FUNCTION trg_fn_employee_update()
   `);
   console.log('✓ Triggers de employee criados');
+
+  // ── CASCATA EMPRESA → FUNCIONÁRIOS ────────────────────────────────────
+  // Ao inativar/reativar a empresa, propaga o status active para todos os
+  // funcionários vinculados. Usa flag de sessão (app.cascade_active) para que
+  // o trigger de employee preserve os códigos durante a cascata.
+  await prisma.$executeRawUnsafe(`
+    CREATE OR REPLACE FUNCTION cascade_company_active_to_employees()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      IF OLD.active IS DISTINCT FROM NEW.active THEN
+        PERFORM set_config('app.cascade_active', 'true', true);
+        UPDATE employees
+        SET active = NEW.active
+        WHERE "companyId" = NEW.id;
+        PERFORM set_config('app.cascade_active', 'false', true);
+      END IF;
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql
+  `);
+  await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS trg_cascade_company_active ON companies`);
+  await prisma.$executeRawUnsafe(`
+    CREATE TRIGGER trg_cascade_company_active
+      AFTER UPDATE OF active ON companies
+      FOR EACH ROW EXECUTE FUNCTION cascade_company_active_to_employees()
+  `);
+  console.log('✓ Trigger de cascata empresa→funcionários criado');
 
   // 5. Backfill registros existentes sem código
   const companies = await prisma.$executeRawUnsafe(
