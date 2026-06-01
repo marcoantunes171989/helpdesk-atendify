@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Table, Button, Form, Input, Tag, Space, Select,
-  Modal, message, Switch, Tooltip, Row, Col, Divider, Avatar,
+  Modal, message, Switch, Tooltip, Row, Col, Divider, Avatar, Segmented,
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, EyeOutlined, DeleteOutlined,
@@ -63,6 +63,7 @@ export default function Companies() {
   const [deletingId, setDeletingId] = useState(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState('');
+  const [filterActive, setFilterActive] = useState('true'); // 'true' | 'false' | 'all'
   const [allStates, setAllStates] = useState([]);
   const [allCities, setAllCities] = useState([]);
   const [loadingCities, setLoadingCities] = useState(false);
@@ -262,9 +263,15 @@ export default function Companies() {
 
   const hasLinks = deleteModal && (deleteModal.employees > 0 || deleteModal.tickets > 0 || deleteModal.categories > 0);
 
-  const filteredCompanies = search
-    ? (() => { const q = normalize(search); return companies.filter(c => [c.name, c.fantasia, c.cnpj, c.email, c.phone, c.city, c.state, c.notes].some(f => normalize(f).includes(q))); })()
-    : companies;
+  const filteredCompanies = companies.filter(c => {
+    if (filterActive === 'true' && !c.active) return false;
+    if (filterActive === 'false' && c.active) return false;
+    if (search) {
+      const q = normalize(search);
+      return [c.name, c.fantasia, c.cnpj, c.email, c.phone, c.city, c.state, c.notes].some(f => normalize(f).includes(q));
+    }
+    return true;
+  });
 
   return (
     <div className="page-wrap">
@@ -272,7 +279,7 @@ export default function Companies() {
         <div>
           <h1 className="page-title">Empresas</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filteredCompanies.filter(c => c.active).length} ativa{filteredCompanies.filter(c => c.active).length !== 1 ? 's' : ''} · {filteredCompanies.length} total
+            {companies.filter(c => c.active).length} ativa{companies.filter(c => c.active).length !== 1 ? 's' : ''} · {companies.length} total
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
@@ -281,13 +288,22 @@ export default function Companies() {
         </Button>
       </div>
 
-      <div className="filter-bar">
+      <div className="filter-bar" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <Input
           placeholder="Buscar por nome, CNPJ, e-mail, telefone ou localização..."
           allowClear
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ width: '100%' }}
+          style={{ flex: 1 }}
+        />
+        <Segmented
+          value={filterActive}
+          onChange={setFilterActive}
+          options={[
+            { label: 'Ativas', value: 'true' },
+            { label: 'Inativas', value: 'false' },
+            { label: 'Todas', value: 'all' },
+          ]}
         />
       </div>
 
