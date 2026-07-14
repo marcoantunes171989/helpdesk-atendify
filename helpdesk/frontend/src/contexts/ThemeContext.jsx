@@ -12,7 +12,7 @@ function resolveTheme(preference) {
 
 export function ThemeProvider({ children }) {
   const [preference, setPreferenceState] = useState(
-    () => localStorage.getItem('atendexa-theme') || 'dark'
+    () => localStorage.getItem('atendexa-theme') || 'light'
   );
 
   const resolvedTheme = resolveTheme(preference);

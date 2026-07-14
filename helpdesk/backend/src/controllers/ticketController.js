@@ -266,6 +266,37 @@ exports.addComment = async (req, res) => {
   res.status(201).json(comment);
 };
 
+exports.rate = async (req, res) => {
+  const { id } = req.params;
+  const { satisfaction } = req.body;
+  const score = Number(satisfaction);
+
+  if (!Number.isInteger(score) || score < 1 || score > 5) {
+    return res.status(400).json({ error: 'A avaliação deve ser um número inteiro de 1 a 5' });
+  }
+
+  const ticket = await prisma.ticket.findUnique({ where: { id } });
+  if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
+
+  if (ticket.userId !== req.user.id) {
+    return res.status(403).json({ error: 'Apenas quem abriu o chamado pode avaliá-lo' });
+  }
+  if (!['RESOLVED', 'CLOSED'].includes(ticket.status)) {
+    return res.status(400).json({ error: 'O chamado ainda não foi resolvido' });
+  }
+  if (ticket.satisfaction !== null) {
+    return res.status(400).json({ error: 'Este chamado já foi avaliado' });
+  }
+
+  const updated = await prisma.ticket.update({
+    where: { id },
+    data: { satisfaction: score, satisfactionAt: new Date() },
+    include: ticketInclude,
+  });
+
+  res.json(updated);
+};
+
 exports.deleteComment = async (req, res) => {
   const { id, commentId } = req.params;
 

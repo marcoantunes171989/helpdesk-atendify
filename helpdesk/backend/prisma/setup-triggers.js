@@ -6,6 +6,10 @@ async function main() {
 
   // 0. Schema patches — fallback para quando prisma migrate deploy não roda em produção
 
+  // tickets.satisfaction / satisfactionAt (avaliação CSAT do cliente)
+  await prisma.$executeRawUnsafe(`ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "satisfaction" INTEGER`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "satisfactionAt" TIMESTAMP(3)`);
+
   // implantacoes.employeeId
   await prisma.$executeRawUnsafe(`ALTER TABLE "implantacoes" ADD COLUMN IF NOT EXISTS "employeeId" TEXT`);
   await prisma.$executeRawUnsafe(`

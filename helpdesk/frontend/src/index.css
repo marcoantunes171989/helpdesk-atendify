@@ -43,30 +43,44 @@ input:-webkit-autofill:focus {
   --cl-title-grad: linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.58) 100%);
   --cl-sidebar-text: rgba(255,255,255,0.82);
   --cl-sidebar-logo: #fff;
+  /* Semantic accent tokens (dark variants — lighter for contrast on dark bg) */
+  --cl-primary:   #2563eb;
+  --cl-secondary: #22d3ee;
+  --cl-success:   #34d399;
+  --cl-warning:   #fbbf24;
+  --cl-danger:    #f87171;
+  --cl-purple:    #a78bfa;
 }
 
 [data-theme="light"] {
-  --cl-text-hi:    #111827;
-  --cl-text:       #1f2937;
-  --cl-text-sub:   #374151;
-  --cl-text-soft:  #4b5563;
-  --cl-text-muted: #6b7280;
-  --cl-text-faint: #9ca3af;
-  --cl-text-dim:   #d1d5db;
+  --cl-text-hi:    #0f172a;
+  --cl-text:       #1e293b;
+  --cl-text-sub:   #334155;
+  --cl-text-soft:  #475569;
+  --cl-text-muted: #64748b;
+  --cl-text-faint: #94a3b8;
+  --cl-text-dim:   #cbd5e1;
   --cl-bg:         #ffffff;
   --cl-bg-soft:    #f8fafc;
   --cl-bg-input:   #ffffff;
-  --cl-border-subtle: rgba(0,0,0,0.05);
-  --cl-border:     rgba(0,0,0,0.10);
-  --cl-border-input: rgba(0,0,0,0.15);
-  --cl-page-bg:    #ffffff;
+  --cl-border-subtle: rgba(15,23,42,0.04);
+  --cl-border:     #e2e8f0;
+  --cl-border-input: #e2e8f0;
+  --cl-page-bg:    #f8fafc;
   --cl-sidebar:    #ffffff;
   --cl-header:     rgba(255,255,255,0.97);
-  --cl-page-grad:  #ffffff;
-  --cl-shadow:     0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
-  --cl-title-grad: linear-gradient(135deg,#111827 0%,rgba(55,65,81,0.82) 100%);
-  --cl-sidebar-text: #1f2937;
-  --cl-sidebar-logo: #1f2937;
+  --cl-page-grad:  #f8fafc;
+  --cl-shadow:     0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --cl-title-grad: linear-gradient(135deg,#0f172a 0%,#0f172a 100%);
+  --cl-sidebar-text: #334155;
+  --cl-sidebar-logo: #0f172a;
+  /* Semantic accent tokens — exact spec hex */
+  --cl-primary:   #2563eb;
+  --cl-secondary: #06b6d4;
+  --cl-success:   #10b981;
+  --cl-warning:   #f59e0b;
+  --cl-danger:    #ef4444;
+  --cl-purple:    #8b5cf6;
 }
 
 /* ============================================================
@@ -364,19 +378,28 @@ h1, h2, h3, h4, h5 {
 }
 .db-stat-grid {
   display: grid;
-  grid-template-columns: repeat(6,1fr);
-  gap: 14px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(4,1fr);
+  gap: 24px;
+  margin-bottom: 24px;
 }
-.db-chart-grid {
+.db-section-grid {
   display: grid;
-  grid-template-columns: 2fr 3fr;
-  gap: 14px;
-  margin-bottom: 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
 }
-@media (max-width: 1280px) { .db-stat-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 900px)  { .db-stat-grid { grid-template-columns: repeat(2,1fr); } .db-chart-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1280px) { .db-stat-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 900px)  { .db-stat-grid { grid-template-columns: repeat(2,1fr); } .db-section-grid { grid-template-columns: 1fr; } }
+@media (max-width: 575px)  { .db-stat-grid { grid-template-columns: 1fr; } }
 @media (max-width: 768px)  { .db-wrap { margin: -16px; padding: 20px 16px 32px; } }
+
+/* Foco visível acessível */
+.db-wrap [tabindex]:focus-visible,
+.db-wrap button:focus-visible,
+.db-wrap a:focus-visible {
+  outline: 2px solid var(--cl-primary);
+  outline-offset: 2px;
+}
 
 /* ============================================================
    Ant Design dark overrides — Table (.page-table-wrap e .db-dark)

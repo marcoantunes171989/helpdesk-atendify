@@ -8,7 +8,7 @@ import {
   CustomerServiceOutlined, PaperClipOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ticketService, categoryService, companyService, employeeService, statusService, technicianService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { TICKET_STATUS, PRIORITY, normalize } from '../utils/constants';
@@ -43,6 +43,7 @@ export default function Tickets() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [filters, setFilters] = useState({});
   const [search, setSearch] = useState('');
+  const [slaExpiredOnly, setSlaExpiredOnly] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -50,6 +51,7 @@ export default function Tickets() {
   const [form] = Form.useForm();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const load = (params = {}) => {
     setLoading(true);
@@ -76,6 +78,23 @@ export default function Tickets() {
       setTechnicians(list);
     });
   }, [user]);
+
+  // Drill-down vindo do Dashboard (cards/gráficos/rankings clicáveis)
+  useEffect(() => {
+    if (!location.state || statuses.length === 0) return;
+    const { priority, categoryId, statusId, builtinStatus, slaExpiredOnly: slaFlag } = location.state;
+    const resolvedStatusId = statusId || (builtinStatus ? statuses.find(s => s.builtinStatus === builtinStatus)?.id : null);
+    const newFilters = {};
+    if (priority) newFilters.priority = priority;
+    if (categoryId) newFilters.categoryId = categoryId;
+    if (resolvedStatusId) newFilters.statusIds = [resolvedStatusId];
+    if (Object.keys(newFilters).length > 0) {
+      setFilters(newFilters);
+      load(buildApiParams(newFilters));
+    }
+    if (slaFlag) setSlaExpiredOnly(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [statuses]);
 
   const handleCompanyChange = (companyId) => {
     form.setFieldValue('employeeId', undefined);
@@ -179,10 +198,12 @@ export default function Tickets() {
     t.slaDeadline && !['RESOLVED', 'CLOSED', 'CANCELLED'].includes(t.status)
     && dayjs(t.slaDeadline).isBefore(dayjs());
 
+  const slaFilteredTickets = slaExpiredOnly ? tickets.filter(isSlaExpired) : tickets;
+
   const filteredTickets = search
     ? (() => {
         const q = normalize(search);
-        return tickets.filter(r => [
+        return slaFilteredTickets.filter(r => [
           r.code ? String(r.code).padStart(4, '0') : null, r.code ? String(r.code) : null,
           r.id, r.title, r.description,
           r.company?.name, r.company?.fantasia, r.employee?.name, r.employee?.position,
@@ -191,7 +212,7 @@ export default function Tickets() {
           PRIORITY[r.priority]?.label,
         ].some(f => normalize(f).includes(q)));
       })()
-    : tickets;
+    : slaFilteredTickets;
 
   const statusCounts = statuses.reduce((acc, s) => {
     acc[s.id] = tickets.filter(t => t.statusId === s.id).length;
@@ -320,6 +341,11 @@ export default function Tickets() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Chamados</h1>
+          {slaExpiredOnly && (
+            <Tag closable onClose={() => setSlaExpiredOnly(false)} color="red" style={{ marginTop: 4 }}>
+              Somente SLA vencido
+            </Tag>
+          )}
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
             {filteredTickets.length} chamado{filteredTickets.length !== 1 ? 's' : ''}{search ? ` (de ${tickets.length})` : ''} · {' '}
             {statuses.filter(s => statusCounts[s.id] > 0).map(s => (

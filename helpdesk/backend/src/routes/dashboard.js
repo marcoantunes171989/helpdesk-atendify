@@ -8,7 +8,7 @@ router.get('/kpis',            auth, wrap(ctrl.kpis));
 router.get('/volume',          auth, wrap(ctrl.volume));
 router.get('/categories',      auth, wrap(ctrl.categories));
 router.get('/sla-by-priority', auth, wrap(ctrl.slaByPriority));
-router.get('/peak-hours',      auth, wrap(ctrl.peakHours));
+router.get('/by-status',       auth, wrap(ctrl.byStatus));
 router.get('/agents',          auth, wrap(ctrl.agents));
 router.get('/queue/realtime',  auth, wrap(ctrl.queue));
 

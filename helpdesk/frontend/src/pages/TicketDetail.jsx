@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import {
   Tag, Button, Select, Space, Typography, Divider, Input, Modal,
   Avatar, Spin, Alert, Row, Col, Tooltip, message, Badge, Upload, Popconfirm,
-  DatePicker,
+  DatePicker, Rate,
 } from 'antd';
 import {
   ArrowLeftOutlined, SendOutlined, ExclamationCircleOutlined, ClockCircleOutlined,
@@ -129,6 +129,7 @@ export default function TicketDetail() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null); // { src, name, mimeType, data }
+  const [ratingSaving, setRatingSaving] = useState(false);
 
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -322,6 +323,19 @@ export default function TicketDetail() {
       reader.onload = () => resolve(reader.result);
     });
     setPreviewImage({ src, name: file.name });
+  };
+
+  const handleRate = async (value) => {
+    setRatingSaving(true);
+    try {
+      const updated = await ticketService.rate(id, value);
+      setTicket(updated);
+      message.success('Obrigado pela avaliação!');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao enviar avaliação');
+    } finally {
+      setRatingSaving(false);
+    }
   };
 
   const handleUpdate = async (field, value) => {
@@ -1085,7 +1099,7 @@ export default function TicketDetail() {
               ))}
 
               {ticket.slaDeadline && (
-                <div style={{ padding: '10px 18px' }}>
+                <div style={{ padding: '10px 18px', borderBottom: (isResolved || isClosed) && ticket.userId === user?.id ? '1px solid var(--cl-border)' : 'none' }}>
                   <div style={LABEL_STYLE}>Prazo SLA</div>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 6, marginTop: 2,
@@ -1096,6 +1110,18 @@ export default function TicketDetail() {
                     {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
                     {isExpired && <Tag color="red" style={{ marginLeft: 4, fontSize: 11, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>Vencido</Tag>}
                   </div>
+                </div>
+              )}
+
+              {(isResolved || isClosed) && ticket.userId === user?.id && (
+                <div style={{ padding: '10px 18px' }}>
+                  <div style={LABEL_STYLE}>{ticket.satisfaction ? 'Sua avaliação' : 'Avalie o atendimento'}</div>
+                  <Rate
+                    value={ticket.satisfaction || 0}
+                    disabled={!!ticket.satisfaction || ratingSaving}
+                    onChange={handleRate}
+                    style={{ marginTop: 4, fontSize: 18 }}
+                  />
                 </div>
               )}
             </div>

@@ -126,6 +126,8 @@ model Ticket {
   technician    Technician?     @relation(fields: [technicianId], references: [id])
   slaDeadline DateTime?
   resolvedAt  DateTime?
+  satisfaction   Int?
+  satisfactionAt DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   comments    TicketComment[]

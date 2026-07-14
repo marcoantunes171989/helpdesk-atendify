@@ -1,0 +1,2 @@
+ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "satisfaction" INTEGER;
+ALTER TABLE "tickets" ADD COLUMN IF NOT EXISTS "satisfactionAt" TIMESTAMP(3);
