@@ -18,37 +18,39 @@ import dayjs from 'dayjs';
 import { crmService, companyService, userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { normalize } from '../utils/constants';
+import { CHART_COLORS } from '../theme/colors';
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 // ─── constants ───────────────────────────────────────────────────────────────
+// Estágios do funil: cores de estado (nunca as de gráfico, pra não confundir estado com categoria)
 const STAGES = {
-  LEAD:        { label: 'Lead',       color: '#94a3b8', bg: 'rgba(148,163,184,.18)', border: 'rgba(148,163,184,.35)', order: 0 },
-  PROSPECT:    { label: 'Prospect',   color: '#60a5fa', bg: 'rgba(96,165,250,.18)',  border: 'rgba(96,165,250,.35)',  order: 1 },
-  PROPOSAL:    { label: 'Proposta',   color: '#fbbf24', bg: 'rgba(251,191,36,.18)',  border: 'rgba(251,191,36,.35)',  order: 2 },
-  NEGOTIATION: { label: 'Negociação', color: '#f97316', bg: 'rgba(249,115,22,.18)', border: 'rgba(249,115,22,.35)',  order: 3 },
-  WON:         { label: 'Ganho',      color: '#4ade80', bg: 'rgba(74,222,128,.18)',  border: 'rgba(74,222,128,.35)',  order: 4 },
-  LOST:        { label: 'Perdido',    color: '#f87171', bg: 'rgba(248,113,113,.18)', border: 'rgba(248,113,113,.35)', order: 5 },
+  LEAD:        { label: 'Lead',       color: 'var(--cl-text-faint)', bg: 'rgba(148,163,184,.18)', border: 'rgba(148,163,184,.35)', order: 0 },
+  PROSPECT:    { label: 'Prospect',   color: 'var(--cl-secondary)',  bg: 'rgba(6,182,212,.18)',    border: 'rgba(6,182,212,.35)',   order: 1 },
+  PROPOSAL:    { label: 'Proposta',   color: 'var(--cl-info)',       bg: 'rgba(56,189,248,.18)',   border: 'rgba(56,189,248,.35)',  order: 2 },
+  NEGOTIATION: { label: 'Negociação', color: 'var(--cl-warning)',    bg: 'rgba(245,158,11,.18)',   border: 'rgba(245,158,11,.35)',  order: 3 },
+  WON:         { label: 'Ganho',      color: 'var(--cl-success)',    bg: 'rgba(16,185,129,.18)',   border: 'rgba(16,185,129,.35)',  order: 4 },
+  LOST:        { label: 'Perdido',    color: 'var(--cl-danger)',     bg: 'rgba(239,68,68,.18)',    border: 'rgba(239,68,68,.35)',   order: 5 },
 };
 const STAGE_FLOW = ['LEAD', 'PROSPECT', 'PROPOSAL', 'NEGOTIATION', 'WON'];
 
+// Tipos de atividade: são categorias (não estados) → paleta fixa de gráficos, em ordem
 const ACT_TYPES = {
-  CALL:    { label: 'Ligação',  color: '#60a5fa', icon: <PhoneOutlined /> },
-  EMAIL:   { label: 'E-mail',   color: '#a78bfa', icon: <MailOutlined /> },
-  MEETING: { label: 'Reunião',  color: '#fbbf24', icon: <TeamOutlined /> },
-  VISIT:   { label: 'Visita',   color: '#4ade80', icon: <EnvironmentOutlined /> },
-  TASK:    { label: 'Tarefa',   color: '#f97316', icon: <CheckSquareOutlined /> },
-  NOTE:    { label: 'Nota',     color: '#94a3b8', icon: <FileTextOutlined /> },
+  CALL:    { label: 'Ligação',  color: CHART_COLORS[0], icon: <PhoneOutlined /> },
+  EMAIL:   { label: 'E-mail',   color: CHART_COLORS[1], icon: <MailOutlined /> },
+  MEETING: { label: 'Reunião',  color: CHART_COLORS[2], icon: <TeamOutlined /> },
+  VISIT:   { label: 'Visita',   color: CHART_COLORS[3], icon: <EnvironmentOutlined /> },
+  TASK:    { label: 'Tarefa',   color: CHART_COLORS[4], icon: <CheckSquareOutlined /> },
+  NOTE:    { label: 'Nota',     color: CHART_COLORS[5], icon: <FileTextOutlined /> },
 };
 
+// Status de atividade: são estados → cores de estado
 const ACT_STATUS = {
-  PENDING:   { label: 'Pendente',   color: '#fbbf24', icon: <ClockCircleOutlined /> },
-  DONE:      { label: 'Concluído',  color: '#4ade80', icon: <CheckCircleOutlined /> },
-  CANCELLED: { label: 'Cancelado',  color: '#f87171', icon: <CloseCircleOutlined /> },
+  PENDING:   { label: 'Pendente',   color: 'var(--cl-warning)', icon: <ClockCircleOutlined /> },
+  DONE:      { label: 'Concluído',  color: 'var(--cl-success)', icon: <CheckCircleOutlined /> },
+  CANCELLED: { label: 'Cancelado',  color: 'var(--cl-danger)',  icon: <CloseCircleOutlined /> },
 };
-
-const PIE_COLORS = ['#60a5fa', '#a78bfa', '#fbbf24', '#4ade80', '#f97316', '#94a3b8'];
 
 const fmt = (v) => v ? `R$ ${parseFloat(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—';
 
@@ -97,12 +99,12 @@ function Dashboard({ contacts, opportunities, activities }) {
     .slice(0, 8);
 
   const kpis = [
-    { label: 'Contatos Ativos', value: contacts.filter(c => c.active).length, color: '#60a5fa', icon: <ContactsOutlined /> },
-    { label: 'Oportunidades Ativas', value: activeOpps.length, color: '#fbbf24', icon: <FundOutlined /> },
-    { label: 'Pipeline Total', value: fmt(pipeline), color: '#4ade80', icon: <BarChartOutlined />, small: true },
-    { label: 'Valor Ganho', value: fmt(wonValue), color: '#a78bfa', icon: <TrophyOutlined />, small: true },
-    { label: 'Taxa Conversão', value: `${convRate}%`, color: convRate >= 60 ? '#4ade80' : convRate >= 30 ? '#fbbf24' : '#f87171', icon: <CheckCircleOutlined /> },
-    { label: 'Atividades Pendentes', value: pending, color: pending > 0 ? '#f97316' : '#4ade80', icon: <ClockCircleOutlined /> },
+    { label: 'Contatos Ativos', value: contacts.filter(c => c.active).length, color: 'var(--cl-secondary)', icon: <ContactsOutlined /> },
+    { label: 'Oportunidades Ativas', value: activeOpps.length, color: 'var(--cl-primary-text)', icon: <FundOutlined /> },
+    { label: 'Pipeline Total', value: fmt(pipeline), color: 'var(--cl-warning)', icon: <BarChartOutlined />, small: true },
+    { label: 'Valor Ganho', value: fmt(wonValue), color: 'var(--cl-success)', icon: <TrophyOutlined />, small: true },
+    { label: 'Taxa Conversão', value: `${convRate}%`, color: convRate >= 60 ? 'var(--cl-success)' : convRate >= 30 ? 'var(--cl-warning)' : 'var(--cl-danger)', icon: <CheckCircleOutlined /> },
+    { label: 'Atividades Pendentes', value: pending, color: pending > 0 ? 'var(--cl-warning)' : 'var(--cl-success)', icon: <ClockCircleOutlined /> },
   ];
 
   return (
@@ -143,7 +145,7 @@ function Dashboard({ contacts, opportunities, activities }) {
               <ResponsiveContainer width="100%" height={200} style={{ outline: 'none' }}>
                 <PieChart style={{ outline: 'none' }}>
                   <Pie data={actData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} strokeWidth={0}>
-                    {actData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                    {actData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                   </Pie>
                   <RTooltip contentStyle={{ background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)', borderRadius: 8, fontSize: 12 }} />
                 </PieChart>
@@ -407,21 +409,21 @@ export default function CRM() {
 
   // ─── table columns ────
   const contactCols = [
-    { title: '#', dataIndex: 'code', width: 60, render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 12 }}>{v ? String(v).padStart(4, '0') : '—'}</span> },
+    { title: '#', dataIndex: 'code', width: 60, render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 12 }}>{v ? String(v).padStart(4, '0') : '—'}</span> },
     { title: 'Nome', key: 'name', render: (_, r) => <div><div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</div><div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{r.position}</div></div> },
     { title: 'Empresa', key: 'company', render: (_, r) => <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{r.company?.name || '—'}</span> },
     { title: 'E-mail', dataIndex: 'email', key: 'email', render: v => <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{v || '—'}</span> },
     { title: 'Telefone', dataIndex: 'phone', key: 'phone', render: v => <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{v || '—'}</span> },
-    { title: 'Oport.', key: 'opps', width: 70, align: 'center', render: (_, r) => <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600 }}>{r._count?.opportunities ?? 0}</span> },
+    { title: 'Oport.', key: 'opps', width: 70, align: 'center', render: (_, r) => <span style={{ fontSize: 12, color: 'var(--cl-warning)', fontWeight: 600 }}>{r._count?.opportunities ?? 0}</span> },
     canEdit && { title: '', key: 'actions', width: 80, render: (_, r) => <Space size={4}><Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openContact(r)} /></Tooltip><Tooltip title="Excluir"><Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={() => setDeleteModal({ type: 'contact', id: r.id, name: r.name })} /></Tooltip></Space> },
   ].filter(Boolean);
 
   const oppCols = [
-    { title: '#', dataIndex: 'code', width: 60, render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 12 }}>{v ? String(v).padStart(4, '0') : '—'}</span> },
+    { title: '#', dataIndex: 'code', width: 60, render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 12 }}>{v ? String(v).padStart(4, '0') : '—'}</span> },
     { title: 'Título', key: 'title', minWidth: 160, render: (_, r) => <div><div style={{ fontWeight: 600, fontSize: 13, color: 'var(--cl-text-hi)' }}>{r.title}</div><div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{r.company?.name}</div></div> },
     { title: 'Estágio', dataIndex: 'stage', width: 110, render: v => <StageBadge stage={v} /> },
-    { title: 'Valor', dataIndex: 'value', width: 120, render: v => <span style={{ fontSize: 12, fontWeight: 600, color: '#4ade80' }}>{fmt(v)}</span> },
-    { title: 'Prob.', dataIndex: 'probability', width: 60, align: 'center', render: v => v > 0 ? <span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600 }}>{v}%</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
+    { title: 'Valor', dataIndex: 'value', width: 120, render: v => <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--cl-success)' }}>{fmt(v)}</span> },
+    { title: 'Prob.', dataIndex: 'probability', width: 60, align: 'center', render: v => v > 0 ? <span style={{ fontSize: 12, color: 'var(--cl-warning)', fontWeight: 600 }}>{v}%</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
     { title: 'Contato', key: 'contact', render: (_, r) => <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{r.contact?.name || '—'}</span> },
     { title: 'Responsável', key: 'owner', render: (_, r) => <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{r.owner?.name || '—'}</span> },
     { title: 'Fechamento', dataIndex: 'expectedClose', width: 105, render: v => v ? <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{dayjs(v).format('DD/MM/YYYY')}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
@@ -434,7 +436,7 @@ export default function CRM() {
     { title: 'Status', dataIndex: 'status', width: 110, render: v => { const s = ACT_STATUS[v]; return s ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: s.color }}>{s.icon} {s.label}</span> : null; } },
     { title: 'Oportunidade', key: 'opp', render: (_, r) => r.opportunity ? <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{r.opportunity.title}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
     { title: 'Responsável', key: 'user', render: (_, r) => <span style={{ fontSize: 12, color: 'var(--cl-text-soft)' }}>{r.user?.name || '—'}</span> },
-    { title: 'Agendado', dataIndex: 'scheduledAt', width: 110, render: v => v ? <span style={{ fontSize: 11, color: dayjs(v).isBefore(dayjs()) ? '#f87171' : 'var(--cl-text-faint)' }}>{dayjs(v).format('DD/MM/YYYY')}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
+    { title: 'Agendado', dataIndex: 'scheduledAt', width: 110, render: v => v ? <span style={{ fontSize: 11, color: dayjs(v).isBefore(dayjs()) ? 'var(--cl-danger)' : 'var(--cl-text-faint)' }}>{dayjs(v).format('DD/MM/YYYY')}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
     canEdit && { title: '', key: 'actions', width: 80, render: (_, r) => <Space size={4}><Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openAct(r)} /></Tooltip><Tooltip title="Excluir"><Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={() => setDeleteModal({ type: 'act', id: r.id, name: r.title })} /></Tooltip></Space> },
   ].filter(Boolean);
 
@@ -491,7 +493,7 @@ export default function CRM() {
         centered width={520}
         className="crm-modal"
         style={{ maxWidth: 'calc(100vw - 16px)' }}
-        footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => contactForm.submit()} style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Cadastrar'}</Button></Space>}
+        footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => contactForm.submit()} style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Cadastrar'}</Button></Space>}
       >
         <Form form={contactForm} layout="vertical" onFinish={handleSaveContact}>
           <Form.Item name="name" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
@@ -522,7 +524,7 @@ export default function CRM() {
         centered width={600}
         className="crm-modal"
         style={{ maxWidth: 'calc(100vw - 16px)' }}
-        footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => oppForm.submit()} style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Criar'}</Button></Space>}
+        footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => oppForm.submit()} style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Criar'}</Button></Space>}
       >
         <Form form={oppForm} layout="vertical" onFinish={handleSaveOpp}>
           <Form.Item name="title" label="Título da Oportunidade" rules={[{ required: true, message: 'Informe o título' }]}>
@@ -577,7 +579,7 @@ export default function CRM() {
         centered width={520}
         className="crm-modal"
         style={{ maxWidth: 'calc(100vw - 16px)' }}
-        footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => actForm.submit()} style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Registrar'}</Button></Space>}
+        footer={<Space><Button onClick={() => setModal(null)}>Cancelar</Button><Button type="primary" loading={saving} onClick={() => actForm.submit()} style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>{modal?.editing ? 'Salvar' : 'Registrar'}</Button></Space>}
       >
         <Form form={actForm} layout="vertical" onFinish={handleSaveAct}>
           <Row gutter={{ xs: 8, sm: 12 }}>
@@ -638,7 +640,7 @@ export default function CRM() {
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
-        title={<span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 18 }} /><span style={{ fontWeight: 700 }}>Excluir registro</span></span>}
+        title={<span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 18 }} /><span style={{ fontWeight: 700 }}>Excluir registro</span></span>}
         footer={<Space><Button onClick={() => setDeleteModal(null)}>Cancelar</Button><Button danger type="primary" loading={deleteLoading} onClick={handleDelete}>Excluir permanentemente</Button></Space>}
       >
         {deleteModal && <p style={{ padding: '8px 0' }}>Deseja excluir <strong>"{deleteModal.name}"</strong>? Esta ação não pode ser desfeita.</p>}

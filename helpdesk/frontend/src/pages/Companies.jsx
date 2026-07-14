@@ -16,13 +16,14 @@ import CompanyAttachments from '../components/CompanyAttachments';
 
 const { TextArea } = Input;
 
+// Cores de categoria (não de estado) — paleta fixa de gráficos, com fundo em alpha
 const avatarColors = [
-  ['rgba(37,99,235,0.25)', '#60a5fa'],
-  ['rgba(29,78,216,0.25)', '#93c5fd'],
-  ['rgba(190,24,93,0.25)', '#f472b6'],
-  ['rgba(217,119,6,0.25)', '#fbbf24'],
-  ['rgba(124,58,237,0.25)', '#a78bfa'],
-  ['rgba(220,38,38,0.25)', '#f87171'],
+  ['rgba(37,99,235,0.25)', '#2563eb'],
+  ['rgba(217,119,6,0.25)', '#d97706'],
+  ['rgba(225,29,72,0.25)', '#e11d48'],
+  ['rgba(5,150,105,0.25)', '#059669'],
+  ['rgba(8,145,178,0.25)', '#0891b2'],
+  ['rgba(101,163,13,0.25)', '#65a30d'],
 ];
 const getColor = (name = '') => avatarColors[(name.charCodeAt(0) || 0) % avatarColors.length];
 
@@ -174,7 +175,7 @@ export default function Companies() {
       title: '#', dataIndex: 'code', key: 'code', width: 60,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 12 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 12 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -218,7 +219,7 @@ export default function Companies() {
     {
       title: 'Funcionários', key: 'employees',
       sorter: (a, b) => (a._count?.employees ?? 0) - (b._count?.employees ?? 0),
-      render: (_, r) => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
+      render: (_, r) => <span style={{ fontWeight: 600, color: 'var(--cl-primary-text)', fontSize: 13 }}>{r._count?.employees ?? 0}</span>,
     },
     {
       title: 'Chamados', key: 'tickets',
@@ -246,7 +247,7 @@ export default function Companies() {
         <Space size={4}>
           <Tooltip title="Ver detalhes">
             <Button type="text" icon={<EyeOutlined />} size="small"
-              style={{ color: '#60a5fa' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
+              style={{ color: 'var(--cl-primary-text)' }} onClick={() => navigate(`/app/companies/${record.id}`)} />
           </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small"
@@ -324,7 +325,7 @@ export default function Companies() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BankOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <BankOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Empresa' : 'Nova Empresa'}
@@ -341,7 +342,7 @@ export default function Companies() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -504,7 +505,7 @@ export default function Companies() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir empresa</span>
           </div>
         }
@@ -523,33 +524,33 @@ export default function Companies() {
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
             {hasLinks ? (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--cl-danger)', fontSize: 13, marginBottom: 10 }}>
                   Os seguintes registros vinculados também serão excluídos:
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {deleteModal.employees > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>👤 Funcionários</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.employees}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--cl-danger)' }}>{deleteModal.employees}</span>
                     </div>
                   )}
                   {deleteModal.tickets > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>🎫 Chamados (e comentários)</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.tickets}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--cl-danger)' }}>{deleteModal.tickets}</span>
                     </div>
                   )}
                   {deleteModal.categories > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>🏷️ Categorias</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.categories}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--cl-danger)' }}>{deleteModal.categories}</span>
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-primary-text)' }}>
                 Esta empresa não possui registros vinculados.
               </div>
             )}

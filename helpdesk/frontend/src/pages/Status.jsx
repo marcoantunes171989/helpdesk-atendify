@@ -24,15 +24,16 @@ import { normalize } from '../utils/constants';
 
 const { TextArea } = Input;
 
+// Paleta Atendexa — swatches de cor para status customizados
 const PRESET_COLORS = [
-  { label: 'Cinza',    value: '#6b7280' },
-  { label: 'Azul',    value: '#1d4ed8' },
-  { label: 'Amarelo', value: '#d97706' },
-  { label: 'Verde',   value: '#16a34a' },
-  { label: 'Roxo',    value: '#7c3aed' },
-  { label: 'Vermelho',value: '#dc2626' },
-  { label: 'Rosa',    value: '#be185d' },
-  { label: 'Ciano',   value: '#0891b2' },
+  { label: 'Cinza',    value: '#94a3b8' },
+  { label: 'Azul',    value: '#2563eb' },
+  { label: 'Amarelo', value: '#f59e0b' },
+  { label: 'Verde',   value: '#10b981' },
+  { label: 'Roxo',    value: '#8b5cf6' },
+  { label: 'Vermelho',value: '#ef4444' },
+  { label: 'Rosa',    value: '#e11d48' },
+  { label: 'Ciano',   value: '#06b6d4' },
 ];
 
 function ColorPicker({ value, onChange }) {
@@ -78,7 +79,7 @@ export default function Status() {
   const openCreate = () => {
     setEditing(null);
     form.resetFields();
-    form.setFieldValue('color', '#6b7280');
+    form.setFieldValue('color', '#94a3b8');
     setDrawerOpen(true);
   };
 
@@ -88,7 +89,7 @@ export default function Status() {
       name: record.name,
       description: record.description,
       observation: record.observation,
-      color: record.color || '#6b7280',
+      color: record.color || '#94a3b8',
       active: record.active,
       builtinStatus: record.builtinStatus || null,
     });
@@ -133,7 +134,7 @@ export default function Status() {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => a.code - b.code,
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>
           {String(v).padStart(4, '0')}
         </span>
       ),
@@ -162,7 +163,7 @@ export default function Status() {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => (
-        <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
+        <span style={{ fontWeight: 600, color: 'var(--cl-primary-text)', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
     },
     {
@@ -247,7 +248,7 @@ export default function Status() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover status</span>
           </div>
         }
@@ -267,11 +268,11 @@ export default function Status() {
               Você está prestes a remover o status <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-danger)', fontWeight: 500 }}>
                 Este status está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
               </div>
             ) : (
-              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-primary-text)' }}>
                 Este status não possui chamados vinculados e pode ser removido com segurança.
               </div>
             )}
@@ -283,8 +284,8 @@ export default function Status() {
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TagsOutlined style={{ color: '#a78bfa', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TagsOutlined style={{ color: 'var(--cl-purple)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Status' : 'Novo Status'}
@@ -300,7 +301,7 @@ export default function Status() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

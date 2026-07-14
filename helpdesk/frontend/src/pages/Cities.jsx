@@ -147,7 +147,7 @@ export default function Cities() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 60,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(3, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>{v ? String(v).padStart(3, '0') : '—'}</span>,
     },
     {
       title: 'UF', key: 'uf', width: 70,
@@ -276,7 +276,7 @@ export default function Cities() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <EnvironmentOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <EnvironmentOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Cidade' : 'Nova Cidade'}</span>
           </div>
@@ -290,7 +290,7 @@ export default function Cities() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -329,7 +329,7 @@ export default function Cities() {
         centered
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir cidade</span>
           </div>
         }
@@ -356,7 +356,7 @@ export default function Cities() {
         centered
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover todas as cidades</span>
           </div>
         }

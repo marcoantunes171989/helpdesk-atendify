@@ -11,40 +11,43 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { agendaTecnicaService } from '../services/api';
+import { CHART_COLORS } from '../theme/colors';
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { Dragger } = Upload;
 
 // ─── Paletas ──────────────────────────────────────────────────────────────────
+// Categorias (não estados) — derivadas da paleta fixa de gráficos
 const FERIAS_TIPO_COLORS = {
-  'Férias':              '#10b981',
-  'Licença':             '#f59e0b',
-  'Licença Maternidade': '#f472b6',
-  'Licença cirurgia':    '#ef4444',
+  'Férias':              CHART_COLORS[3],
+  'Licença':             CHART_COLORS[1],
+  'Licença Maternidade': CHART_COLORS[2],
+  'Licença cirurgia':    CHART_COLORS[5],
 };
-const PLANTAO_TIPO_COLORS = { Plantão: '#3b82f6', Férias: '#10b981', Licença: '#f59e0b' };
-const EQUIPE_COLORS = { Desenvolvimento: '#8b5cf6', Campo: '#3b82f6', ERP: '#f59e0b', Suporte: '#06b6d4' };
+const PLANTAO_TIPO_COLORS = { Plantão: CHART_COLORS[0], Férias: CHART_COLORS[3], Licença: CHART_COLORS[1] };
+const EQUIPE_COLORS = { Desenvolvimento: CHART_COLORS[2], Campo: CHART_COLORS[0], ERP: CHART_COLORS[1], Suporte: CHART_COLORS[4] };
+// Mesmas 4 categorias de registro reaparecem nos cards de resumo, busca e importação
+const REGISTRO_TIPO_COLORS = { visitas: CHART_COLORS[0], plantoes: CHART_COLORS[2], ferias: CHART_COLORS[3], tecnicos: CHART_COLORS[1] };
 
 function tipoColor(tipo) {
   const map = {
-    'sm louveira': '#3b82f6', 'sm honorato': '#8b5cf6', 'sm ramos': '#6366f1',
-    'sm rocha': '#818cf8', 'sm leve': '#a5b4fc', 'sm': '#60a5fa',
-    'atendimento externo': '#10b981', 'carro em uso': '#f59e0b',
-    'implantacao': '#f97316', 'intersolid': '#06b6d4', 'comercial': '#84cc16',
+    'sm louveira': CHART_COLORS[0], 'sm honorato': CHART_COLORS[2], 'sm ramos': CHART_COLORS[4],
+    'sm rocha': CHART_COLORS[5], 'sm leve': CHART_COLORS[1], 'sm': CHART_COLORS[0],
+    'atendimento externo': CHART_COLORS[3], 'carro em uso': CHART_COLORS[1],
+    'implantacao': CHART_COLORS[2], 'intersolid': CHART_COLORS[4], 'comercial': CHART_COLORS[5],
   };
   const k = normalizeKey(tipo || '');
   for (const [key, color] of Object.entries(map)) { if (k.includes(key)) return color; }
-  return '#6b7280';
+  return 'var(--cl-text-faint)';
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function makeId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function initials(n) { return (n || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase(); }
 function avatarColor(n) {
-  const p = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#84cc16','#f97316'];
   let h = 0; for (const c of (n || '')) h = ((h << 5) - h + c.charCodeAt(0)) | 0;
-  return p[Math.abs(h) % p.length];
+  return CHART_COLORS[Math.abs(h) % CHART_COLORS.length];
 }
 function normalizeKey(s) {
   return String(s).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
@@ -219,7 +222,7 @@ function TecAvatar({ nome, size = 28 }) {
 }
 
 function TipoBadge({ tipo, colorFn }) {
-  const color = colorFn ? colorFn(tipo) : '#6b7280';
+  const color = colorFn ? colorFn(tipo) : 'var(--cl-text-faint)';
   return (
     <Tag style={{ background:color+'22', color, border:`1px solid ${color}44`, borderRadius:20, fontSize:11, fontWeight:600, padding:'0 8px' }}>
       {tipo}
@@ -449,11 +452,11 @@ export default function AgendaTecnica() {
   }, [tecnicos]);
 
   const EQ_STYLE = {
-    Campo:           { icon: <CarOutlined />,    color: '#3b82f6' },
-    ERP:             { icon: <LaptopOutlined />, color: '#f59e0b' },
-    Suporte:         { icon: <TeamOutlined />,   color: '#06b6d4' },
-    Desenvolvimento: { icon: <LaptopOutlined />, color: '#8b5cf6' },
-    Geral:           { icon: <TeamOutlined />,   color: '#6b7280' },
+    Campo:           { icon: <CarOutlined />,    color: CHART_COLORS[0] },
+    ERP:             { icon: <LaptopOutlined />, color: CHART_COLORS[1] },
+    Suporte:         { icon: <TeamOutlined />,   color: CHART_COLORS[4] },
+    Desenvolvimento: { icon: <LaptopOutlined />, color: CHART_COLORS[2] },
+    Geral:           { icon: <TeamOutlined />,   color: 'var(--cl-text-faint)' },
   };
 
   // ─── CRUD ──────────────────────────────────────────────────────────────────────
@@ -485,7 +488,7 @@ export default function AgendaTecnica() {
   function handleClearAll() {
     Modal.confirm({
       title: 'Excluir todos os registros',
-      icon: <ExclamationCircleOutlined style={{ color: '#ef4444' }} />,
+      icon: <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)' }} />,
       content: 'Isso irá remover TODOS os registros de visitas, plantões, férias e técnicos. Esta ação não pode ser desfeita.',
       okText: 'Excluir tudo', okType: 'danger', cancelText: 'Cancelar',
       onOk: async () => {
@@ -606,7 +609,7 @@ export default function AgendaTecnica() {
   const colsPlantoes = [
     { title:'Data', dataIndex:'data', width:110, render: v => v ? <span style={{ color:'var(--cl-text)', fontSize:13 }}>{dayjs(v).isValid() ? dayjs(v).format('DD/MM/YYYY') : v}</span> : '—' },
     { title:'Técnico', dataIndex:'tecnico', render: v => <TecnicoCell nome={v} /> },
-    { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={t => PLANTAO_TIPO_COLORS[t] || '#6b7280'} /> },
+    { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={t => PLANTAO_TIPO_COLORS[t] || 'var(--cl-text-faint)'} /> },
     { title:'Aba', dataIndex:'aba', render: v => <Tag style={{ borderRadius:20, fontSize:11, color:'var(--cl-text-soft)', borderColor:'var(--cl-border)' }}>{v}</Tag> },
     { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'plantao' }, 'plantao')} onDelete={() => handleDelete(r.id, 'plantao')} /> },
   ];
@@ -617,8 +620,8 @@ export default function AgendaTecnica() {
       <div><div style={{ fontWeight:600, fontSize:13, color:'var(--cl-text-hi)' }}>{r.mes}</div>
       <div style={{ fontSize:11, color:'var(--cl-text-soft)' }}>{r.periodo}</div></div>
     )},
-    { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={t => FERIAS_TIPO_COLORS[t] || '#6b7280'} /> },
-    { title:'Equipe', dataIndex:'equipe', render: v => { const color = EQUIPE_COLORS[v] || '#6b7280'; return <Tag style={{ background:color+'22', color, border:`1px solid ${color}44`, borderRadius:20, fontSize:11 }}>{v || '—'}</Tag>; } },
+    { title:'Tipo', dataIndex:'tipo', render: v => <TipoBadge tipo={v} colorFn={t => FERIAS_TIPO_COLORS[t] || 'var(--cl-text-faint)'} /> },
+    { title:'Equipe', dataIndex:'equipe', render: v => { const color = EQUIPE_COLORS[v] || 'var(--cl-text-faint)'; return <Tag style={{ background:color+'22', color, border:`1px solid ${color}44`, borderRadius:20, fontSize:11 }}>{v || '—'}</Tag>; } },
     { title:'', key:'acoes', width:72, align:'right', render: (_, r) => <AcoesCell onEdit={() => openForm({ ...r, tipoRegistro:'ferias' }, 'ferias')} onDelete={() => handleDelete(r.id, 'ferias')} /> },
   ];
 
@@ -708,7 +711,7 @@ export default function AgendaTecnica() {
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:28 }}>
           {Object.entries(tecsPorEquipe).map(([equipe, lista], idx) => {
-            const { icon, color } = EQ_STYLE[equipe] || { icon:<TeamOutlined />, color:'#6b7280' };
+            const { icon, color } = EQ_STYLE[equipe] || { icon:<TeamOutlined />, color:'var(--cl-text-faint)' };
             return (
               <div key={equipe}>
                 {idx > 0 && <Divider style={{ margin:'0 0 24px' }} />}
@@ -727,7 +730,7 @@ export default function AgendaTecnica() {
             <Divider style={{ margin:0 }} />
             <div>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-                <ClockCircleOutlined style={{ color:'#10b981', fontSize:16 }} />
+                <ClockCircleOutlined style={{ color:'var(--cl-success)', fontSize:16 }} />
                 <span style={{ fontWeight:700, fontSize:15, color:'var(--cl-text-hi)' }}>Horários</span>
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:10 }}>
@@ -736,7 +739,7 @@ export default function AgendaTecnica() {
                     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                       <span style={{ fontWeight:600, fontSize:13, color:'var(--cl-text-hi)' }}>{t.nome}</span>
                       {t.modalidade && (
-                        <Tag style={{ borderRadius:20, fontSize:10, padding:'0 6px', background: t.modalidade.toLowerCase().includes('home') ? '#8b5cf622' : '#3b82f622', color: t.modalidade.toLowerCase().includes('home') ? '#8b5cf6' : '#3b82f6', border:`1px solid ${t.modalidade.toLowerCase().includes('home') ? '#8b5cf644' : '#3b82f644'}` }}>
+                        <Tag style={{ borderRadius:20, fontSize:10, padding:'0 6px', background: t.modalidade.toLowerCase().includes('home') ? 'rgba(139,92,246,0.13)' : 'rgba(37,99,235,0.13)', color: t.modalidade.toLowerCase().includes('home') ? 'var(--cl-purple)' : 'var(--cl-primary-text)', border:`1px solid ${t.modalidade.toLowerCase().includes('home') ? 'rgba(139,92,246,0.27)' : 'rgba(37,99,235,0.27)'}` }}>
                           {t.modalidade.toLowerCase().includes('home') ? <><HomeOutlined /> HO</> : 'Presencial'}
                         </Tag>
                       )}
@@ -761,7 +764,7 @@ export default function AgendaTecnica() {
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, gap:16, flexWrap:'wrap' }}>
         <div style={{ display:'flex', alignItems:'center', gap:14 }}>
           <div style={{ width:48, height:48, borderRadius:12, flexShrink:0, background:'linear-gradient(135deg,rgba(99,102,241,0.25),rgba(139,92,246,0.18))', border:'1px solid rgba(139,92,246,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <ScheduleOutlined style={{ fontSize:22, color:'#a78bfa' }} />
+            <ScheduleOutlined style={{ fontSize:22, color:'var(--cl-purple)' }} />
           </div>
           <div>
             <h1 className="page-title" style={{ marginBottom:2 }}>Agenda Técnica</h1>
@@ -808,12 +811,12 @@ export default function AgendaTecnica() {
         <div style={{ marginBottom:20, background:'var(--cl-bg-soft)', border:'1px solid var(--cl-border)', borderRadius:12, padding:20 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
             <div style={{ fontWeight:700, fontSize:15, color:'var(--cl-text-hi)' }}>
-              Resultados para: <span style={{ color:'#60a5fa' }}>{searchTec}</span>
+              Resultados para: <span style={{ color:'var(--cl-primary-text)' }}>{searchTec}</span>
             </div>
             <Space>
-              <Tag style={{ borderRadius:20, background:'#3b82f622', color:'#3b82f6', border:'1px solid #3b82f644' }}>{searchResults.visitas.length} visitas</Tag>
-              <Tag style={{ borderRadius:20, background:'#8b5cf622', color:'#8b5cf6', border:'1px solid #8b5cf644' }}>{searchResults.plantoes.length} plantões</Tag>
-              <Tag style={{ borderRadius:20, background:'#10b98122', color:'#10b981', border:'1px solid #10b98144' }}>{searchResults.ferias.length} férias</Tag>
+              <Tag style={{ borderRadius:20, background:REGISTRO_TIPO_COLORS.visitas+'22', color:REGISTRO_TIPO_COLORS.visitas, border:`1px solid ${REGISTRO_TIPO_COLORS.visitas}44` }}>{searchResults.visitas.length} visitas</Tag>
+              <Tag style={{ borderRadius:20, background:REGISTRO_TIPO_COLORS.plantoes+'22', color:REGISTRO_TIPO_COLORS.plantoes, border:`1px solid ${REGISTRO_TIPO_COLORS.plantoes}44` }}>{searchResults.plantoes.length} plantões</Tag>
+              <Tag style={{ borderRadius:20, background:REGISTRO_TIPO_COLORS.ferias+'22', color:REGISTRO_TIPO_COLORS.ferias, border:`1px solid ${REGISTRO_TIPO_COLORS.ferias}44` }}>{searchResults.ferias.length} férias</Tag>
             </Space>
           </div>
 
@@ -839,7 +842,7 @@ export default function AgendaTecnica() {
                 {searchResults.plantoes.map(p => (
                   <div key={p.id} style={{ display:'flex', alignItems:'center', gap:8, background:'var(--cl-bg-input)', border:'1px solid var(--cl-border)', borderRadius:8, padding:'6px 12px' }}>
                     <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{p.data}</span>
-                    <TipoBadge tipo={p.tipo} colorFn={t => PLANTAO_TIPO_COLORS[t] || '#6b7280'} />
+                    <TipoBadge tipo={p.tipo} colorFn={t => PLANTAO_TIPO_COLORS[t] || 'var(--cl-text-faint)'} />
                     <Tag style={{ borderRadius:20, fontSize:10, color:'var(--cl-text-soft)', borderColor:'var(--cl-border)' }}>{p.aba}</Tag>
                   </div>
                 ))}
@@ -855,7 +858,7 @@ export default function AgendaTecnica() {
                   <div key={f.id} style={{ display:'flex', alignItems:'center', gap:8, background:'var(--cl-bg-input)', border:'1px solid var(--cl-border)', borderRadius:8, padding:'6px 12px' }}>
                     <span style={{ fontWeight:600, fontSize:13, color:'var(--cl-text-hi)' }}>{f.colaborador}</span>
                     <span style={{ fontSize:12, color:'var(--cl-text-soft)' }}>{f.mes} · {f.periodo}</span>
-                    <TipoBadge tipo={f.tipo} colorFn={t => FERIAS_TIPO_COLORS[t] || '#6b7280'} />
+                    <TipoBadge tipo={f.tipo} colorFn={t => FERIAS_TIPO_COLORS[t] || 'var(--cl-text-faint)'} />
                   </div>
                 ))}
               </div>
@@ -871,10 +874,10 @@ export default function AgendaTecnica() {
       {/* Cards resumo */}
       <Row gutter={[14,14]} style={{ marginBottom:24 }}>
         {[
-          { label:'Visitas externas',   value:visitas.length,  icon:<CarOutlined />,         color:'#3b82f6' },
-          { label:'Plantões agendados', value:plantoes.length, icon:<CalendarOutlined />,    color:'#8b5cf6' },
-          { label:'Férias / Licenças',  value:ferias.length,   icon:<ClockCircleOutlined />, color:'#10b981' },
-          { label:'Técnicos ativos',    value:tecnicos.length, icon:<TeamOutlined />,        color:'#f59e0b' },
+          { label:'Visitas externas',   value:visitas.length,  icon:<CarOutlined />,         color:REGISTRO_TIPO_COLORS.visitas },
+          { label:'Plantões agendados', value:plantoes.length, icon:<CalendarOutlined />,    color:REGISTRO_TIPO_COLORS.plantoes },
+          { label:'Férias / Licenças',  value:ferias.length,   icon:<ClockCircleOutlined />, color:REGISTRO_TIPO_COLORS.ferias },
+          { label:'Técnicos ativos',    value:tecnicos.length, icon:<TeamOutlined />,        color:REGISTRO_TIPO_COLORS.tecnicos },
         ].map(c => <Col xs={12} sm={12} md={6} key={c.label}><SummaryCard {...c} /></Col>)}
       </Row>
 
@@ -905,10 +908,10 @@ export default function AgendaTecnica() {
               <div style={{ fontWeight:600, fontSize:13, color:'var(--cl-text-hi)', marginBottom:10 }}>Dados encontrados</div>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                 {[
-                  { label:'Visitas',  count:importPreview.visitas.length,  color:'#3b82f6' },
-                  { label:'Plantões', count:importPreview.plantoes.length, color:'#8b5cf6' },
-                  { label:'Férias',   count:importPreview.ferias.length,   color:'#10b981' },
-                  { label:'Técnicos', count:importPreview.tecnicos.length, color:'#f59e0b' },
+                  { label:'Visitas',  count:importPreview.visitas.length,  color:REGISTRO_TIPO_COLORS.visitas },
+                  { label:'Plantões', count:importPreview.plantoes.length, color:REGISTRO_TIPO_COLORS.plantoes },
+                  { label:'Férias',   count:importPreview.ferias.length,   color:REGISTRO_TIPO_COLORS.ferias },
+                  { label:'Técnicos', count:importPreview.tecnicos.length, color:REGISTRO_TIPO_COLORS.tecnicos },
                 ].map(({ label, count, color }) => (
                   <div key={label} style={{ background:color+'18', border:`1px solid ${color}33`, borderRadius:8, padding:'6px 14px', textAlign:'center' }}>
                     <div style={{ fontWeight:700, fontSize:18, color }}>{count}</div>

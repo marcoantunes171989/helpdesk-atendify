@@ -89,7 +89,7 @@ export default function Technicians() {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>
           {String(v ?? 0).padStart(4, '0')}
         </span>
       ),
@@ -115,7 +115,7 @@ export default function Technicians() {
       title: 'Chamados', key: 'tickets',
       sorter: (a, b) => (a._count?.tickets ?? 0) - (b._count?.tickets ?? 0),
       render: (_, r) => (
-        <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
+        <span style={{ fontWeight: 600, color: 'var(--cl-primary-text)', fontSize: 13 }}>{r._count?.tickets ?? 0}</span>
       ),
     },
     {
@@ -193,7 +193,7 @@ export default function Technicians() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover técnico</span>
           </div>
         }
@@ -213,11 +213,11 @@ export default function Technicians() {
               Você está prestes a remover o técnico <strong>{deleteModal.name}</strong>. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-danger)', fontWeight: 500 }}>
                 Este técnico está vinculado a <strong>{deleteModal.tickets} chamado{deleteModal.tickets !== 1 ? 's' : ''}</strong> e não pode ser removido.
               </div>
             ) : (
-              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-primary-text)' }}>
                 Este técnico não possui chamados vinculados e pode ser removido com segurança.
               </div>
             )}
@@ -229,8 +229,8 @@ export default function Technicians() {
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(22,163,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ToolOutlined style={{ color: '#4ade80', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ToolOutlined style={{ color: 'var(--cl-success)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Técnico' : 'Novo Técnico'}
@@ -246,7 +246,7 @@ export default function Technicians() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

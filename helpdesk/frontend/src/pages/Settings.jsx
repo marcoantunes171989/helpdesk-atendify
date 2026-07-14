@@ -48,7 +48,7 @@ export default function Settings() {
         }}>
           <div style={{
             fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.12em', color: '#60a5fa', marginBottom: 6,
+            letterSpacing: '0.12em', color: 'var(--cl-primary-text)', marginBottom: 6,
           }}>
             Aparência
           </div>
@@ -67,7 +67,7 @@ export default function Settings() {
                     flex: '1 1 140px',
                     padding: '18px 20px 16px',
                     borderRadius: 12,
-                    border: `2px solid ${selected ? '#2563eb' : 'var(--cl-border)'}`,
+                    border: `2px solid ${selected ? 'var(--cl-primary)' : 'var(--cl-border)'}`,
                     background: selected ? 'rgba(37,99,235,0.08)' : 'var(--cl-bg)',
                     cursor: 'pointer',
                     transition: 'border-color 0.15s, background 0.15s',
@@ -79,14 +79,14 @@ export default function Settings() {
                     <div style={{
                       position: 'absolute', top: 10, right: 10,
                       width: 18, height: 18, borderRadius: '50%',
-                      background: '#2563eb',
+                      background: 'var(--cl-primary)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       <CheckOutlined style={{ color: '#fff', fontSize: 10 }} />
                     </div>
                   )}
                   <div style={{
-                    color: selected ? '#60a5fa' : 'var(--cl-text-muted)',
+                    color: selected ? 'var(--cl-primary-text)' : 'var(--cl-text-muted)',
                     marginBottom: 10,
                     transition: 'color 0.15s',
                   }}>

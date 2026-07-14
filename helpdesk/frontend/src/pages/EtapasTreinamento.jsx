@@ -108,7 +108,7 @@ export default function EtapasTreinamento() {
       width: 60,
       sorter: (a, b) => (a.order ?? 999) - (b.order ?? 999),
       render: v => v != null
-        ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa' }}>{String(v).padStart(2, '0')}</span>
+        ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)' }}>{String(v).padStart(2, '0')}</span>
         : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
@@ -223,7 +223,7 @@ export default function EtapasTreinamento() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.12)',
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <UnorderedListOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
+              <UnorderedListOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Etapa' : 'Nova Etapa de Treinamento'}
@@ -239,7 +239,7 @@ export default function EtapasTreinamento() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -284,7 +284,7 @@ export default function EtapasTreinamento() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover etapa</span>
           </div>
         }

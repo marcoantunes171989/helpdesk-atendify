@@ -99,7 +99,7 @@ export default function AppLayout() {
       >
         <div style={{
           width: 32, height: 32, borderRadius: 8,
-          background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+          background: 'linear-gradient(135deg, #1e40af, #2563eb)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           boxShadow: '0 0 12px rgba(37,99,235,0.4)',
         }}>
@@ -212,7 +212,7 @@ export default function AppLayout() {
                 cursor: 'pointer', padding: '4px 8px', borderRadius: 8,
               }}>
                 <Avatar size={32} style={{
-                  background: 'rgba(37,99,235,0.35)', color: '#60a5fa',
+                  background: 'rgba(37,99,235,0.35)', color: 'var(--cl-primary-text)',
                   fontWeight: 700, fontSize: 13,
                   border: '1px solid rgba(37,99,235,0.4)',
                 }}>

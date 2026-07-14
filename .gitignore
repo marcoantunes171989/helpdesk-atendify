@@ -1,6 +1,6 @@
-backend/
-frontend/
-apply-onrow.js
-fix-encoding.js
-.claude/
+/backend/
+/frontend/
+/apply-onrow.js
+/fix-encoding.js
+/.claude/
 node_modules/

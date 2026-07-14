@@ -20,6 +20,7 @@ import EmptyState from '../components/dashboard/EmptyState';
 import PeriodFilter, { periodLabel } from '../components/dashboard/PeriodFilter';
 import ProgressMetric from '../components/dashboard/ProgressMetric';
 import QueueItem from '../components/dashboard/QueueItem';
+import { CHART_COLORS } from '../theme/colors';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ function VolumeTooltip({ active, payload, label }) {
 
 const SLA_STATUS_COLOR = { green: 'var(--cl-success)', yellow: 'var(--cl-warning)', red: 'var(--cl-danger)', none: 'var(--cl-text-dim)' };
 const PRIORITY_LABEL = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Média', LOW: 'Baixa' };
-const CAT_COLORS = ['#2563eb', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#0891b2', '#7c3aed', '#0ea5e9', '#16a34a'];
+const CAT_COLORS = CHART_COLORS;
 
 // ─── Main component ───────────────────────────────────────────────────────────
 

@@ -314,7 +314,7 @@ export default function Visitas() {
   const columns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
       title: 'Título / Empresa', key: 'title',
@@ -359,7 +359,7 @@ export default function Visitas() {
             <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openDetail(record)} />
           </Tooltip>
           <Tooltip title="ATA">
-            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATA(record)} />
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: 'var(--cl-primary-text)' }} onClick={() => gerarATA(record)} />
           </Tooltip>
           <Tooltip title="Editar">
             <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
@@ -383,10 +383,10 @@ export default function Visitas() {
   })();
 
   const kpiData = [
-    { label: 'Total', value: items.length, color: '#60a5fa' },
-    { label: 'Realizadas', value: items.filter(i => i.status === 'REALIZADA').length, color: '#4ade80' },
-    { label: 'Agendadas',  value: items.filter(i => i.status === 'AGENDADA').length,  color: '#fbbf24' },
-    { label: 'Canceladas', value: items.filter(i => i.status === 'CANCELADA').length, color: '#f87171' },
+    { label: 'Total', value: items.length, color: 'var(--cl-primary-text)' },
+    { label: 'Realizadas', value: items.filter(i => i.status === 'REALIZADA').length, color: 'var(--cl-success)' },
+    { label: 'Agendadas',  value: items.filter(i => i.status === 'AGENDADA').length,  color: 'var(--cl-info)' },
+    { label: 'Canceladas', value: items.filter(i => i.status === 'CANCELADA').length, color: 'var(--cl-danger)' },
   ];
 
   const LABEL = { fontSize: 11, color: 'var(--cl-text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 };
@@ -455,7 +455,7 @@ export default function Visitas() {
         centered
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CarOutlined style={{ color: '#60a5fa', fontSize: 18 }} />
+            <CarOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 18 }} />
             <span style={{ fontWeight: 700, fontSize: 16 }}>Detalhes da Visita</span>
           </div>
         }
@@ -552,7 +552,7 @@ export default function Visitas() {
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
-        title={<div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} /><span style={{ fontWeight: 700 }}>Remover Visita</span></div>}
+        title={<div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} /><span style={{ fontWeight: 700 }}>Remover Visita</span></div>}
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
@@ -568,7 +568,7 @@ export default function Visitas() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CarOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <CarOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Visita' : 'Nova Visita Técnica'}</span>
           </div>
@@ -693,7 +693,7 @@ export default function Visitas() {
                           <div style={{ lineHeight: 1.3, padding: '2px 0' }}>
                             <div style={{ fontSize: 13 }}>{e.title}</div>
                             {e.modulo?.name && (
-                              <div style={{ fontSize: 11, color: '#94a3b8' }}>{e.modulo.name}</div>
+                              <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{e.modulo.name}</div>
                             )}
                           </div>
                         </Option>
@@ -721,7 +721,7 @@ export default function Visitas() {
                         <Option key={e.id} value={e.id} label={e.name}>
                           <div style={{ lineHeight: 1.3, padding: '2px 0' }}>
                             <div style={{ fontSize: 13 }}>{e.name}</div>
-                            {e.position && <div style={{ fontSize: 11, color: '#94a3b8' }}>{e.position}</div>}
+                            {e.position && <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{e.position}</div>}
                           </div>
                         </Option>
                       ))}

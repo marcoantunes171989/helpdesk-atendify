@@ -31,9 +31,9 @@ const CARD = {
 };
 
 const roleColors = {
-  SUPER_ADMIN: { bg: 'rgba(124,58,237,0.18)', color: '#a78bfa' },
-  ADMIN:       { bg: 'rgba(37,99,235,0.18)',  color: '#60a5fa' },
-  AGENT:       { bg: 'rgba(37,99,235,0.14)',  color: '#60a5fa' },
+  SUPER_ADMIN: { bg: 'rgba(139,92,246,0.18)', color: 'var(--cl-purple)' },
+  ADMIN:       { bg: 'rgba(37,99,235,0.18)',  color: 'var(--cl-primary-text)' },
+  AGENT:       { bg: 'rgba(6,182,212,0.16)',  color: 'var(--cl-secondary)' },
   CLIENT:      { bg: 'var(--cl-bg-input)', color: 'var(--cl-text-soft)' },
 };
 
@@ -521,7 +521,7 @@ export default function TicketDetail() {
           )}
           <Tooltip title="Baixar">
             <Button type="text" icon={<DownloadOutlined />} size="small"
-              style={{ color: '#60a5fa' }} onClick={() => downloadAttachment(att)} />
+              style={{ color: 'var(--cl-primary-text)' }} onClick={() => downloadAttachment(att)} />
           </Tooltip>
         </div>
       </div>
@@ -591,7 +591,7 @@ export default function TicketDetail() {
                   <Button
                     icon={<LockOutlined />}
                     size="small"
-                    style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: '#60a5fa', borderColor: '#2563eb' }}
+                    style={{ borderRadius: 6, flexShrink: 0, marginLeft: 8, color: 'var(--cl-primary-text)', borderColor: 'var(--cl-primary)' }}
                     onClick={() => {
                       const openStatus = statuses.find(s => s.builtinStatus === 'OPEN');
                       if (openStatus) openStatusChangeModal(openStatus.id);
@@ -807,10 +807,10 @@ export default function TicketDetail() {
                           background: 'var(--cl-bg)', border: '1px solid var(--cl-border)',
                           maxWidth: 200, transition: 'border-color 0.15s',
                         }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--cl-primary)'}
                         onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--cl-border)'}
                       >
-                        <FileOutlined style={{ color: '#60a5fa', fontSize: 14, flexShrink: 0 }} />
+                        <FileOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 14, flexShrink: 0 }} />
                         <span style={{ fontSize: 12, color: 'var(--cl-text-hi)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {att.name}
                         </span>
@@ -826,7 +826,7 @@ export default function TicketDetail() {
           {/* Trâmites */}
           <div style={{ ...CARD, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexShrink: 0 }}>
-              <Badge count={ticket.comments.length} color="#2563eb" size="small">
+              <Badge count={ticket.comments.length} color="var(--cl-primary)" size="small">
                 <MessageOutlined style={{ fontSize: 16, color: 'var(--cl-text-soft)' }} />
               </Badge>
               <h3 style={{ fontWeight: 700, fontSize: 15, color: 'var(--cl-text-hi)', margin: 0 }}>
@@ -851,10 +851,10 @@ export default function TicketDetail() {
                 if (isSysResolved || isSysReopened) {
                   const prefix = isSysResolved ? '::SYS_RESOLVED::' : '::SYS_REOPENED::';
                   const sysMsg = c.message.slice(prefix.length).trim();
-                  const sysColor = isSysResolved ? '#2563eb' : '#ea580c';
-                  const sysBg = isSysResolved ? 'rgba(37,99,235,0.08)' : 'rgba(234,88,12,0.08)';
-                  const sysBorder = isSysResolved ? 'rgba(96,165,250,0.30)' : 'rgba(251,146,60,0.30)';
-                  const sysTextColor = isSysResolved ? '#60a5fa' : '#fb923c';
+                  const sysColor = isSysResolved ? 'var(--cl-success)' : 'var(--cl-warning)';
+                  const sysBg = isSysResolved ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)';
+                  const sysBorder = isSysResolved ? 'rgba(16,185,129,0.30)' : 'rgba(245,158,11,0.30)';
+                  const sysTextColor = isSysResolved ? 'var(--cl-success)' : 'var(--cl-warning)';
                   return (
                     <div key={c.id} style={{
                       borderRadius: 10,
@@ -910,7 +910,7 @@ export default function TicketDetail() {
                       }}>
                         <span style={{
                           fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
-                          color: '#60a5fa', flexShrink: 0,
+                          color: 'var(--cl-primary-text)', flexShrink: 0,
                         }}>
                           #{String(seq).padStart(2, '0')}
                         </span>
@@ -1019,7 +1019,7 @@ export default function TicketDetail() {
                             background: isAgent ? 'var(--cl-bg-soft)' : 'var(--cl-bg)',
                             color: 'var(--cl-text)', whiteSpace: 'pre-wrap',
                             wordBreak: 'break-word', overflowWrap: 'break-word',
-                            border: `1px solid ${isAgent ? 'rgba(96,165,250,0.25)' : 'var(--cl-border)'}`,
+                            border: `1px solid ${isAgent ? 'rgba(37,99,235,0.25)' : 'var(--cl-border)'}`,
                             minHeight: 40, display: 'block',
                           }}>
                             {c.message}
@@ -1070,7 +1070,7 @@ export default function TicketDetail() {
             }}>
               <div style={{
                 width: 6, height: 6, borderRadius: '50%',
-                background: '#3b82f6', flexShrink: 0,
+                background: 'var(--cl-primary)', flexShrink: 0,
               }} />
               <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)', letterSpacing: '0.02em' }}>
                 Informações
@@ -1104,7 +1104,7 @@ export default function TicketDetail() {
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 6, marginTop: 2,
                     fontSize: 13, fontWeight: 600,
-                    color: isExpired ? '#f87171' : '#60a5fa',
+                    color: isExpired ? 'var(--cl-danger)' : 'var(--cl-primary-text)',
                   }}>
                     <ClockCircleOutlined style={{ fontSize: 12 }} />
                     {dayjs(ticket.slaDeadline).format('DD/MM/YYYY HH:mm')}
@@ -1135,7 +1135,7 @@ export default function TicketDetail() {
         onCancel={() => setDeleteModal(false)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir chamado</span>
           </div>
         }
@@ -1152,7 +1152,7 @@ export default function TicketDetail() {
           <p style={{ marginBottom: 16 }}>
             Você está prestes a excluir o chamado <strong>"{ticket?.title}"</strong> permanentemente. Esta ação não pode ser desfeita.
           </p>
-          <div style={{ background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+          <div style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-danger)', fontWeight: 500 }}>
             Todos os trâmites vinculados também serão removidos.
           </div>
         </div>
@@ -1163,7 +1163,7 @@ export default function TicketDetail() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MessageOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <MessageOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>Novo Trâmite</span>
           </div>
@@ -1193,7 +1193,7 @@ export default function TicketDetail() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
-                Trâmite <span style={{ color: '#f87171' }}>*</span>
+                Trâmite <span style={{ color: 'var(--cl-danger)' }}>*</span>
               </div>
               <TextArea
                 value={comment}
@@ -1210,7 +1210,7 @@ export default function TicketDetail() {
 
             <div>
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
-                Status <span style={{ color: '#f87171' }}>*</span>
+                Status <span style={{ color: 'var(--cl-danger)' }}>*</span>
               </div>
               <Select
                 value={commentStatusId}
@@ -1233,7 +1233,7 @@ export default function TicketDetail() {
 
             <div>
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
-                Data / Hora do Lançamento <span style={{ color: '#f87171' }}>*</span>
+                Data / Hora do Lançamento <span style={{ color: 'var(--cl-danger)' }}>*</span>
               </div>
               <DateTimeInput
                 value={commentDate}
@@ -1249,7 +1249,7 @@ export default function TicketDetail() {
                   <PaperClipOutlined style={{ fontSize: 14 }} />
                   <span>Anexos</span>
                   {commentFiles.length > 0 && (
-                    <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                    <span style={{ background: 'var(--cl-primary)', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
                       {commentFiles.length}
                     </span>
                   )}
@@ -1283,9 +1283,9 @@ export default function TicketDetail() {
             {(() => {
               const ps = statuses.find(s => s.id === pendingStatusId);
               const builtin = ps?.builtinStatus;
-              if (builtin === 'RESOLVED') return <CheckCircleOutlined style={{ color: '#60a5fa', fontSize: 20 }} />;
-              if (builtin === 'OPEN') return <UnlockOutlined style={{ color: '#fb923c', fontSize: 20 }} />;
-              return <ExclamationCircleOutlined style={{ color: '#fbbf24', fontSize: 20 }} />;
+              if (builtin === 'RESOLVED') return <CheckCircleOutlined style={{ color: 'var(--cl-success)', fontSize: 20 }} />;
+              if (builtin === 'OPEN') return <UnlockOutlined style={{ color: 'var(--cl-warning)', fontSize: 20 }} />;
+              return <ExclamationCircleOutlined style={{ color: 'var(--cl-warning)', fontSize: 20 }} />;
             })()}
             <span style={{ fontWeight: 700 }}>
               Alterar status para: {statuses.find(s => s.id === pendingStatusId)?.name}
@@ -1328,7 +1328,7 @@ export default function TicketDetail() {
               <PaperClipOutlined style={{ fontSize: 14 }} />
               <span>Anexos</span>
               {statusChangeFiles.length > 0 && (
-                <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                <span style={{ background: 'var(--cl-primary)', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
                   {statusChangeFiles.length}
                 </span>
               )}

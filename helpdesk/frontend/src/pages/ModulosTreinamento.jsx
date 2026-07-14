@@ -95,7 +95,7 @@ export default function ModulosTreinamento() {
       width: 60,
       sorter: (a, b) => (a.order ?? 999) - (b.order ?? 999),
       render: v => v != null
-        ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa' }}>{String(v).padStart(2, '0')}</span>
+        ? <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)' }}>{String(v).padStart(2, '0')}</span>
         : <span style={{ color: 'var(--cl-text-dim)' }}>—</span>,
     },
     {
@@ -116,7 +116,7 @@ export default function ModulosTreinamento() {
       dataIndex: ['_count', 'etapas'],
       width: 90,
       sorter: (a, b) => (a._count?.etapas ?? 0) - (b._count?.etapas ?? 0),
-      render: v => <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: 13 }}>{v ?? 0}</span>,
+      render: v => <span style={{ fontWeight: 600, color: 'var(--cl-primary-text)', fontSize: 13 }}>{v ?? 0}</span>,
     },
     {
       title: 'Situação',
@@ -194,7 +194,7 @@ export default function ModulosTreinamento() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.12)',
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AppstoreAddOutlined style={{ color: '#3b82f6', fontSize: 16 }} />
+              <AppstoreAddOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Módulo' : 'Novo Módulo de Treinamento'}
@@ -210,7 +210,7 @@ export default function ModulosTreinamento() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -241,7 +241,7 @@ export default function ModulosTreinamento() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover módulo</span>
           </div>
         }
@@ -260,8 +260,8 @@ export default function ModulosTreinamento() {
               Remover o módulo <strong>{deleteModal.name}</strong>? Esta ação não pode ser desfeita.
             </p>
             {deleteModal.etapas > 0 && (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
-                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-danger)', fontWeight: 500 }}>
                 Atenção: {deleteModal.etapas} etapa{deleteModal.etapas !== 1 ? 's' : ''} perderá o vínculo com este módulo.
               </div>
             )}

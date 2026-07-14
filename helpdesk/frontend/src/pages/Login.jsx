@@ -66,8 +66,8 @@ export default function Login() {
           box-shadow: none !important;
         }
         .glass-form .anticon { color: rgba(255,255,255,0.4) !important; }
-        .glass-form .ant-form-item-explain-error { color: #fca5a5 !important; }
-        .glass-form .ant-form-item-required::before { color: #fca5a5 !important; }
+        .glass-form .ant-form-item-explain-error { color: #f87171 !important; }
+        .glass-form .ant-form-item-required::before { color: #f87171 !important; }
 
         /* Bloqueia a cor de autofill do browser */
         .glass-form .ant-input {
@@ -211,7 +211,7 @@ export default function Login() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 10,
-                background: '#2563eb',
+                background: 'var(--cl-primary)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -273,7 +273,7 @@ export default function Login() {
                 loading={loading}
                 style={{
                   height: 50, borderRadius: 9,
-                  background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+                  background: 'linear-gradient(135deg, #1e40af, #2563eb)',
                   border: 'none',
                   fontWeight: 700, fontSize: 15,
                   boxShadow: '0 4px 18px rgba(37,99,235,0.45)',

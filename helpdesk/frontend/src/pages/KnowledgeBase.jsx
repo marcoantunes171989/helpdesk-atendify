@@ -19,23 +19,23 @@ const { Option } = Select;
 const KB_CATEGORIES = {
   DUVIDA: {
     label: 'Dúvida',
-    color: '#60a5fa',
-    bg: 'rgba(37,99,235,0.15)',
-    border: 'rgba(37,99,235,0.3)',
+    color: 'var(--cl-info)',
+    bg: 'rgba(56,189,248,0.15)',
+    border: 'rgba(56,189,248,0.3)',
     icon: <QuestionCircleOutlined />,
   },
   ERRO: {
     label: 'Erro',
-    color: '#f87171',
-    bg: 'rgba(220,38,38,0.12)',
-    border: 'rgba(220,38,38,0.3)',
+    color: 'var(--cl-danger)',
+    bg: 'rgba(239,68,68,0.12)',
+    border: 'rgba(239,68,68,0.3)',
     icon: <WarningOutlined />,
   },
   CONFIGURACAO: {
     label: 'Configuração',
-    color: '#a78bfa',
-    bg: 'rgba(124,58,237,0.15)',
-    border: 'rgba(124,58,237,0.3)',
+    color: 'var(--cl-purple)',
+    bg: 'rgba(139,92,246,0.15)',
+    border: 'rgba(139,92,246,0.3)',
     icon: <SettingOutlined />,
   },
 };
@@ -294,9 +294,9 @@ export default function KnowledgeBase() {
             onClick={() => { setShowAi(true); setSelectedArticle(null); }}
             style={{
               borderRadius: 8, fontWeight: 600,
-              color: '#a78bfa',
-              borderColor: 'rgba(124,58,237,0.35)',
-              background: showAi ? 'rgba(124,58,237,0.1)' : 'transparent',
+              color: 'var(--cl-purple)',
+              borderColor: 'rgba(139,92,246,0.35)',
+              background: showAi ? 'rgba(139,92,246,0.1)' : 'transparent',
             }}
           >
             Consultar IA
@@ -340,7 +340,7 @@ export default function KnowledgeBase() {
                   ? (opt.key === 'ALL' ? 'rgba(37,99,235,0.4)' : KB_CATEGORIES[opt.key]?.border || 'rgba(37,99,235,0.4)')
                   : 'var(--cl-border)',
                 color: categoryFilter === opt.key
-                  ? (opt.key === 'ALL' ? '#60a5fa' : KB_CATEGORIES[opt.key]?.color || '#60a5fa')
+                  ? (opt.key === 'ALL' ? 'var(--cl-primary-text)' : KB_CATEGORIES[opt.key]?.color || 'var(--cl-primary-text)')
                   : 'var(--cl-text-soft)',
               }}
             >
@@ -379,7 +379,7 @@ export default function KnowledgeBase() {
                         borderBottom: '1px solid var(--cl-border)',
                         cursor: 'pointer',
                         background: isSelected ? 'rgba(37,99,235,0.08)' : 'transparent',
-                        borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent',
+                        borderLeft: isSelected ? '3px solid var(--cl-primary)' : '3px solid transparent',
                         transition: 'background 0.15s',
                         opacity: article.active === false ? 0.5 : 1,
                       }}
@@ -414,7 +414,7 @@ export default function KnowledgeBase() {
                             )}
                           </div>
                         </div>
-                        <span style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700, flexShrink: 0 }}>
+                        <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--cl-primary-text)', fontWeight: 700, flexShrink: 0 }}>
                           #{String(article.code).padStart(4, '0')}
                         </span>
                       </div>
@@ -472,9 +472,9 @@ export default function KnowledgeBase() {
                     onClick={() => setShowAi(true)}
                     style={{
                       borderRadius: 8, fontWeight: 600,
-                      color: '#a78bfa',
-                      borderColor: 'rgba(124,58,237,0.35)',
-                      background: 'rgba(124,58,237,0.08)',
+                      color: 'var(--cl-purple)',
+                      borderColor: 'rgba(139,92,246,0.35)',
+                      background: 'rgba(139,92,246,0.08)',
                     }}
                   >
                     Consultar IA
@@ -491,7 +491,7 @@ export default function KnowledgeBase() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BookOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <BookOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Artigo' : 'Novo Artigo'}
@@ -507,7 +507,7 @@ export default function KnowledgeBase() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -559,7 +559,7 @@ export default function KnowledgeBase() {
                   <PaperClipOutlined style={{ fontSize: 15 }} />
                   <span>Anexos</span>
                   {fileList.length > 0 && (
-                    <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                    <span style={{ background: 'var(--cl-primary)', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
                       {fileList.length}
                     </span>
                   )}
@@ -600,7 +600,7 @@ export default function KnowledgeBase() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir artigo</span>
           </div>
         }
@@ -644,7 +644,7 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <CategoryBadge category={article.category} />
-          <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: 'var(--cl-primary-text)', fontWeight: 700 }}>
             #{String(article.code).padStart(4, '0')}
           </span>
           {!article.active && (
@@ -655,9 +655,9 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
           <Tooltip title={copied ? 'Copiado!' : 'Copiar conteúdo'}>
             <Button
               type="text"
-              icon={copied ? <CheckOutlined style={{ color: '#4ade80' }} /> : <CopyOutlined />}
+              icon={copied ? <CheckOutlined style={{ color: 'var(--cl-success)' }} /> : <CopyOutlined />}
               size="small"
-              style={{ color: copied ? '#4ade80' : 'var(--cl-text-soft)' }}
+              style={{ color: copied ? 'var(--cl-success)' : 'var(--cl-text-soft)' }}
               onClick={handleCopy}
             />
           </Tooltip>
@@ -723,7 +723,7 @@ function ArticleDetailPanel({ article, canEdit, onEdit, onDelete }) {
                 {att.data && (
                   <Tooltip title="Baixar arquivo">
                     <Button type="text" icon={<DownloadOutlined />} size="small"
-                      style={{ color: '#60a5fa' }} onClick={() => downloadAttachment(att)} />
+                      style={{ color: 'var(--cl-primary-text)' }} onClick={() => downloadAttachment(att)} />
                   </Tooltip>
                 )}
               </div>
@@ -741,10 +741,10 @@ function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 12,
-          background: 'rgba(124,58,237,0.15)',
+          background: 'rgba(139,92,246,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <RobotOutlined style={{ color: '#a78bfa', fontSize: 20 }} />
+          <RobotOutlined style={{ color: 'var(--cl-purple)', fontSize: 20 }} />
         </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--cl-text-hi)' }}>
@@ -771,7 +771,7 @@ function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources
         <Button
           type="primary" icon={<SendOutlined />} loading={loading}
           onClick={onQuery} disabled={!question.trim()}
-          style={{ background: '#7c3aed', borderColor: '#7c3aed', borderRadius: 8, fontWeight: 600 }}
+          style={{ background: 'var(--cl-purple)', borderColor: 'var(--cl-purple)', borderRadius: 8, fontWeight: 600 }}
         >
           Perguntar
         </Button>
@@ -787,11 +787,11 @@ function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources
       {!loading && answer && (
         <div>
           <div style={{
-            background: 'rgba(124,58,237,0.08)',
-            border: '1px solid rgba(124,58,237,0.2)',
+            background: 'rgba(139,92,246,0.08)',
+            border: '1px solid rgba(139,92,246,0.2)',
             borderRadius: 10, padding: '16px 18px', marginBottom: 16,
           }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#a78bfa', marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--cl-purple)', marginBottom: 10 }}>
               <RobotOutlined /> Resposta da IA
             </div>
             <div style={{ fontSize: 14, color: 'var(--cl-text)', lineHeight: 1.75, whiteSpace: 'pre-wrap' }}>
@@ -832,7 +832,7 @@ function AiPanel({ question, onQuestionChange, onQuery, loading, answer, sources
         <div>
           <div style={{
             background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)',
-            borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#60a5fa',
+            borderRadius: 10, padding: '12px 16px', marginBottom: 16, fontSize: 13, color: 'var(--cl-primary-text)',
           }}>
             IA indisponível no momento. Artigos relacionados encontrados:
           </div>

@@ -51,7 +51,7 @@ const TESTIMONIALS = [
   },
   {
     name: 'Fernanda Costa', role: 'Diretora de Operações · LogisTech',
-    avatar: 'FC', color: '#7c3aed', stars: 5,
+    avatar: 'FC', color: '#8b5cf6', stars: 5,
     text: 'O controle de SLA salvou vários contratos importantes. Antes perdíamos prazos sem perceber. Hoje recebo alerta antes de vencer e minha equipe age a tempo. Vale cada centavo.',
   },
   {

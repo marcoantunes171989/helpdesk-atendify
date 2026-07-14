@@ -36,7 +36,7 @@ input:-webkit-autofill:focus {
   --cl-border-input: rgba(255,255,255,0.12);
   /* Page structure */
   --cl-page-bg:    #090912;
-  --cl-sidebar:    #0c0c18;
+  --cl-sidebar:    #0f172a;
   --cl-header:     rgba(10,10,20,0.96);
   --cl-page-grad:  linear-gradient(160deg,#090912 0%,#0d0d1a 55%,#080810 100%);
   --cl-shadow:     0 4px 28px rgba(0,0,0,0.35);
@@ -44,12 +44,21 @@ input:-webkit-autofill:focus {
   --cl-sidebar-text: rgba(255,255,255,0.82);
   --cl-sidebar-logo: #fff;
   /* Semantic accent tokens (dark variants — lighter for contrast on dark bg) */
-  --cl-primary:   #2563eb;
-  --cl-secondary: #22d3ee;
-  --cl-success:   #34d399;
-  --cl-warning:   #fbbf24;
-  --cl-danger:    #f87171;
-  --cl-purple:    #a78bfa;
+  --cl-primary:      #2563eb;
+  --cl-primary-text: #60a5fa;
+  --cl-secondary:    #22d3ee;
+  --cl-success:      #34d399;
+  --cl-warning:      #fbbf24;
+  --cl-danger:       #f87171;
+  --cl-purple:       #a78bfa;
+  --cl-info:         #38bdf8;
+  /* Paleta de gráficos — ordem fixa, validada contra daltonismo (não varia por tema) */
+  --cl-chart-1: #2563eb;
+  --cl-chart-2: #d97706;
+  --cl-chart-3: #e11d48;
+  --cl-chart-4: #059669;
+  --cl-chart-5: #0891b2;
+  --cl-chart-6: #65a30d;
 }
 
 [data-theme="light"] {
@@ -67,20 +76,29 @@ input:-webkit-autofill:focus {
   --cl-border:     #e2e8f0;
   --cl-border-input: #e2e8f0;
   --cl-page-bg:    #f8fafc;
-  --cl-sidebar:    #ffffff;
+  --cl-sidebar:    #0f172a;
   --cl-header:     rgba(255,255,255,0.97);
   --cl-page-grad:  #f8fafc;
   --cl-shadow:     0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
   --cl-title-grad: linear-gradient(135deg,#0f172a 0%,#0f172a 100%);
-  --cl-sidebar-text: #334155;
-  --cl-sidebar-logo: #0f172a;
+  --cl-sidebar-text: rgba(255,255,255,0.82);
+  --cl-sidebar-logo: #fff;
   /* Semantic accent tokens — exact spec hex */
-  --cl-primary:   #2563eb;
-  --cl-secondary: #06b6d4;
-  --cl-success:   #10b981;
-  --cl-warning:   #f59e0b;
-  --cl-danger:    #ef4444;
-  --cl-purple:    #8b5cf6;
+  --cl-primary:      #2563eb;
+  --cl-primary-text: #2563eb;
+  --cl-secondary:    #06b6d4;
+  --cl-success:      #10b981;
+  --cl-warning:      #f59e0b;
+  --cl-danger:       #ef4444;
+  --cl-purple:       #8b5cf6;
+  --cl-info:         #38bdf8;
+  /* Paleta de gráficos — ordem fixa, validada contra daltonismo (não varia por tema) */
+  --cl-chart-1: #2563eb;
+  --cl-chart-2: #d97706;
+  --cl-chart-3: #e11d48;
+  --cl-chart-4: #059669;
+  --cl-chart-5: #0891b2;
+  --cl-chart-6: #65a30d;
 }
 
 /* ============================================================
@@ -642,7 +660,7 @@ h1, h2, h3, h4, h5 {
 
 .app-sidebar .ant-menu { background: transparent !important; border: none !important; }
 .app-sidebar .ant-menu-item {
-  color: var(--cl-text-soft) !important;
+  color: var(--cl-sidebar-text) !important;
   border-radius: 8px !important;
   margin: 2px 8px !important;
   height: auto !important;
@@ -659,7 +677,7 @@ h1, h2, h3, h4, h5 {
   text-overflow: unset !important;
   white-space: normal !important;
 }
-.app-sidebar .ant-menu-item:hover { background: var(--cl-bg-soft) !important; color: var(--cl-text) !important; }
+.app-sidebar .ant-menu-item:hover { background: rgba(255,255,255,0.07) !important; color: rgba(255,255,255,0.88) !important; }
 .app-sidebar .ant-menu-item-selected { background: rgba(37,99,235,0.2) !important; color: #60a5fa !important; }
 .app-sidebar .ant-menu-item-selected .anticon { color: #60a5fa !important; }
 .app-sidebar .ant-menu-item .anticon { color: inherit !important; vertical-align: middle !important; }
@@ -670,12 +688,6 @@ h1, h2, h3, h4, h5 {
 .sidebar-menu-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-menu-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 4px; }
 .sidebar-menu-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
-
-[data-theme="light"] .app-sidebar .ant-menu-item-selected {
-  background: rgba(37,99,235,0.1) !important;
-  color: #2563eb !important;
-}
-[data-theme="light"] .app-sidebar .ant-menu-item-selected .anticon { color: #2563eb !important; }
 
 /* ============================================================
    Dark-only: Select / Cascader / DatePicker popup overrides

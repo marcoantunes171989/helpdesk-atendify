@@ -37,11 +37,24 @@ document.addEventListener('DOMContentLoaded', () => {
   autofillObserver.observe(document.body, { childList: true, subtree: true });
 });
 
+// Menu do sidebar é sempre navy (Azul-Marinho Profundo #0F172A), independente do tema
+const SIDEBAR_MENU_TOKENS = {
+  itemSelectedBg: 'rgba(37,99,235,0.2)',
+  itemSelectedColor: '#60a5fa',
+  itemHoverBg: 'rgba(255,255,255,0.07)',
+  itemHoverColor: 'rgba(255,255,255,0.88)',
+  itemColor: 'rgba(255,255,255,0.55)',
+};
+
 const DARK_THEME = {
   token: {
     colorPrimary: '#2563eb',
     colorPrimaryHover: '#1d4ed8',
     colorPrimaryActive: '#1e40af',
+    colorSuccess: '#34d399',
+    colorWarning: '#fbbf24',
+    colorError: '#f87171',
+    colorInfo: '#38bdf8',
     borderRadius: 8,
     colorBgContainer: '#0d0d1a',
     colorBgLayout: '#090912',
@@ -57,13 +70,7 @@ const DARK_THEME = {
   },
   components: {
     Button: { colorPrimary: '#2563eb', algorithm: true },
-    Menu: {
-      itemSelectedBg: 'rgba(37,99,235,0.2)',
-      itemSelectedColor: '#60a5fa',
-      itemHoverBg: 'rgba(255,255,255,0.07)',
-      itemHoverColor: 'rgba(255,255,255,0.88)',
-      itemColor: 'rgba(255,255,255,0.55)',
-    },
+    Menu: SIDEBAR_MENU_TOKENS,
     Table: {
       colorBgContainer: '#0d0d1a',
       headerBg: '#111120',
@@ -118,6 +125,10 @@ const LIGHT_THEME = {
     colorPrimary: '#2563eb',
     colorPrimaryHover: '#1d4ed8',
     colorPrimaryActive: '#1e40af',
+    colorSuccess: '#10b981',
+    colorWarning: '#f59e0b',
+    colorError: '#ef4444',
+    colorInfo: '#38bdf8',
     borderRadius: 8,
     colorBgContainer: '#ffffff',
     colorBgLayout: '#f8fafc',
@@ -133,13 +144,7 @@ const LIGHT_THEME = {
   },
   components: {
     Button: { colorPrimary: '#2563eb', algorithm: true },
-    Menu: {
-      itemSelectedBg: 'rgba(37,99,235,0.10)',
-      itemSelectedColor: '#2563eb',
-      itemHoverBg: 'rgba(15,23,42,0.04)',
-      itemHoverColor: '#0f172a',
-      itemColor: '#475569',
-    },
+    Menu: SIDEBAR_MENU_TOKENS,
     Table: {
       colorBgContainer: '#ffffff',
       headerBg: '#f8fafc',

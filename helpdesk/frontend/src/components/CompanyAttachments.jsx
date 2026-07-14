@@ -17,11 +17,11 @@ const formatSize = (bytes) => {
 
 const iconFor = (mime = '', name = '') => {
   const ext = name.split('.').pop()?.toLowerCase();
-  if (mime.startsWith('image/')) return <FileImageOutlined style={{ color: '#a78bfa' }} />;
-  if (mime === 'application/pdf' || ext === 'pdf') return <FilePdfOutlined style={{ color: '#f87171' }} />;
-  if (['doc', 'docx'].includes(ext)) return <FileWordOutlined style={{ color: '#60a5fa' }} />;
-  if (['xls', 'xlsx', 'csv'].includes(ext)) return <FileExcelOutlined style={{ color: '#4ade80' }} />;
-  if (['zip', 'rar', '7z'].includes(ext)) return <FileZipOutlined style={{ color: '#fbbf24' }} />;
+  if (mime.startsWith('image/')) return <FileImageOutlined style={{ color: 'var(--cl-purple)' }} />;
+  if (mime === 'application/pdf' || ext === 'pdf') return <FilePdfOutlined style={{ color: 'var(--cl-danger)' }} />;
+  if (['doc', 'docx'].includes(ext)) return <FileWordOutlined style={{ color: 'var(--cl-primary-text)' }} />;
+  if (['xls', 'xlsx', 'csv'].includes(ext)) return <FileExcelOutlined style={{ color: 'var(--cl-success)' }} />;
+  if (['zip', 'rar', '7z'].includes(ext)) return <FileZipOutlined style={{ color: 'var(--cl-warning)' }} />;
   return <FileOutlined style={{ color: 'var(--cl-text-soft)' }} />;
 };
 
@@ -115,7 +115,7 @@ export default function CompanyAttachments({ companyId, stagedFiles, onStagedCha
         style={{ background: 'var(--cl-bg-soft)', borderColor: 'var(--cl-border)' }}
       >
         <p style={{ margin: '8px 0 4px' }}>
-          <InboxOutlined style={{ fontSize: 28, color: '#60a5fa' }} />
+          <InboxOutlined style={{ fontSize: 28, color: 'var(--cl-primary-text)' }} />
         </p>
         <p style={{ fontSize: 13, color: 'var(--cl-text-hi)', fontWeight: 600, margin: 0 }}>
           {uploadingName ? `Enviando ${uploadingName}...` : 'Clique ou arraste arquivos aqui'}
@@ -145,7 +145,7 @@ export default function CompanyAttachments({ companyId, stagedFiles, onStagedCha
                 </div>
               </div>
               <Tooltip title="Baixar">
-                <Button type="text" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(att)} style={{ color: '#60a5fa' }} />
+                <Button type="text" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(att)} style={{ color: 'var(--cl-primary-text)' }} />
               </Tooltip>
               <Tooltip title="Excluir">
                 <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => handleRemove(att, idx)} />

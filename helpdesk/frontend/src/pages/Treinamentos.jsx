@@ -13,21 +13,24 @@ import {
 import { treinamentoService, companyService, userService, employeeService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { normalize } from '../utils/constants';
+import { CHART_COLORS } from '../theme/colors';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
+// Modalidade: categoria (não estado) → paleta fixa de gráficos
 const TIPO_CONFIG = {
-  PRESENCIAL: { label: 'Presencial',  color: '#34d399', bg: 'rgba(16,185,129,0.12)',  icon: <EnvironmentOutlined /> },
-  REMOTO:     { label: 'Remoto',      color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',   icon: <LaptopOutlined /> },
-  HIBRIDO:    { label: 'Híbrido',     color: '#a78bfa', bg: 'rgba(124,58,237,0.12)',  icon: <TeamOutlined /> },
+  PRESENCIAL: { label: 'Presencial',  color: CHART_COLORS[3], bg: 'rgba(5,150,105,0.12)',  icon: <EnvironmentOutlined /> },
+  REMOTO:     { label: 'Remoto',      color: CHART_COLORS[0], bg: 'rgba(37,99,235,0.12)',   icon: <LaptopOutlined /> },
+  HIBRIDO:    { label: 'Híbrido',     color: CHART_COLORS[2], bg: 'rgba(225,29,72,0.12)',  icon: <TeamOutlined /> },
 };
 
+// Status: estado do fluxo → cores de estado
 const STATUS_CONFIG = {
-  AGENDADO:     { label: 'Agendado',      color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',  icon: <ClockCircleOutlined /> },
-  EM_ANDAMENTO: { label: 'Em Andamento',  color: '#fbbf24', bg: 'rgba(217,119,6,0.12)',  icon: <SyncOutlined spin /> },
-  CONCLUIDO:    { label: 'Concluído',     color: '#34d399', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircleOutlined /> },
-  CANCELADO:    { label: 'Cancelado',     color: '#f87171', bg: 'rgba(220,38,38,0.12)',  icon: <CloseCircleOutlined /> },
+  AGENDADO:     { label: 'Agendado',      color: 'var(--cl-primary-text)', bg: 'rgba(37,99,235,0.12)',  icon: <ClockCircleOutlined /> },
+  EM_ANDAMENTO: { label: 'Em Andamento',  color: 'var(--cl-warning)', bg: 'rgba(245,158,11,0.12)',  icon: <SyncOutlined spin /> },
+  CONCLUIDO:    { label: 'Concluído',     color: 'var(--cl-success)', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircleOutlined /> },
+  CANCELADO:    { label: 'Cancelado',     color: 'var(--cl-danger)', bg: 'rgba(239,68,68,0.12)',  icon: <CloseCircleOutlined /> },
 };
 
 function TipoBadge({ tipo }) {
@@ -291,7 +294,7 @@ export default function Treinamentos() {
       title: '#',
       dataIndex: 'code',
       width: 60,
-      render: v => <span style={{ fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>#{String(v).padStart(4, '0')}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', color: 'var(--cl-primary-text)', fontWeight: 700 }}>#{String(v).padStart(4, '0')}</span>,
     },
     {
       title: 'Título',
@@ -356,7 +359,7 @@ export default function Treinamentos() {
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
           <Tooltip title="Gerar ATA">
-            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATATreinamento(record)} />
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: 'var(--cl-primary-text)' }} onClick={() => gerarATATreinamento(record)} />
           </Tooltip>
           {canEdit && (
             <>
@@ -468,7 +471,7 @@ export default function Treinamentos() {
         width={520}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <TeamOutlined style={{ color: '#60a5fa' }} />
+            <TeamOutlined style={{ color: 'var(--cl-primary-text)' }} />
             <span>Detalhes do Treinamento</span>
           </div>
         }
@@ -478,7 +481,7 @@ export default function Treinamentos() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace', fontWeight: 700, marginBottom: 4 }}>
+                <div style={{ fontSize: 11, color: 'var(--cl-primary-text)', fontFamily: 'monospace', fontWeight: 700, marginBottom: 4 }}>
                   #{String(selected.code).padStart(4, '0')}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{selected.title}</div>
@@ -535,7 +538,7 @@ export default function Treinamentos() {
                         border: `1px solid ${p.attended ? 'rgba(16,185,129,0.25)' : 'var(--cl-border)'}`,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <UserOutlined style={{ color: p.attended ? '#34d399' : 'var(--cl-text-dim)' }} />
+                          <UserOutlined style={{ color: p.attended ? 'var(--cl-success)' : 'var(--cl-text-dim)' }} />
                           <div>
                             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--cl-text-hi)' }}>{nome}</div>
                             {cargo && <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{cargo}</div>}
@@ -566,7 +569,7 @@ export default function Treinamentos() {
             )}
 
             <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Button icon={<PrinterOutlined />} onClick={() => gerarATATreinamento(selected)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
+              <Button icon={<PrinterOutlined />} onClick={() => gerarATATreinamento(selected)} style={{ color: 'var(--cl-primary-text)', borderColor: 'var(--cl-primary)' }}>
                 Gerar ATA
               </Button>
               {canEdit && (
@@ -588,7 +591,7 @@ export default function Treinamentos() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TeamOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <TeamOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Treinamento' : 'Novo Treinamento'}</span>
           </div>
@@ -601,7 +604,7 @@ export default function Treinamentos() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -737,7 +740,7 @@ export default function Treinamentos() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir Treinamento</span>
           </div>
         }

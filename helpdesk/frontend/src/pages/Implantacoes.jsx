@@ -18,11 +18,11 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 const STATUS_CONFIG = {
-  PENDENTE:     { label: 'Pendente',     color: '#94a3b8', bg: 'rgba(148,163,184,0.12)', icon: <ClockCircleOutlined />,  antColor: 'default' },
-  EM_ANDAMENTO: { label: 'Em Andamento', color: '#60a5fa', bg: 'rgba(37,99,235,0.12)',   icon: <SyncOutlined spin />,     antColor: 'processing' },
-  PAUSADO:      { label: 'Pausado',      color: '#fbbf24', bg: 'rgba(217,119,6,0.12)',   icon: <PauseCircleOutlined />,   antColor: 'warning' },
-  CONCLUIDO:    { label: 'Concluído',    color: '#34d399', bg: 'rgba(16,185,129,0.12)',  icon: <CheckCircleOutlined />,   antColor: 'success' },
-  CANCELADO:    { label: 'Cancelado',    color: '#f87171', bg: 'rgba(220,38,38,0.12)',   icon: <CloseCircleOutlined />,   antColor: 'error' },
+  PENDENTE:     { label: 'Pendente',     color: 'var(--cl-text-faint)', bg: 'rgba(148,163,184,0.12)', icon: <ClockCircleOutlined />,  antColor: 'default' },
+  EM_ANDAMENTO: { label: 'Em Andamento', color: 'var(--cl-primary-text)', bg: 'rgba(37,99,235,0.12)',   icon: <SyncOutlined spin />,     antColor: 'processing' },
+  PAUSADO:      { label: 'Pausado',      color: 'var(--cl-warning)', bg: 'rgba(245,158,11,0.12)',   icon: <PauseCircleOutlined />,   antColor: 'warning' },
+  CONCLUIDO:    { label: 'Concluído',    color: 'var(--cl-success)', bg: 'rgba(16,185,129,0.12)',  icon: <CheckCircleOutlined />,   antColor: 'success' },
+  CANCELADO:    { label: 'Cancelado',    color: 'var(--cl-danger)', bg: 'rgba(239,68,68,0.12)',   icon: <CloseCircleOutlined />,   antColor: 'error' },
 };
 
 const FASE_STATUS = {
@@ -566,7 +566,7 @@ export default function Implantacoes() {
       title: '#',
       dataIndex: 'code',
       width: 60,
-      render: v => <span style={{ fontFamily: 'monospace', color: '#60a5fa', fontWeight: 700 }}>#{String(v).padStart(4, '0')}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', color: 'var(--cl-primary-text)', fontWeight: 700 }}>#{String(v).padStart(4, '0')}</span>,
     },
     {
       title: 'Título',
@@ -605,7 +605,7 @@ export default function Implantacoes() {
         const pct = faseProgress(fases);
         return fases.length > 0 ? (
           <div>
-            <Progress percent={pct} size="small" strokeColor="#3b82f6" trailColor="var(--cl-border)" />
+            <Progress percent={pct} size="small" strokeColor="var(--cl-primary)" trailColor="var(--cl-border)" />
             <div style={{ fontSize: 11, color: 'var(--cl-text-faint)', marginTop: 2 }}>
               {fases.filter(f => f.status === 'CONCLUIDO').length}/{fases.length} fases
             </div>
@@ -641,7 +641,7 @@ export default function Implantacoes() {
             <Button type="text" icon={<EyeOutlined />} size="small" onClick={() => openDetail(record)} />
           </Tooltip>
           <Tooltip title="Gerar ATA">
-            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: '#60a5fa' }} onClick={() => gerarATAImplantacao(record, allEmployees, etapasTemplate)} />
+            <Button type="text" icon={<PrinterOutlined />} size="small" style={{ color: 'var(--cl-primary-text)' }} onClick={() => gerarATAImplantacao(record, allEmployees, etapasTemplate)} />
           </Tooltip>
           {canEdit && (
             <>
@@ -739,7 +739,7 @@ export default function Implantacoes() {
         width={520}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <BuildOutlined style={{ color: '#60a5fa' }} />
+            <BuildOutlined style={{ color: 'var(--cl-primary-text)' }} />
             <span>Detalhes da Implantação</span>
           </div>
         }
@@ -749,7 +749,7 @@ export default function Implantacoes() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#60a5fa', fontFamily: 'monospace', fontWeight: 700, marginBottom: 4 }}>
+                <div style={{ fontSize: 11, color: 'var(--cl-primary-text)', fontFamily: 'monospace', fontWeight: 700, marginBottom: 4 }}>
                   #{String(selected.code).padStart(4, '0')}
                 </div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--cl-text-hi)' }}>{selected.title}</div>
@@ -791,7 +791,7 @@ export default function Implantacoes() {
                 </div>
                 <Progress
                   percent={faseProgress(selected.fases)}
-                  strokeColor="#3b82f6"
+                  strokeColor="var(--cl-primary)"
                   trailColor="var(--cl-border)"
                   style={{ marginBottom: 16 }}
                 />
@@ -813,7 +813,7 @@ export default function Implantacoes() {
                                 size="small" type="text"
                                 loading={updatingFase === fase.id}
                                 onClick={() => handleFaseStatus(fase.id, fase.status === 'PENDENTE' ? 'EM_ANDAMENTO' : 'CONCLUIDO')}
-                                style={{ fontSize: 11, color: '#60a5fa' }}
+                                style={{ fontSize: 11, color: 'var(--cl-primary-text)' }}
                               >
                                 {fase.status === 'PENDENTE' ? 'Iniciar' : 'Concluir'}
                               </Button>
@@ -830,7 +830,7 @@ export default function Implantacoes() {
                               {faseEmps.map(e => (
                                 <span key={e.id} style={{
                                   fontSize: 11, padding: '1px 8px', borderRadius: 10,
-                                  background: 'rgba(37,99,235,0.1)', color: '#60a5fa',
+                                  background: 'rgba(37,99,235,0.1)', color: 'var(--cl-primary-text)',
                                   border: '1px solid rgba(37,99,235,0.2)',
                                 }}>
                                   {e.name}
@@ -856,7 +856,7 @@ export default function Implantacoes() {
             )}
 
             <div style={{ marginTop: 24, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Button icon={<PrinterOutlined />} onClick={() => gerarATAImplantacao(selected, allEmployees, etapasTemplate)} style={{ color: '#60a5fa', borderColor: '#2563eb' }}>
+              <Button icon={<PrinterOutlined />} onClick={() => gerarATAImplantacao(selected, allEmployees, etapasTemplate)} style={{ color: 'var(--cl-primary-text)', borderColor: 'var(--cl-primary)' }}>
                 Gerar ATA
               </Button>
               {canEdit && (
@@ -878,7 +878,7 @@ export default function Implantacoes() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BuildOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <BuildOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Implantação' : 'Nova Implantação'}</span>
           </div>
@@ -891,7 +891,7 @@ export default function Implantacoes() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -902,7 +902,7 @@ export default function Implantacoes() {
 
             {/* Bloco 1 — Identificação */}
             <div style={{ background: 'var(--cl-bg-secondary)', border: '1px solid var(--cl-border)', borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--cl-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
                 Identificação
               </div>
               <Form.Item name="title" label="Título" rules={[{ required: true }]} style={{ marginBottom: 12 }}>
@@ -937,7 +937,7 @@ export default function Implantacoes() {
                       padding: '8px 12px', borderRadius: 6,
                       border: '1px solid var(--cl-border)',
                       background: 'rgba(37,99,235,0.05)',
-                      fontSize: 14, color: '#3b82f6', fontWeight: 500,
+                      fontSize: 14, color: 'var(--cl-primary-text)', fontWeight: 500,
                     }}>
                       {co.fantasia}
                     </div>
@@ -948,7 +948,7 @@ export default function Implantacoes() {
 
             {/* Bloco 2 — Equipe e Prazo */}
             <div style={{ background: 'var(--cl-bg-secondary)', border: '1px solid var(--cl-border)', borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--cl-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
                 Equipe e Prazo
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
@@ -1019,16 +1019,16 @@ export default function Implantacoes() {
               <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--cl-border)', background: 'var(--cl-bg-secondary)' }}>
                 {fasesForm.length > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, color: '#64748b' }}>
-                      Selecionadas: <span style={{ color: '#3b82f6', fontWeight: 600 }}>{fasesForm.length} etapa{fasesForm.length !== 1 ? 's' : ''}</span>
+                    <span style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>
+                      Selecionadas: <span style={{ color: 'var(--cl-primary-text)', fontWeight: 600 }}>{fasesForm.length} etapa{fasesForm.length !== 1 ? 's' : ''}</span>
                     </span>
-                    <span style={{ fontSize: 11, color: '#64748b' }}>
-                      Concluídas: <span style={{ color: '#34d399', fontWeight: 600 }}>{fasesForm.filter(f => f.status === 'CONCLUIDO').length}/{fasesForm.length}</span>
+                    <span style={{ fontSize: 11, color: 'var(--cl-text-muted)' }}>
+                      Concluídas: <span style={{ color: 'var(--cl-success)', fontWeight: 600 }}>{fasesForm.filter(f => f.status === 'CONCLUIDO').length}/{fasesForm.length}</span>
                     </span>
                   </div>
                 )}
                 <Input
-                  prefix={<SearchOutlined style={{ color: '#94a3b8', fontSize: 14 }} />}
+                  prefix={<SearchOutlined style={{ color: 'var(--cl-text-faint)', fontSize: 14 }} />}
                   placeholder="Pesquisar etapas ou módulos..."
                   value={faseSearch}
                   onChange={e => setFaseSearch(e.target.value)}
@@ -1064,7 +1064,7 @@ export default function Implantacoes() {
                   });
                   const sortedGroups = Object.values(groups).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'));
                   if (sortedGroups.length === 0) {
-                    return <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
+                    return <div style={{ padding: '24px', textAlign: 'center', color: 'var(--cl-text-faint)', fontSize: 13 }}>Nenhuma etapa encontrada</div>;
                   }
                   return sortedGroups.map((group, gi) => {
                     const isCollapsed = faseSearch ? false : !!collapsedModules[group.name];
@@ -1082,7 +1082,7 @@ export default function Implantacoes() {
                         style={{
                           padding: '8px 14px 6px',
                           fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
-                          color: '#e2e8f0', background: '#1e293b',
+                          color: '#e2e8f0', background: '#0f172a',
                           borderTop: gi > 0 ? '2px solid #0f172a' : undefined,
                           display: 'flex', alignItems: 'center', gap: 8,
                           cursor: 'pointer', userSelect: 'none',
@@ -1097,7 +1097,7 @@ export default function Implantacoes() {
                         {group.name}
                         <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 400, opacity: .7 }}>
                           {selectedCount > 0
-                            ? <span style={{ color: '#60a5fa' }}>{selectedCount} selecionada{selectedCount !== 1 ? 's' : ''} · </span>
+                            ? <span style={{ color: 'var(--cl-primary-text)' }}>{selectedCount} selecionada{selectedCount !== 1 ? 's' : ''} · </span>
                             : null}
                           {group.etapas.length} etapa{group.etapas.length !== 1 ? 's' : ''}
                         </span>
@@ -1109,7 +1109,7 @@ export default function Implantacoes() {
                           const faseIdx = fasesForm.findIndex(f => f.etapaTreinamentoId === etapa.id);
                           const isAdded = faseIdx !== -1;
                           const fase = isAdded ? fasesForm[faseIdx] : null;
-                          const statusCfg = { PENDENTE: { color: '#94a3b8', label: 'Pendente' }, EM_ANDAMENTO: { color: '#60a5fa', label: 'Andamento' }, CONCLUIDO: { color: '#34d399', label: 'Concluído' } };
+                          const statusCfg = { PENDENTE: { color: 'var(--cl-text-faint)', label: 'Pendente' }, EM_ANDAMENTO: { color: 'var(--cl-primary-text)', label: 'Andamento' }, CONCLUIDO: { color: 'var(--cl-success)', label: 'Concluído' } };
                           return (
                             <div key={etapa.id} style={{
                               borderBottom: '1px solid var(--cl-border)',
@@ -1126,8 +1126,8 @@ export default function Implantacoes() {
                                 {/* Checkbox visual */}
                                 <div style={{
                                   width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                                  border: `2px solid ${isAdded ? '#3b82f6' : '#94a3b8'}`,
-                                  background: isAdded ? '#3b82f6' : 'transparent',
+                                  border: `2px solid ${isAdded ? 'var(--cl-primary)' : 'var(--cl-text-faint)'}`,
+                                  background: isAdded ? 'var(--cl-primary)' : 'transparent',
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                                   transition: 'all .15s',
                                 }}>
@@ -1135,7 +1135,7 @@ export default function Implantacoes() {
                                 </div>
 
                                 {/* Título da etapa */}
-                                <span style={{ fontSize: 13, flex: 1, color: isAdded ? '#3b82f6' : 'var(--cl-text)', fontWeight: isAdded ? 500 : 400 }}>
+                                <span style={{ fontSize: 13, flex: 1, color: isAdded ? 'var(--cl-primary-text)' : 'var(--cl-text)', fontWeight: isAdded ? 500 : 400 }}>
                                   {etapa.title}
                                 </span>
 
@@ -1173,11 +1173,11 @@ export default function Implantacoes() {
                                   style={{ padding: '4px 14px 6px 42px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}
                                   onClick={e => e.stopPropagation()}
                                 >
-                                  <span style={{ fontSize: 11, color: '#64748b', marginRight: 2 }}>
+                                  <span style={{ fontSize: 11, color: 'var(--cl-text-muted)', marginRight: 2 }}>
                                     <TeamOutlined /> Funcionários:
                                   </span>
                                   {companyEmployees.length === 0 ? (
-                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>Selecione a empresa primeiro</span>
+                                    <span style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>Selecione a empresa primeiro</span>
                                   ) : (
                                     companyEmployees.slice().sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')).map(emp => {
                                       const sel = fase?.employeeIds?.includes(emp.id);
@@ -1193,9 +1193,9 @@ export default function Implantacoes() {
                                             padding: '3px 10px', borderRadius: 20, fontSize: 12,
                                             cursor: 'pointer', userSelect: 'none', transition: 'all .15s',
                                             fontWeight: sel ? 600 : 400,
-                                            background: sel ? '#3b82f6' : 'var(--cl-bg-secondary)',
+                                            background: sel ? 'var(--cl-primary)' : 'var(--cl-bg-secondary)',
                                             color: sel ? '#fff' : 'var(--cl-text)',
-                                            border: `1px solid ${sel ? '#3b82f6' : 'var(--cl-border)'}`,
+                                            border: `1px solid ${sel ? 'var(--cl-primary)' : 'var(--cl-border)'}`,
                                           }}
                                         >
                                           {sel && <CheckOutlined style={{ fontSize: 9 }} />}
@@ -1245,7 +1245,7 @@ export default function Implantacoes() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir Implantação</span>
           </div>
         }

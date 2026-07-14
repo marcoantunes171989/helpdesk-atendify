@@ -16,14 +16,15 @@ const { Option } = Select;
 
 // ─── constants ───────────────────────────────────────────────────────────────
 const PRIORITY_LABEL = { LOW: 'Baixa', MEDIUM: 'Média', HIGH: 'Alta', CRITICAL: 'Crítica' };
-const PRIORITY_COLOR = { LOW: '#94a3b8', MEDIUM: '#fbbf24', HIGH: '#f97316', CRITICAL: '#ef4444' };
+// Hex literais (não var()) — usados com sufixo de alpha (`${cor}44`) nas Tags abaixo
+const PRIORITY_COLOR = { LOW: '#94a3b8', MEDIUM: '#38bdf8', HIGH: '#f59e0b', CRITICAL: '#ef4444' };
 const STATUS_LABEL = {
   OPEN: 'Aberto', IN_PROGRESS: 'Em Andamento',
   RESOLVED: 'Resolvido', CLOSED: 'Fechado', CANCELLED: 'Cancelado',
 };
 const STATUS_COLOR = {
-  OPEN: '#60a5fa', IN_PROGRESS: '#a78bfa',
-  RESOLVED: '#4ade80', CLOSED: '#94a3b8', CANCELLED: '#f87171',
+  OPEN: '#2563eb', IN_PROGRESS: '#8b5cf6',
+  RESOLVED: '#10b981', CLOSED: '#94a3b8', CANCELLED: '#ef4444',
 };
 
 // ─── aggregation helpers ──────────────────────────────────────────────────────
@@ -230,7 +231,7 @@ async function doExportPDF(title, subtitle, headers, rows, summary) {
 }
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
-function KPICard({ title, value, color = '#60a5fa', sub }) {
+function KPICard({ title, value, color = 'var(--cl-primary-text)', sub }) {
   return (
     <div style={{
       background: 'var(--cl-bg-card)', border: '1px solid var(--cl-border)',
@@ -253,17 +254,17 @@ function groupColumns(labelTitle) {
       render: v => <span style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{v}</span>,
     },
     { title: 'Total', dataIndex: 'total', key: 'total', width: 80, align: 'center', sorter: (a, b) => b.total - a.total, defaultSortOrder: 'ascend', render: v => <strong style={{ color: 'var(--cl-text-hi)' }}>{v}</strong> },
-    { title: 'Abertos', dataIndex: 'open', key: 'open', width: 90, align: 'center', sorter: (a, b) => b.open - a.open, render: v => v > 0 ? <span style={{ color: '#60a5fa', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
-    { title: 'Em Andamento', dataIndex: 'inProgress', key: 'inProgress', width: 120, align: 'center', sorter: (a, b) => b.inProgress - a.inProgress, render: v => v > 0 ? <span style={{ color: '#a78bfa', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
-    { title: 'Resolvidos', dataIndex: 'resolved', key: 'resolved', width: 100, align: 'center', sorter: (a, b) => b.resolved - a.resolved, render: v => v > 0 ? <span style={{ color: '#4ade80', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
-    { title: 'Fechados', dataIndex: 'closed', key: 'closed', width: 90, align: 'center', sorter: (a, b) => b.closed - a.closed, render: v => v > 0 ? <span style={{ color: '#94a3b8', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
+    { title: 'Abertos', dataIndex: 'open', key: 'open', width: 90, align: 'center', sorter: (a, b) => b.open - a.open, render: v => v > 0 ? <span style={{ color: 'var(--cl-primary-text)', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
+    { title: 'Em Andamento', dataIndex: 'inProgress', key: 'inProgress', width: 120, align: 'center', sorter: (a, b) => b.inProgress - a.inProgress, render: v => v > 0 ? <span style={{ color: 'var(--cl-purple)', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
+    { title: 'Resolvidos', dataIndex: 'resolved', key: 'resolved', width: 100, align: 'center', sorter: (a, b) => b.resolved - a.resolved, render: v => v > 0 ? <span style={{ color: 'var(--cl-success)', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
+    { title: 'Fechados', dataIndex: 'closed', key: 'closed', width: 90, align: 'center', sorter: (a, b) => b.closed - a.closed, render: v => v > 0 ? <span style={{ color: 'var(--cl-text-faint)', fontWeight: 600 }}>{v}</span> : <span style={{ color: 'var(--cl-text-dim)' }}>—</span> },
     {
       title: '% Resolvidos', key: 'pct', width: 110, align: 'center',
       sorter: (a, b) => (b.resolved / (b.total || 1)) - (a.resolved / (a.total || 1)),
       render: (_, r) => {
         const pct = r.total > 0 ? Math.round((r.resolved + r.closed) / r.total * 100) : 0;
         return (
-          <span style={{ fontSize: 12, fontWeight: 600, color: pct >= 75 ? '#4ade80' : pct >= 40 ? '#fbbf24' : '#f87171' }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: pct >= 75 ? 'var(--cl-success)' : pct >= 40 ? 'var(--cl-warning)' : 'var(--cl-danger)' }}>
             {pct}%
           </span>
         );
@@ -448,7 +449,7 @@ export default function Reports() {
   const detailedColumns = [
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 12 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 12 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
       title: 'Título', dataIndex: 'title', key: 'title', minWidth: 160,
@@ -595,13 +596,13 @@ export default function Reports() {
           </Tooltip>
           <Tooltip title="Exportar planilha XLSX">
             <Button icon={<FileExcelOutlined />} onClick={handleExportXLSX} disabled={tickets.length === 0}
-              style={{ color: '#16a34a', borderColor: 'rgba(22,163,74,0.3)' }}>
+              style={{ color: 'var(--cl-success)', borderColor: 'rgba(16,185,129,0.3)' }}>
               XLSX
             </Button>
           </Tooltip>
           <Tooltip title="Exportar PDF">
             <Button icon={<FilePdfOutlined />} onClick={handleExportPDF} disabled={tickets.length === 0}
-              style={{ color: '#dc2626', borderColor: 'rgba(220,38,38,0.3)' }}>
+              style={{ color: 'var(--cl-danger)', borderColor: 'rgba(239,68,68,0.3)' }}>
               PDF
             </Button>
           </Tooltip>
@@ -680,19 +681,19 @@ export default function Reports() {
             <KPICard title="Total" value={summary.total} color="var(--cl-text-hi)" />
           </Col>
           <Col xs={12} sm={8} md={4}>
-            <KPICard title="Abertos" value={summary.open} color="#60a5fa" />
+            <KPICard title="Abertos" value={summary.open} color="var(--cl-primary-text)" />
           </Col>
           <Col xs={12} sm={8} md={4}>
-            <KPICard title="Em Andamento" value={summary.inProgress} color="#a78bfa" />
+            <KPICard title="Em Andamento" value={summary.inProgress} color="var(--cl-purple)" />
           </Col>
           <Col xs={12} sm={8} md={4}>
-            <KPICard title="Resolvidos" value={summary.resolved} color="#4ade80" />
+            <KPICard title="Resolvidos" value={summary.resolved} color="var(--cl-success)" />
           </Col>
           <Col xs={12} sm={8} md={4}>
-            <KPICard title="Fechados" value={summary.closed} color="#94a3b8" />
+            <KPICard title="Fechados" value={summary.closed} color="var(--cl-text-faint)" />
           </Col>
           <Col xs={12} sm={8} md={4}>
-            <KPICard title="Críticos" value={summary.critical} color="#ef4444"
+            <KPICard title="Críticos" value={summary.critical} color="var(--cl-danger)"
               sub={summary.total > 0 ? `${Math.round(summary.critical / summary.total * 100)}% do total` : null}
             />
           </Col>
@@ -721,7 +722,7 @@ export default function Reports() {
       <Modal
         title={
           <Space>
-            <EyeOutlined style={{ color: '#60a5fa' }} />
+            <EyeOutlined style={{ color: 'var(--cl-primary-text)' }} />
             <span style={{ fontWeight: 700 }}>Visualização de Impressão</span>
           </Space>
         }

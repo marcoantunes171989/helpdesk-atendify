@@ -16,9 +16,9 @@ import { ROLES, normalize } from '../utils/constants';
 const { Option } = Select;
 
 const roleColors = {
-  SUPER_ADMIN: { bg: 'rgba(124,58,237,0.2)', color: '#a78bfa' },
-  ADMIN:       { bg: 'rgba(37,99,235,0.2)',  color: '#60a5fa' },
-  AGENT:       { bg: 'rgba(29,78,216,0.2)',  color: '#93c5fd' },
+  SUPER_ADMIN: { bg: 'rgba(139,92,246,0.2)', color: 'var(--cl-purple)' },
+  ADMIN:       { bg: 'rgba(37,99,235,0.2)',  color: 'var(--cl-primary-text)' },
+  AGENT:       { bg: 'rgba(6,182,212,0.2)',  color: 'var(--cl-secondary)' },
   CLIENT:      { bg: 'var(--cl-bg-input)', color: 'var(--cl-text-soft)' },
 };
 
@@ -122,7 +122,7 @@ export default function Users() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>{v ? String(v).padStart(4, '0') : '—'}</span>,
     },
     {
       title: 'Usuário', key: 'name',
@@ -233,7 +233,7 @@ export default function Users() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir usuário</span>
           </div>
         }
@@ -254,21 +254,21 @@ export default function Users() {
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
             {(deleteModal.createdTickets > 0 || deleteModal.comments > 0) ? (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--cl-danger)', fontSize: 13, marginBottom: 10 }}>
                   Exclusão bloqueada — vínculos existentes:
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {deleteModal.createdTickets > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>Chamados criados pelo usuário</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.createdTickets}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--cl-danger)' }}>{deleteModal.createdTickets}</span>
                     </div>
                   )}
                   {deleteModal.comments > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                       <span>Comentários em chamados</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.comments}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--cl-danger)' }}>{deleteModal.comments}</span>
                     </div>
                   )}
                 </div>
@@ -277,15 +277,15 @@ export default function Users() {
                 </p>
               </div>
             ) : deleteModal.assignedTickets > 0 ? (
-              <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
+              <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--cl-warning)', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                   <span>Chamados atribuídos (serão desvinculados)</span>
-                  <span style={{ fontWeight: 700, color: '#fbbf24' }}>{deleteModal.assignedTickets}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--cl-warning)' }}>{deleteModal.assignedTickets}</span>
                 </div>
               </div>
             ) : (
-              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-primary-text)' }}>
                 Este usuário não possui vínculos com chamados.
               </div>
             )}
@@ -298,7 +298,7 @@ export default function Users() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TeamOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <TeamOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Usuário' : 'Novo Usuário'}</span>
           </div>
@@ -312,7 +312,7 @@ export default function Users() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -351,7 +351,7 @@ export default function Users() {
         onOk={() => pwdForm.submit()}
         okText="Redefinir"
         cancelText="Cancelar"
-        okButtonProps={{ style: { background: '#2563eb', borderColor: '#2563eb' } }}
+        okButtonProps={{ style: { background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)' } }}
         width={400}
       >
         <Form form={pwdForm} layout="vertical" onFinish={handleResetPassword} style={{ marginTop: 16 }}>

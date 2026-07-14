@@ -227,7 +227,7 @@ export default function Tickets() {
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       defaultSortOrder: 'descend',
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -239,7 +239,7 @@ export default function Tickets() {
         <Space size={6} align="start">
           {isSlaExpired(r) && (
             <Tooltip title="SLA Vencido">
-              <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 13, marginTop: 2 }} />
+              <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 13, marginTop: 2 }} />
             </Tooltip>
           )}
           <div>
@@ -324,7 +324,7 @@ export default function Tickets() {
       render: (_, r) => (
         <Space size={4} onClick={e => e.stopPropagation()}>
           <Tooltip title="Ver detalhes">
-            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: '#60a5fa' }}
+            <Button type="text" icon={<EyeOutlined />} size="small" style={{ color: 'var(--cl-primary-text)' }}
               onClick={() => navigate(`/app/tickets/${r.id}`)} />
           </Tooltip>
           {!['CLOSED', 'CANCELLED'].includes(r.status) && (
@@ -413,7 +413,7 @@ export default function Tickets() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir chamado</span>
           </div>
         }
@@ -431,7 +431,7 @@ export default function Tickets() {
             <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir o chamado <strong>"{deleteModal.title}"</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-danger)', fontWeight: 500 }}>
               Todos os comentários vinculados também serão removidos.
             </div>
           </div>
@@ -442,8 +442,8 @@ export default function Tickets() {
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(217,119,6,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CustomerServiceOutlined style={{ color: '#fbbf24', fontSize: 16 }} />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CustomerServiceOutlined style={{ color: 'var(--cl-warning)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>Abrir Chamado</span>
           </div>
@@ -457,7 +457,7 @@ export default function Tickets() {
           <Space>
             <Button onClick={closeDrawer}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               Abrir Chamado
             </Button>
           </Space>
@@ -550,7 +550,7 @@ export default function Tickets() {
                   <PaperClipOutlined style={{ fontSize: 15 }} />
                   <span>Anexos</span>
                   {fileList.length > 0 && (
-                    <span style={{ background: '#2563eb', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
+                    <span style={{ background: 'var(--cl-primary)', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 600, padding: '1px 7px', lineHeight: '18px' }}>
                       {fileList.length}
                     </span>
                   )}

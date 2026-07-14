@@ -31,13 +31,14 @@ function formatPhone(value = '') {
   return maskPhone(value);
 }
 
+// Cores de categoria (não de estado) — paleta fixa de gráficos, com fundo em alpha
 const avatarColors = [
-  { bg: 'rgba(37,99,235,0.25)', color: '#60a5fa' },
-  { bg: 'rgba(29,78,216,0.25)', color: '#93c5fd' },
-  { bg: 'rgba(190,24,93,0.25)', color: '#f472b6' },
-  { bg: 'rgba(217,119,6,0.25)', color: '#fbbf24' },
-  { bg: 'rgba(124,58,237,0.25)', color: '#a78bfa' },
-  { bg: 'rgba(220,38,38,0.25)', color: '#f87171' },
+  { bg: 'rgba(37,99,235,0.25)', color: '#2563eb' },
+  { bg: 'rgba(217,119,6,0.25)', color: '#d97706' },
+  { bg: 'rgba(225,29,72,0.25)', color: '#e11d48' },
+  { bg: 'rgba(5,150,105,0.25)', color: '#059669' },
+  { bg: 'rgba(8,145,178,0.25)', color: '#0891b2' },
+  { bg: 'rgba(101,163,13,0.25)', color: '#65a30d' },
 ];
 
 const getAvatarColor = (name = '') => avatarColors[name.charCodeAt(0) % avatarColors.length];
@@ -134,7 +135,7 @@ export default function Employees() {
       title: '#', dataIndex: 'code', key: 'code', width: 70,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
       render: v => (
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>
           {v ? String(v).padStart(4, '0') : '—'}
         </span>
       ),
@@ -254,7 +255,7 @@ export default function Employees() {
         onCancel={() => setDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir funcionário</span>
           </div>
         }
@@ -273,15 +274,15 @@ export default function Employees() {
               Você está prestes a excluir <strong>{deleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
             {deleteModal.tickets > 0 ? (
-              <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#fbbf24', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
+              <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--cl-warning)', fontSize: 13, marginBottom: 6 }}>Atenção:</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                   <span>Chamados vinculados (serão desvinculados)</span>
-                  <span style={{ fontWeight: 700, color: '#fbbf24' }}>{deleteModal.tickets}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--cl-warning)' }}>{deleteModal.tickets}</span>
                 </div>
               </div>
             ) : (
-              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-primary-text)' }}>
                 Este funcionário não possui chamados vinculados.
               </div>
             )}
@@ -294,7 +295,7 @@ export default function Employees() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IdcardOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <IdcardOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>
               {editing ? 'Editar Funcionário' : 'Novo Funcionário'}
@@ -310,7 +311,7 @@ export default function Employees() {
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>

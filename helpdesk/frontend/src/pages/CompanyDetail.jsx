@@ -147,7 +147,7 @@ export default function CompanyDetail() {
       title: 'Funcionário', key: 'name',
       render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar size={32} style={{ background: 'rgba(37,99,235,0.2)', color: '#60a5fa', fontWeight: 700, fontSize: 13 }}>
+          <Avatar size={32} style={{ background: 'rgba(37,99,235,0.2)', color: 'var(--cl-primary-text)', fontWeight: 700, fontSize: 13 }}>
             {r.name?.charAt(0).toUpperCase()}
           </Avatar>
           <span style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</span>
@@ -201,7 +201,7 @@ export default function CompanyDetail() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/app/companies')} style={{ color: 'var(--cl-text-soft)', padding: '4px 8px' }} />
           <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BankOutlined style={{ color: '#60a5fa', fontSize: 20 }} />
+            <BankOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 20 }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -223,13 +223,13 @@ export default function CompanyDetail() {
       {/* Stats */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={12} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="#60a5fa" bg="rgba(37,99,235,0.15)" />
+          <StatCard icon={<IdcardOutlined />} label="Funcionários" value={employees.length} color="var(--cl-primary-text)" bg="rgba(37,99,235,0.15)" />
         </Col>
         <Col xs={12} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<CustomerServiceOutlined />} label="Chamados" value={tickets.length} color="#fbbf24" bg="rgba(217,119,6,0.15)" />
+          <StatCard icon={<CustomerServiceOutlined />} label="Chamados" value={tickets.length} color="var(--cl-warning)" bg="rgba(245,158,11,0.15)" />
         </Col>
         <Col xs={24} sm={8} style={{ display: 'flex' }}>
-          <StatCard icon={<CustomerServiceOutlined />} label="Em Aberto" value={openTickets} color="#f87171" bg="rgba(220,38,38,0.15)" />
+          <StatCard icon={<CustomerServiceOutlined />} label="Em Aberto" value={openTickets} color="var(--cl-danger)" bg="rgba(239,68,68,0.15)" />
         </Col>
       </Row>
 
@@ -248,7 +248,7 @@ export default function CompanyDetail() {
                   {canEdit && (
                     <div style={{ padding: '16px 24px 8px', display: 'flex', justifyContent: 'flex-end' }}>
                       <Button type="primary" icon={<PlusOutlined />} onClick={openCreateEmp}
-                        style={{ background: '#2563eb', borderColor: '#2563eb', borderRadius: 8, fontWeight: 600 }}>
+                        style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', borderRadius: 8, fontWeight: 600 }}>
                         Novo Funcionário
                       </Button>
                     </div>
@@ -285,7 +285,7 @@ export default function CompanyDetail() {
         onCancel={() => setEmpDeleteModal(null)}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#dc2626', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir funcionário</span>
           </div>
         }
@@ -303,7 +303,7 @@ export default function CompanyDetail() {
             <p style={{ marginBottom: 16 }}>
               Você está prestes a excluir <strong>{empDeleteModal.name}</strong> permanentemente. Esta ação não pode ser desfeita.
             </p>
-            <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', fontWeight: 500 }}>
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-danger)', fontWeight: 500 }}>
               O funcionário será removido do sistema e não poderá ser recuperado.
             </div>
           </div>
@@ -315,7 +315,7 @@ export default function CompanyDetail() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IdcardOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <IdcardOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editingEmp ? 'Editar Funcionário' : 'Novo Funcionário'}</span>
           </div>
@@ -328,7 +328,7 @@ export default function CompanyDetail() {
           <Space>
             <Button onClick={() => setEmpDrawer(false)}>Cancelar</Button>
             <Button type="primary" loading={empSaving} onClick={() => empForm.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editingEmp ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -347,7 +347,7 @@ export default function CompanyDetail() {
               </Col>
               <Col xs={24} sm={12}>
                 <Form.Item name="phone" label="Telefone">
-                  <Input prefix={<PhoneOutlined style={{ color: '#9ca3af' }} />} placeholder="(11) 99999-9999" size="large" />
+                  <Input prefix={<PhoneOutlined style={{ color: 'var(--cl-text-faint)' }} />} placeholder="(11) 99999-9999" size="large" />
                 </Form.Item>
               </Col>
             </Row>
@@ -360,7 +360,7 @@ export default function CompanyDetail() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BankOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <BankOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>Editar Empresa</span>
           </div>
@@ -373,7 +373,7 @@ export default function CompanyDetail() {
           <Space>
             <Button onClick={() => setCompDrawer(false)}>Cancelar</Button>
             <Button type="primary" loading={compSaving} onClick={() => compForm.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               Salvar Alterações
             </Button>
           </Space>

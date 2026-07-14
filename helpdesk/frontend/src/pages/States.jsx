@@ -155,7 +155,7 @@ export default function States() {
     {
       title: '#', dataIndex: 'code', key: 'code', width: 60,
       sorter: (a, b) => (a.code || 0) - (b.code || 0),
-      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#60a5fa', fontSize: 13 }}>{v ? String(v).padStart(3, '0') : '—'}</span>,
+      render: v => <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--cl-primary-text)', fontSize: 13 }}>{v ? String(v).padStart(3, '0') : '—'}</span>,
     },
     {
       title: 'Sigla', dataIndex: 'sigla', key: 'sigla', width: 80,
@@ -274,7 +274,7 @@ export default function States() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(37,99,235,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <GlobalOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+              <GlobalOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Estado' : 'Novo Estado'}</span>
           </div>
@@ -288,7 +288,7 @@ export default function States() {
           <Space>
             <Button onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: '#2563eb', borderColor: '#2563eb', fontWeight: 600 }}>
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
               {editing ? 'Salvar Alterações' : 'Cadastrar'}
             </Button>
           </Space>
@@ -327,7 +327,7 @@ export default function States() {
         centered
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Excluir estado</span>
           </div>
         }
@@ -346,17 +346,17 @@ export default function States() {
               Deseja excluir o estado <strong>{deleteModal.name} ({deleteModal.sigla})</strong>? Esta ação não pode ser desfeita.
             </p>
             {deleteModal.cities > 0 ? (
-              <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 8, padding: '14px 16px' }}>
-                <div style={{ fontWeight: 600, color: '#f87171', fontSize: 13, marginBottom: 10 }}>
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '14px 16px' }}>
+                <div style={{ fontWeight: 600, color: 'var(--cl-danger)', fontSize: 13, marginBottom: 10 }}>
                   Os seguintes registros vinculados também serão excluídos em cascata:
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                   <span>Cidades vinculadas a este estado</span>
-                  <span style={{ fontWeight: 700, color: '#f87171' }}>{deleteModal.cities}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--cl-danger)' }}>{deleteModal.cities}</span>
                 </div>
               </div>
             ) : (
-              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#60a5fa' }}>
+              <div style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--cl-primary-text)' }}>
                 Este estado não possui cidades vinculadas.
               </div>
             )}
@@ -371,7 +371,7 @@ export default function States() {
         centered
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ExclamationCircleOutlined style={{ color: '#f87171', fontSize: 20 }} />
+            <ExclamationCircleOutlined style={{ color: 'var(--cl-danger)', fontSize: 20 }} />
             <span style={{ fontWeight: 700 }}>Remover todos os estados</span>
           </div>
         }
