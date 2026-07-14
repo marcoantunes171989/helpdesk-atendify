@@ -639,12 +639,16 @@ h1, h2, h3, h4, h5 {
    Ant Design dark overrides — Layout / Nav
    ============================================================ */
 
-/* Light: força fundo branco em todos os contêineres de layout */
+/* Light: força fundo branco nos contêineres de conteúdo (sidebar fica sempre navy, ver abaixo) */
 [data-theme="light"] .ant-layout,
-[data-theme="light"] .ant-layout-content,
-[data-theme="light"] .ant-layout-sider,
-[data-theme="light"] .ant-layout-sider-children {
+[data-theme="light"] .ant-layout-content {
   background: #ffffff !important;
+}
+
+/* Sidebar é sempre azul-marinho (#0F172A), independente do tema */
+.ant-layout-sider,
+.ant-layout-sider-children {
+  background: var(--cl-sidebar) !important;
 }
 
 /* Light: sem backdrop-filter — fundo sólido não precisa blur */
