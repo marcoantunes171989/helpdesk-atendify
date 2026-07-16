@@ -110,7 +110,15 @@ export default function Companies() {
     setDrawerOpen(true);
   };
 
+  // Erros de unicidade do backend, mapeados para o campo correspondente
+  const FIELD_ERROR_MAP = [
+    [/cnpj/i, 'cnpj'],
+    [/e-?mail/i, 'email'],
+    [/telefone/i, 'phone'],
+  ];
+
   const handleSubmit = async (values) => {
+    if (saving) return; // trava contra clique duplo / submit concorrente
     setSaving(true);
     try {
       if (editing) {
@@ -138,7 +146,14 @@ export default function Companies() {
       setStagedFiles([]);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao salvar empresa');
+      const apiMsg = err.response?.data?.error;
+      const friendly = apiMsg || 'Não foi possível salvar a empresa. Tente novamente.';
+      const fieldMatch = apiMsg && FIELD_ERROR_MAP.find(([re]) => re.test(apiMsg));
+      if (fieldMatch) {
+        form.setFields([{ name: fieldMatch[1], errors: [apiMsg] }]);
+      }
+      message.error(friendly);
+      console.error('Erro ao salvar empresa:', err);
     } finally {
       setSaving(false);
     }
@@ -340,10 +355,10 @@ export default function Companies() {
         style={{ maxWidth: 'calc(100vw - 16px)' }}
         footer={
           <Space>
-            <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
-            <Button type="primary" loading={saving} onClick={() => form.submit()}
+            <Button disabled={saving} onClick={() => setDrawerOpen(false)}>Cancelar</Button>
+            <Button type="primary" loading={saving} disabled={saving} onClick={() => form.submit()}
               style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
-              {editing ? 'Salvar Alterações' : 'Cadastrar'}
+              {saving ? (editing ? 'Salvando...' : 'Cadastrando...') : (editing ? 'Salvar Alterações' : 'Cadastrar')}
             </Button>
           </Space>
         }

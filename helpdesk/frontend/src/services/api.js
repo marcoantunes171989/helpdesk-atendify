@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { message } from 'antd';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
@@ -17,8 +18,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
-
+      message.error('Sessão expirada. Faça login novamente.');
+      setTimeout(() => { window.location.href = '/login'; }, 1200);
     }
     return Promise.reject(error);
   }
