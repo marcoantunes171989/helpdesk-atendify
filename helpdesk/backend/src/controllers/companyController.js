@@ -1,21 +1,37 @@
 ﻿const prisma = require('../prisma');
 
+// ETAPA 6 (RBAC-03): CNPJ, e-mail, telefone, endereço e observações são dados
+// sensíveis da empresa-cliente. Quem não tem companies.read (ex.: CLIENT
+// escolhendo a empresa ao abrir um chamado, ou AGENT sem o módulo) só recebe
+// o necessário para preencher o formulário — sem expor dados sensíveis de
+// outras empresas.
+const PUBLIC_FIELDS = { id: true, code: true, name: true, fantasia: true, active: true };
+
+function hasFullAccess(req) {
+  return req.permissions?.has('companies.read');
+}
+
 exports.list = async (req, res) => {
   const { search, active } = req.query;
   const where = {};
+  const full = hasFullAccess(req);
 
   if (search) {
-    where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
-      { cnpj: { contains: search } },
-      { email: { contains: search, mode: 'insensitive' } },
-    ];
+    where.OR = full
+      ? [
+          { name: { contains: search, mode: 'insensitive' } },
+          { cnpj: { contains: search } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ]
+      : [{ name: { contains: search, mode: 'insensitive' } }, { fantasia: { contains: search, mode: 'insensitive' } }];
   }
   if (active !== undefined) where.active = active === 'true';
 
   const companies = await prisma.company.findMany({
     where,
-    include: { _count: { select: { tickets: true, employees: true } } },
+    ...(full
+      ? { include: { _count: { select: { tickets: true, employees: true } } } }
+      : { select: PUBLIC_FIELDS }),
     orderBy: { code: { sort: 'asc', nulls: 'last' } },
   });
 
@@ -24,9 +40,12 @@ exports.list = async (req, res) => {
 
 exports.get = async (req, res) => {
   const { id } = req.params;
+  const full = hasFullAccess(req);
   const company = await prisma.company.findUnique({
     where: { id },
-    include: { _count: { select: { tickets: true, categories: true, employees: true } } },
+    ...(full
+      ? { include: { _count: { select: { tickets: true, categories: true, employees: true } } } }
+      : { select: PUBLIC_FIELDS }),
   });
   if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
   res.json(company);
