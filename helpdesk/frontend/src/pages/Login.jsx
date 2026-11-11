@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const BREAKPOINT = 768;
 const PHOTO_URL = '/Atendexa.png';
+const PHOTO_URL_WEBP = '/Atendexa.webp';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -86,21 +87,24 @@ export default function Login() {
       `}</style>
 
       {/* Imagem de fundo — preenche toda a tela sem barras */}
-      <img
-        src={PHOTO_URL}
-        alt=""
-        fetchPriority="high"
-        decoding="sync"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center 20%',
-          zIndex: 0,
-        }}
-      />
+      <picture>
+        <source srcSet={PHOTO_URL_WEBP} type="image/webp" />
+        <img
+          src={PHOTO_URL}
+          alt=""
+          fetchPriority="high"
+          decoding="sync"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center 20%',
+            zIndex: 0,
+          }}
+        />
+      </picture>
 
       {/* Overlay direcional: escurece só o lado direito para contraste do card */}
       <div style={{

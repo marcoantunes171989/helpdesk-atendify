@@ -1,31 +1,33 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import AppLayout from './components/AppLayout';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Companies from './pages/Companies';
-import Users from './pages/Users';
-import Categories from './pages/Categories';
-import Tickets from './pages/Tickets';
-import TicketDetail from './pages/TicketDetail';
-import Employees from './pages/Employees';
-import CompanyDetail from './pages/CompanyDetail';
-import Status from './pages/Status';
-import Technicians from './pages/Technicians';
-import Settings from './pages/Settings';
-import States from './pages/States';
-import Cities from './pages/Cities';
-import KnowledgeBase from './pages/KnowledgeBase';
-import Reports from './pages/Reports';
-import CRM from './pages/CRM';
-import Implantacoes from './pages/Implantacoes';
-import EtapasTreinamento from './pages/EtapasTreinamento';
-import ModulosTreinamento from './pages/ModulosTreinamento';
-import Treinamentos from './pages/Treinamentos';
-import Visitas from './pages/Visitas';
-import AgendaTecnica from './pages/AgendaTecnica';
+
+const AppLayout = lazy(() => import('./components/AppLayout'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Companies = lazy(() => import('./pages/Companies'));
+const Users = lazy(() => import('./pages/Users'));
+const Categories = lazy(() => import('./pages/Categories'));
+const Tickets = lazy(() => import('./pages/Tickets'));
+const TicketDetail = lazy(() => import('./pages/TicketDetail'));
+const Employees = lazy(() => import('./pages/Employees'));
+const CompanyDetail = lazy(() => import('./pages/CompanyDetail'));
+const Status = lazy(() => import('./pages/Status'));
+const Technicians = lazy(() => import('./pages/Technicians'));
+const Settings = lazy(() => import('./pages/Settings'));
+const States = lazy(() => import('./pages/States'));
+const Cities = lazy(() => import('./pages/Cities'));
+const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase'));
+const Reports = lazy(() => import('./pages/Reports'));
+const CRM = lazy(() => import('./pages/CRM'));
+const Implantacoes = lazy(() => import('./pages/Implantacoes'));
+const EtapasTreinamento = lazy(() => import('./pages/EtapasTreinamento'));
+const ModulosTreinamento = lazy(() => import('./pages/ModulosTreinamento'));
+const Treinamentos = lazy(() => import('./pages/Treinamentos'));
+const Visitas = lazy(() => import('./pages/Visitas'));
+const AgendaTecnica = lazy(() => import('./pages/AgendaTecnica'));
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -35,7 +37,7 @@ function PrivateRoute({ children }) {
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <Spin fullscreen />;
+  if (loading) return children;
   return user ? <Navigate to="/app" replace /> : children;
 }
 
@@ -44,7 +46,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+      <Route path="/app" element={<PrivateRoute><Suspense fallback={<Spin fullscreen />}><AppLayout /></Suspense></PrivateRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="companies" element={<Companies />} />
         <Route path="companies/:id" element={<CompanyDetail />} />

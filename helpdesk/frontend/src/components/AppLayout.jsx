@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer, Spin } from 'antd';
 import {
   DashboardOutlined, TeamOutlined, UserOutlined, AppstoreOutlined,
   CustomerServiceOutlined, LogoutOutlined, BankOutlined,
@@ -234,7 +234,9 @@ export default function AppLayout() {
           minHeight: 'calc(100vh - 64px)',
           background: 'var(--cl-page-bg)',
         }}>
-          <Outlet />
+          <Suspense fallback={<Spin style={{ display: 'flex', justifyContent: 'center', marginTop: 80 }} />}>
+            <Outlet />
+          </Suspense>
         </Content>
       </Layout>
     </Layout>
