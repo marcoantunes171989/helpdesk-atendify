@@ -12,7 +12,7 @@ async function main() {
     await prisma.permission.upsert({
       where: { key: perm.key },
       update: { module: perm.module, action: perm.action, description: perm.description },
-      create: perm,
+      create: { key: perm.key, module: perm.module, action: perm.action, description: perm.description },
     });
   }
   console.log(`[seed-permissions] ${PERMISSIONS.length} permissões sincronizadas.`);
