@@ -1,4 +1,4 @@
 node_modules/
 .env
 dist/
-.rbac03-pgtest/
+.rbac*-pgtest/
