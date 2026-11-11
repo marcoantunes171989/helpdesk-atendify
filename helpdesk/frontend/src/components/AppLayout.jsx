@@ -8,9 +8,10 @@ import {
   TagsOutlined, ToolOutlined, SettingOutlined, GlobalOutlined, EnvironmentOutlined,
   BookOutlined, BarChartOutlined, ContactsOutlined, RocketOutlined, ReadOutlined,
   CarOutlined, ScheduleOutlined, OrderedListOutlined, AppstoreAddOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
-import { canManageCompanies, canManageUsers, canManageCategories, ROLES } from '../utils/constants';
+import { ROLES } from '../utils/constants';
 
 const { Header, Sider, Content } = Layout;
 
@@ -20,7 +21,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < BREAKPOINT);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, can } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,24 +37,25 @@ export default function AppLayout() {
 
   const menuItems = [
     { key: '/app', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/app/tickets', icon: <CustomerServiceOutlined />, label: 'Chamados' },
-    canManageCategories(user?.role) && { key: '/app/categories', icon: <AppstoreOutlined />, label: 'Categorias' },
-    canManageCategories(user?.role) && { key: '/app/statuses', icon: <TagsOutlined />, label: 'Status' },
-    canManageCategories(user?.role) && { key: '/app/technicians', icon: <ToolOutlined />, label: 'Técnicos' },
-    canManageCategories(user?.role) && { key: '/app/states', icon: <GlobalOutlined />, label: 'Estados' },
-    canManageCategories(user?.role) && { key: '/app/cities', icon: <EnvironmentOutlined />, label: 'Cidades' },
-    { key: '/app/knowledge', icon: <BookOutlined />, label: 'Base de Conhecimento' },
-    canManageCategories(user?.role) && { key: '/app/reports', icon: <BarChartOutlined />, label: 'Relatórios' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/crm', icon: <ContactsOutlined />, label: 'CRM' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/implantacoes', icon: <RocketOutlined />, label: 'Implantações' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/modulos-treinamento', icon: <AppstoreAddOutlined />, label: 'Módulos de Treinamento' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/etapas-treinamento', icon: <OrderedListOutlined />, label: 'Etapas de Treinamento' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/treinamentos', icon: <ReadOutlined />, label: 'Treinamentos' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/visitas', icon: <CarOutlined />, label: 'Visitas Técnicas' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/agenda-tecnica', icon: <ScheduleOutlined />, label: 'Agenda Técnica' },
-    ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role) && { key: '/app/employees', icon: <IdcardOutlined />, label: 'Funcionários' },
-    canManageUsers(user?.role) && { key: '/app/users', icon: <TeamOutlined />, label: 'Usuários' },
-    canManageCompanies(user?.role) && { key: '/app/companies', icon: <BankOutlined />, label: 'Empresas' },
+    can('tickets.read') && { key: '/app/tickets', icon: <CustomerServiceOutlined />, label: 'Chamados' },
+    can('categories.read') && { key: '/app/categories', icon: <AppstoreOutlined />, label: 'Categorias' },
+    can('statuses.read') && { key: '/app/statuses', icon: <TagsOutlined />, label: 'Status' },
+    can('technicians.read') && { key: '/app/technicians', icon: <ToolOutlined />, label: 'Técnicos' },
+    can('states_cities.read') && { key: '/app/states', icon: <GlobalOutlined />, label: 'Estados' },
+    can('states_cities.read') && { key: '/app/cities', icon: <EnvironmentOutlined />, label: 'Cidades' },
+    can('knowledge.read') && { key: '/app/knowledge', icon: <BookOutlined />, label: 'Base de Conhecimento' },
+    can('reports.read') && { key: '/app/reports', icon: <BarChartOutlined />, label: 'Relatórios' },
+    can('crm.read') && { key: '/app/crm', icon: <ContactsOutlined />, label: 'CRM' },
+    can('implantacoes.read') && { key: '/app/implantacoes', icon: <RocketOutlined />, label: 'Implantações' },
+    can('treinamentos.read') && { key: '/app/modulos-treinamento', icon: <AppstoreAddOutlined />, label: 'Módulos de Treinamento' },
+    can('treinamentos.read') && { key: '/app/etapas-treinamento', icon: <OrderedListOutlined />, label: 'Etapas de Treinamento' },
+    can('treinamentos.read') && { key: '/app/treinamentos', icon: <ReadOutlined />, label: 'Treinamentos' },
+    can('visitas.read') && { key: '/app/visitas', icon: <CarOutlined />, label: 'Visitas Técnicas' },
+    can('agenda_tecnica.read') && { key: '/app/agenda-tecnica', icon: <ScheduleOutlined />, label: 'Agenda Técnica' },
+    can('employees.read') && { key: '/app/employees', icon: <IdcardOutlined />, label: 'Funcionários' },
+    can('users.read') && { key: '/app/users', icon: <TeamOutlined />, label: 'Usuários' },
+    can('access_groups.read') && { key: '/app/access-groups', icon: <SafetyCertificateOutlined />, label: 'Grupos de Acesso' },
+    can('companies.read') && { key: '/app/companies', icon: <BankOutlined />, label: 'Empresas' },
     { key: '/app/settings', icon: <SettingOutlined />, label: 'Configurações' },
   ].filter(Boolean);
 

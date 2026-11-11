@@ -9,7 +9,7 @@ import {
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { userService } from '../services/api';
+import { userService, accessGroupService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLES, normalize } from '../utils/constants';
 
@@ -38,14 +38,23 @@ export default function Users() {
   const [roleFilter, setRoleFilter] = useState(undefined);
   const [form] = Form.useForm();
   const [pwdForm] = Form.useForm();
-  const { user } = useAuth();
+  const [accessGroups, setAccessGroups] = useState([]);
+  const { user, can } = useAuth();
+
+  const canCreate = can('users.create');
+  const canUpdate = can('users.update');
+  const canDelete = can('users.delete');
+  const canManage = can('users.manage');
 
   const load = (params = {}) => {
     setLoading(true);
     userService.list(params).then(setUsers).finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => {
+    load();
+    accessGroupService.list({ active: 'true' }).then(setAccessGroups);
+  }, [user]);
 
   const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => { setEditing(record); form.setFieldsValue({ ...record }); setDrawerOpen(true); };
@@ -170,13 +179,17 @@ export default function Users() {
       title: '', key: 'actions', width: 110,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Redefinir senha">
-            <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => setPwdModal(record.id)} />
-          </Tooltip>
-          {record.id !== user?.id && (
+          {canUpdate && (
+            <Tooltip title="Editar">
+              <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+            </Tooltip>
+          )}
+          {canManage && (
+            <Tooltip title="Redefinir senha">
+              <Button type="text" icon={<KeyOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => setPwdModal(record.id)} />
+            </Tooltip>
+          )}
+          {canDelete && record.id !== user?.id && (
             <Tooltip title="Excluir">
               <Button type="text" icon={<DeleteOutlined />} size="small" danger
                 loading={deletingId === record.id} onClick={() => openDelete(record)} />
@@ -196,9 +209,11 @@ export default function Users() {
             {filteredUsers.length} usuário{filteredUsers.length !== 1 ? 's' : ''} cadastrado{filteredUsers.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-          Novo Usuário
-        </Button>
+        {canCreate && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
+            Novo Usuário
+          </Button>
+        )}
       </div>
 
       <div className="filter-bar">
@@ -323,16 +338,47 @@ export default function Users() {
             <Form.Item name="name" label="Nome" rules={[{ required: true, message: 'Informe o nome' }]}>
               <Input placeholder="Nome completo" size="large" />
             </Form.Item>
+            <Form.Item name="username" label="Nome de usuário" rules={[{ pattern: /^[a-zA-Z0-9._-]+$/, message: 'Use apenas letras, números, ponto, hífen ou underscore' }]}>
+              <Input placeholder="usuario.login (opcional — permite login sem e-mail)" size="large" />
+            </Form.Item>
             <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Informe o e-mail' }, { type: 'email', message: 'E-mail inválido' }]}>
               <Input placeholder="email@exemplo.com" size="large" />
             </Form.Item>
             {!editing && (
-              <Form.Item name="password" label="Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
-                <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
-              </Form.Item>
+              <>
+                <Form.Item name="password" label="Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
+                  <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
+                </Form.Item>
+                <Form.Item
+                  name="confirmPassword"
+                  label="Confirmar senha"
+                  dependencies={['password']}
+                  rules={[
+                    { required: true, message: 'Confirme a senha' },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('password') === value) return Promise.resolve();
+                        return Promise.reject(new Error('As senhas não coincidem'));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password placeholder="Repita a senha" size="large" />
+                </Form.Item>
+              </>
             )}
             <Form.Item name="role" label="Perfil" rules={[{ required: true, message: 'Selecione o perfil' }]}>
-              <Select placeholder="Selecione o perfil" size="large">{roleOptions}</Select>
+              <Select placeholder="Selecione o perfil" size="large" disabled={editing && editing.id === user?.id && user?.role !== 'SUPER_ADMIN'}>{roleOptions}</Select>
+            </Form.Item>
+            <Form.Item name="accessGroupId" label="Grupo de Acesso">
+              <Select
+                placeholder="Sem grupo (usa permissões padrão do perfil)"
+                size="large"
+                allowClear
+                disabled={editing && editing.id === user?.id && user?.role !== 'SUPER_ADMIN'}
+              >
+                {accessGroups.map(g => <Option key={g.id} value={g.id}>{g.name}</Option>)}
+              </Select>
             </Form.Item>
             {editing && (
               <Form.Item name="active" label="Status" valuePropName="checked">
@@ -357,6 +403,22 @@ export default function Users() {
         <Form form={pwdForm} layout="vertical" onFinish={handleResetPassword} style={{ marginTop: 16 }}>
           <Form.Item name="password" label="Nova Senha" rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}>
             <Input.Password placeholder="Mínimo 6 caracteres" size="large" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Confirmar Nova Senha"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Confirme a nova senha' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) return Promise.resolve();
+                  return Promise.reject(new Error('As senhas não coincidem'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Repita a nova senha" size="large" />
           </Form.Item>
         </Form>
       </Modal>

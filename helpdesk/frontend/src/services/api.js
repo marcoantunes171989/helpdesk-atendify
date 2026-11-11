@@ -26,7 +26,7 @@ api.interceptors.response.use(
 );
 
 export const authService = {
-  login: (data) => api.post('/auth/login', data).then(r => r.data),
+  login: (identifier, password) => api.post('/auth/login', { identifier, password }).then(r => r.data),
   me: () => api.get('/auth/me').then(r => r.data),
   changePassword: (data) => api.put('/auth/change-password', data).then(r => r.data),
 };
@@ -85,6 +85,23 @@ export const userService = {
   resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data).then(r => r.data),
   remove: (id) => api.delete(`/users/${id}`).then(r => r.data),
   checkLinks: (id) => api.get(`/users/${id}/links`).then(r => r.data),
+};
+
+export const accessGroupService = {
+  list: (params) => api.get('/access-groups', { params }).then(r => r.data),
+  get: (id) => api.get(`/access-groups/${id}`).then(r => r.data),
+  create: (data) => api.post('/access-groups', data).then(r => r.data),
+  update: (id, data) => api.put(`/access-groups/${id}`, data).then(r => r.data),
+  remove: (id) => api.delete(`/access-groups/${id}`).then(r => r.data),
+};
+
+export const permissionService = {
+  catalog: () => api.get('/permissions/catalog').then(r => r.data),
+  me: () => api.get('/permissions/me').then(r => r.data),
+};
+
+export const auditLogService = {
+  list: (params) => api.get('/audit-logs', { params }).then(r => r.data),
 };
 
 export const categoryService = {
