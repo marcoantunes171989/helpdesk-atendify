@@ -14,8 +14,8 @@ import { useAuth } from '../contexts/AuthContext';
 const { Option } = Select;
 
 export default function EtapasTreinamento() {
-  const { user } = useAuth();
-  const canEdit = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role);
+  const { can } = useAuth();
+  const canEdit = can('treinamentos.create') || can('treinamentos.update') || can('treinamentos.delete');
 
   const [items, setItems] = useState([]);
   const [modulos, setModulos] = useState([]);

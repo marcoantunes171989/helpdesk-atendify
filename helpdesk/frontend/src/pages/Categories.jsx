@@ -11,14 +11,20 @@ import {
 import dayjs from 'dayjs';
 import { categoryService } from '../services/api';
 import { normalize } from '../utils/constants';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Categories() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
+  const { can } = useAuth();
+  const canCreate = can('categories.create');
+  const canUpdate = can('categories.update');
+  const canDelete = can('categories.delete');
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [viewOnly, setViewOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -32,12 +38,26 @@ export default function Categories() {
 
   useEffect(() => { load(); }, []);
 
-  const openCreate = () => { setEditing(null); form.resetFields(); setDrawerOpen(true); };
+  const openCreate = () => { setEditing(null); setViewOnly(false); form.resetFields(); setDrawerOpen(true); };
   const openEdit = (record) => {
     setEditing(record);
+    setViewOnly(false);
     form.setFieldsValue({ name: record.name, description: record.description, slaHours: record.slaHours ?? 24, active: record.active });
     setDrawerOpen(true);
   };
+  // RBAC-06 ETAPA 3: clique na linha abria sempre o formulário de edição,
+  // mesmo para quem só tem categories.read (sem categories.update) — a tela
+  // ficava "editável" na aparência mas o backend rejeitava o salvamento.
+  // Sem categories.update, o clique abre os mesmos campos em modo de
+  // somente-leitura (sem salvar); o botão de lápis (que já só aparece com
+  // canUpdate) continua indo direto para edição.
+  const openDetails = (record) => {
+    setEditing(record);
+    setViewOnly(true);
+    form.setFieldsValue({ name: record.name, description: record.description, slaHours: record.slaHours ?? 24, active: record.active });
+    setDrawerOpen(true);
+  };
+  const openRow = (record) => (canUpdate ? openEdit(record) : openDetails(record));
 
   const handleSubmit = async (values) => {
     setSaving(true);
@@ -124,14 +144,18 @@ export default function Categories() {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Remover">
-            <Button type="text" icon={<DeleteOutlined />} size="small" danger
-              onClick={() => setDeleteModal({ id: record.id, name: record.name, tickets: record._count?.tickets ?? 0 })} />
-          </Tooltip>
+          {canUpdate && (
+            <Tooltip title="Editar">
+              <Button type="text" icon={<EditOutlined />} size="small"
+                style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+            </Tooltip>
+          )}
+          {canDelete && (
+            <Tooltip title="Remover">
+              <Button type="text" icon={<DeleteOutlined />} size="small" danger
+                onClick={() => setDeleteModal({ id: record.id, name: record.name, tickets: record._count?.tickets ?? 0 })} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -150,9 +174,11 @@ export default function Categories() {
             {filteredCategories.length} categoria{filteredCategories.length !== 1 ? 's' : ''} cadastrada{filteredCategories.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-          Nova Categoria
-        </Button>
+        {canCreate && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
+            Nova Categoria
+          </Button>
+        )}
       </div>
 
       <div className="filter-bar">
@@ -169,7 +195,7 @@ export default function Categories() {
         <Table dataSource={filteredCategories} columns={columns} rowKey="id" loading={loading}
           size="middle" scroll={{ x: 500 }}
           pagination={{ pageSize: 15, showSizeChanger: false, showTotal: t => `${t} categoria${t !== 1 ? 's' : ''}` }}
-          onRow={record => ({ onClick: () => openEdit(record), style: { cursor: 'pointer' } })}
+          onRow={record => ({ onClick: () => openRow(record), style: { cursor: 'pointer' } })}
         />
       </div>
 
@@ -217,7 +243,9 @@ export default function Categories() {
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <AppstoreOutlined style={{ color: 'var(--cl-warning)', fontSize: 16 }} />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Categoria' : 'Nova Categoria'}</span>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>
+              {viewOnly ? 'Detalhes da Categoria' : editing ? 'Editar Categoria' : 'Nova Categoria'}
+            </span>
           </div>
         }
         open={drawerOpen}
@@ -226,17 +254,21 @@ export default function Categories() {
         width={560}
         styles={{ body: { padding: '24px 0 8px' } }}
         footer={
-          <Space>
-            <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
-            <Button type="primary" loading={saving} onClick={() => form.submit()}
-              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
-              {editing ? 'Salvar Alterações' : 'Cadastrar'}
-            </Button>
-          </Space>
+          viewOnly ? (
+            <Button onClick={() => setDrawerOpen(false)}>Fechar</Button>
+          ) : (
+            <Space>
+              <Button onClick={() => setDrawerOpen(false)}>Cancelar</Button>
+              <Button type="primary" loading={saving} onClick={() => form.submit()}
+                style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', fontWeight: 600 }}>
+                {editing ? 'Salvar Alterações' : 'Cadastrar'}
+              </Button>
+            </Space>
+          )
         }
       >
         <div style={{ padding: '0 24px' }}>
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form form={form} layout="vertical" onFinish={handleSubmit} disabled={viewOnly}>
             <Form.Item name="name" label="Nome da Categoria" rules={[{ required: true, message: 'Informe o nome' }]}>
               <Input placeholder="Ex: Suporte Técnico, Financeiro..." size="large" />
             </Form.Item>

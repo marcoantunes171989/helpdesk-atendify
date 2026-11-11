@@ -271,8 +271,8 @@ export default function CRM() {
   const [actForm] = Form.useForm();
   const [selectedCompanyForContact, setSelectedCompanyForContact] = useState(null);
 
-  const { user } = useAuth();
-  const canEdit = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role);
+  const { user, can } = useAuth();
+  const canEdit = can('crm.create') || can('crm.update') || can('crm.delete');
 
   const loadAll = useCallback(async () => {
     setLoading(true);

@@ -18,7 +18,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import {
-  TICKET_STATUS, PRIORITY, ROLES, canAssignTickets, canUpdateTicketStatus, normalize } from '../utils/constants';
+  TICKET_STATUS, PRIORITY, ROLES, normalize } from '../utils/constants';
 
 const { Paragraph } = Typography;
 const { TextArea } = Input;
@@ -108,7 +108,7 @@ export default function TicketDetail() {
   const isLight = resolvedTheme === 'light';
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, can } = useAuth();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
   useEffect(() => {
@@ -188,8 +188,8 @@ export default function TicketDetail() {
       unique.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
       setCategories(unique);
     });
-    if (canAssignTickets(user?.role)) userService.list({ role: 'AGENT' }).then(setAgents);
-    if (canUpdateTicketStatus(user?.role)) {
+    if (can('tickets.manage')) userService.list({ role: 'AGENT' }).then(setAgents);
+    if (can('tickets.manage')) {
       companyService.list().then(list => setCompanies(list.filter(c => c.active)));
       statusService.list().then(setStatuses);
       technicianService.list({ active: 'true' }).then(list => {
@@ -458,7 +458,7 @@ export default function TicketDetail() {
     && dayjs(ticket.slaDeadline).isBefore(dayjs());
   const isClosed = ['CLOSED', 'CANCELLED'].includes(ticket.status);
   const isResolved = ticket.status === 'RESOLVED';
-  const canEdit = canUpdateTicketStatus(user?.role);
+  const canEdit = can('tickets.manage');
 
   const renderAttachment = (att, compact = false) => {
     const isImage = att.mimeType.startsWith('image/');

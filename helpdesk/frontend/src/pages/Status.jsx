@@ -21,6 +21,7 @@ const BUILTIN_STATUS_OPTIONS = [
 import dayjs from 'dayjs';
 import { statusService } from '../services/api';
 import { normalize } from '../utils/constants';
+import { useAuth } from '../contexts/AuthContext';
 
 const { TextArea } = Input;
 
@@ -59,6 +60,10 @@ function ColorPicker({ value, onChange }) {
 export default function Status() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
+  const { can } = useAuth();
+  const canCreate = can('statuses.create');
+  const canUpdate = can('statuses.update');
+  const canDelete = can('statuses.delete');
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -191,14 +196,18 @@ export default function Status() {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Remover">
-            <Button type="text" icon={<DeleteOutlined />} size="small" danger
-              onClick={() => setDeleteModal({ id: record.id, name: record.name, tickets: record._count?.tickets ?? 0 })} />
-          </Tooltip>
+          {canUpdate && (
+            <Tooltip title="Editar">
+              <Button type="text" icon={<EditOutlined />} size="small"
+                style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+            </Tooltip>
+          )}
+          {canDelete && (
+            <Tooltip title="Remover">
+              <Button type="text" icon={<DeleteOutlined />} size="small" danger
+                onClick={() => setDeleteModal({ id: record.id, name: record.name, tickets: record._count?.tickets ?? 0 })} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -217,10 +226,12 @@ export default function Status() {
             {filteredStatuses.length} status cadastrado{filteredStatuses.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
-          style={{ borderRadius: 8, fontWeight: 600 }}>
-          Novo Status
-        </Button>
+        {canCreate && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
+            style={{ borderRadius: 8, fontWeight: 600 }}>
+            Novo Status
+          </Button>
+        )}
       </div>
 
       <div className="filter-bar">

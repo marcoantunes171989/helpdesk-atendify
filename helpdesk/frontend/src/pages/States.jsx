@@ -12,7 +12,7 @@ import {
 import dayjs from 'dayjs';
 import { stateService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { canManageCategories, normalize } from '../utils/constants';
+import { normalize } from '../utils/constants';
 
 export default function States() {
   const { resolvedTheme } = useTheme();
@@ -36,8 +36,8 @@ export default function States() {
   const [importLoading, setImportLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [form] = Form.useForm();
-  const { user } = useAuth();
-  const canEdit = canManageCategories(user?.role);
+  const { can } = useAuth();
+  const canEdit = can('states_cities.create') || can('states_cities.update') || can('states_cities.delete');
 
   const load = () => {
     setLoading(true);
