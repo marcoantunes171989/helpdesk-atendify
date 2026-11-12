@@ -2,16 +2,12 @@ import { useState, useEffect, Suspense } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer, Spin } from 'antd';
 import {
-  DashboardOutlined, TeamOutlined, UserOutlined, AppstoreOutlined,
-  CustomerServiceOutlined, LogoutOutlined, BankOutlined,
-  MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined, IdcardOutlined,
-  TagsOutlined, ToolOutlined, SettingOutlined, GlobalOutlined, EnvironmentOutlined,
-  BookOutlined, BarChartOutlined, ContactsOutlined, RocketOutlined, ReadOutlined,
-  CarOutlined, ScheduleOutlined, OrderedListOutlined, AppstoreAddOutlined,
-  SafetyCertificateOutlined,
+  CustomerServiceOutlined, LogoutOutlined,
+  MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLES } from '../utils/constants';
+import { buildMenuItems, flatMenuKeys } from '../config/menuConfig';
 
 const { Header, Sider, Content } = Layout;
 
@@ -35,29 +31,7 @@ export default function AppLayout() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  const menuItems = [
-    { key: '/app', icon: <DashboardOutlined />, label: 'Dashboard' },
-    can('tickets.read') && { key: '/app/tickets', icon: <CustomerServiceOutlined />, label: 'Chamados' },
-    can('categories.read') && { key: '/app/categories', icon: <AppstoreOutlined />, label: 'Categorias' },
-    can('statuses.read') && { key: '/app/statuses', icon: <TagsOutlined />, label: 'Status' },
-    can('technicians.read') && { key: '/app/technicians', icon: <ToolOutlined />, label: 'Técnicos' },
-    can('states_cities.read') && { key: '/app/states', icon: <GlobalOutlined />, label: 'Estados' },
-    can('states_cities.read') && { key: '/app/cities', icon: <EnvironmentOutlined />, label: 'Cidades' },
-    can('knowledge.read') && { key: '/app/knowledge', icon: <BookOutlined />, label: 'Base de Conhecimento' },
-    can('reports.read') && { key: '/app/reports', icon: <BarChartOutlined />, label: 'Relatórios' },
-    can('crm.read') && { key: '/app/crm', icon: <ContactsOutlined />, label: 'CRM' },
-    can('implantacoes.read') && { key: '/app/implantacoes', icon: <RocketOutlined />, label: 'Implantações' },
-    can('treinamentos.read') && { key: '/app/modulos-treinamento', icon: <AppstoreAddOutlined />, label: 'Módulos de Treinamento' },
-    can('treinamentos.read') && { key: '/app/etapas-treinamento', icon: <OrderedListOutlined />, label: 'Etapas de Treinamento' },
-    can('treinamentos.read') && { key: '/app/treinamentos', icon: <ReadOutlined />, label: 'Treinamentos' },
-    can('visitas.read') && { key: '/app/visitas', icon: <CarOutlined />, label: 'Visitas Técnicas' },
-    can('agenda_tecnica.read') && { key: '/app/agenda-tecnica', icon: <ScheduleOutlined />, label: 'Agenda Técnica' },
-    can('employees.read') && { key: '/app/employees', icon: <IdcardOutlined />, label: 'Funcionários' },
-    can('users.read') && { key: '/app/users', icon: <TeamOutlined />, label: 'Usuários' },
-    can('access_groups.read') && { key: '/app/access-groups', icon: <SafetyCertificateOutlined />, label: 'Grupos de Acesso' },
-    can('companies.read') && { key: '/app/companies', icon: <BankOutlined />, label: 'Empresas' },
-    { key: '/app/settings', icon: <SettingOutlined />, label: 'Configurações' },
-  ].filter(Boolean);
+  const menuItems = buildMenuItems(can);
 
   const userMenu = {
     items: [
@@ -76,9 +50,9 @@ export default function AppLayout() {
     onClick: ({ key }) => { if (key === 'logout') logout(); },
   };
 
-  const selectedKey = menuItems.find(item =>
-    item.key !== '/app' && location.pathname.startsWith(item.key)
-  )?.key || (location.pathname === '/app' ? '/app' : '');
+  const selectedKey = flatMenuKeys().find(key =>
+    key !== '/app' && location.pathname.startsWith(key)
+  ) || (location.pathname === '/app' ? '/app' : '');
 
   const handleMenuClick = ({ key }) => {
     navigate(key);

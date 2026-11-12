@@ -157,7 +157,7 @@ export default function Users() {
       ),
     },
     {
-      title: 'Perfil', dataIndex: 'role', key: 'role',
+      title: 'Papel', dataIndex: 'role', key: 'role',
       sorter: (a, b) => a.role.localeCompare(b.role),
       render: v => (
         <span style={{ fontSize: 12, fontWeight: 600, color: roleColors[v]?.color }}>
@@ -367,12 +367,12 @@ export default function Users() {
                 </Form.Item>
               </>
             )}
-            <Form.Item name="role" label="Perfil" rules={[{ required: true, message: 'Selecione o perfil' }]}>
-              <Select placeholder="Selecione o perfil" size="large" disabled={editing && editing.id === user?.id && user?.role !== 'SUPER_ADMIN'}>{roleOptions}</Select>
+            <Form.Item name="role" label="Papel" rules={[{ required: true, message: 'Selecione o papel' }]}>
+              <Select placeholder="Selecione o papel" size="large" disabled={editing && editing.id === user?.id && user?.role !== 'SUPER_ADMIN'}>{roleOptions}</Select>
             </Form.Item>
-            <Form.Item name="accessGroupId" label="Grupo de Acesso">
+            <Form.Item name="accessGroupId" label="Perfil de Acesso">
               <Select
-                placeholder="Sem grupo (usa permissões padrão do perfil)"
+                placeholder="Sem perfil específico (usa permissões padrão do papel)"
                 size="large"
                 allowClear
                 disabled={editing && editing.id === user?.id && user?.role !== 'SUPER_ADMIN'}

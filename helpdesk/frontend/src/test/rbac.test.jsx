@@ -172,8 +172,8 @@ describe('RBAC — menus e rotas por permissão', () => {
   });
 
   // RBAC-05 ETAPA 6, cenário 6: grupo sem acesso a Usuários — cobre também
-  // que "Grupos de Acesso" continua independente (chaves de permissão distintas).
-  it('grupo sem access_groups.read não vê "Grupos de Acesso" mesmo tendo users.read', async () => {
+  // que "Perfis de Acesso" continua independente (chaves de permissão distintas).
+  it('grupo sem access_groups.read não vê "Perfis de Acesso" mesmo tendo users.read', async () => {
     authService.me.mockResolvedValue({ id: 7, name: 'RH', role: 'AGENT', accessGroupId: 'g5' });
     permissionService.me.mockResolvedValue({ permissions: ['dashboard.read', 'users.read'] });
     setStoredSession({ token: 'valid-token', user: { id: 7, name: 'RH', role: 'AGENT' } });
@@ -183,7 +183,7 @@ describe('RBAC — menus e rotas por permissão', () => {
     await waitFor(() => {
       expect(screen.getByText('Usuários')).toBeInTheDocument();
     });
-    expect(screen.queryByText('Grupos de Acesso')).not.toBeInTheDocument();
+    expect(screen.queryByText('Perfis de Acesso')).not.toBeInTheDocument();
   });
 
   // RBAC-05 ETAPA 6, cenário 8: grupo desativado — o backend retorna o
@@ -201,5 +201,42 @@ describe('RBAC — menus e rotas por permissão', () => {
     }, { timeout: 15000 });
     expect(screen.queryByText('CRM')).not.toBeInTheDocument();
     expect(screen.queryByText('Usuários')).not.toBeInTheDocument();
+  });
+
+  // RBAC-UX-01 GATE 08: o menu lateral é agrupado (Painel, Atendimento,
+  // Cadastros, Gestão, Administração). Um grupo sem nenhum item permitido
+  // não deve aparecer — "Gestão" só tem itens com permissão exigida, então
+  // deve desaparecer para quem só tem dashboard.read.
+  it('grupo "Gestão" não aparece no menu para usuário sem nenhuma permissão desse grupo', async () => {
+    authService.me.mockResolvedValue({ id: 10, name: 'Visitante', role: 'AGENT', accessGroupId: 'g7' });
+    permissionService.me.mockResolvedValue({ permissions: ['dashboard.read'] });
+    setStoredSession({ token: 'valid-token', user: { id: 10, name: 'Visitante', role: 'AGENT' } });
+    setLocation('/app');
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0);
+    }, { timeout: 15000 });
+    expect(screen.getByText('Painel')).toBeInTheDocument();
+    expect(screen.queryByText('Atendimento')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cadastros')).not.toBeInTheDocument();
+    expect(screen.queryByText('Gestão')).not.toBeInTheDocument();
+  });
+
+  // SUPER_ADMIN vê todos os grupos, já que tem bypass total de permissões.
+  it('SUPER_ADMIN vê todos os grupos do menu lateral agrupado', async () => {
+    authService.me.mockResolvedValue({ id: 9, name: 'Root', role: 'SUPER_ADMIN' });
+    permissionService.me.mockResolvedValue({ permissions: [] });
+    setStoredSession({ token: 'valid-token', user: { id: 9, name: 'Root', role: 'SUPER_ADMIN' } });
+    setLocation('/app');
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getByText('Administração')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Painel')).toBeInTheDocument();
+    expect(screen.getByText('Atendimento')).toBeInTheDocument();
+    expect(screen.getByText('Cadastros')).toBeInTheDocument();
+    expect(screen.getByText('Gestão')).toBeInTheDocument();
   });
 });

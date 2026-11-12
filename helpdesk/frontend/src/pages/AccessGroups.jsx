@@ -120,7 +120,7 @@ export default function AccessGroups() {
 
   const columns = [
     {
-      title: 'Grupo', key: 'name',
+      title: 'Perfil', key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
       render: (_, r) => (
         <div>
@@ -170,14 +170,14 @@ export default function AccessGroups() {
     <div className="page-wrap">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Grupos de Acesso</h1>
+          <h1 className="page-title">Perfis de Acesso</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filteredGroups.length} grupo{filteredGroups.length !== 1 ? 's' : ''} cadastrado{filteredGroups.length !== 1 ? 's' : ''}
+            {filteredGroups.length} perfil{filteredGroups.length !== 1 ? 'is' : ''} cadastrado{filteredGroups.length !== 1 ? 's' : ''}
           </p>
         </div>
         {canCreate && (
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} style={{ borderRadius: 8, fontWeight: 600 }}>
-            Novo Grupo
+            Novo Perfil
           </Button>
         )}
       </div>
@@ -194,7 +194,7 @@ export default function AccessGroups() {
       <Modal
         open={!!deleteModal}
         onCancel={() => setDeleteModal(null)}
-        title={<div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ExclamationCircleOutlined style={{ color: 'var(--cl-danger)' }} /><span style={{ fontWeight: 700 }}>Excluir grupo de acesso</span></div>}
+        title={<div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><ExclamationCircleOutlined style={{ color: 'var(--cl-danger)' }} /><span style={{ fontWeight: 700 }}>Excluir perfil de acesso</span></div>}
         footer={
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button onClick={() => setDeleteModal(null)}>Cancelar</Button>
@@ -209,7 +209,7 @@ export default function AccessGroups() {
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <SafetyCertificateOutlined style={{ color: 'var(--cl-primary-text)', fontSize: 16 }} />
-            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Grupo de Acesso' : 'Novo Grupo de Acesso'}</span>
+            <span style={{ fontWeight: 700, fontSize: 16 }}>{editing ? 'Editar Perfil de Acesso' : 'Novo Perfil de Acesso'}</span>
           </div>
         }
         open={drawerOpen}
@@ -227,7 +227,7 @@ export default function AccessGroups() {
         }
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="name" label="Nome do grupo" rules={[{ required: true, message: 'Informe o nome' }]}>
+          <Form.Item name="name" label="Nome do perfil" rules={[{ required: true, message: 'Informe o nome' }]}>
             <Input placeholder="Ex.: Suporte Técnico" size="large" />
           </Form.Item>
           <Form.Item name="description" label="Descrição">
