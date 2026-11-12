@@ -8,14 +8,15 @@ name: Atendexa CI
 on:
   push:
     branches: [main]
-    paths:
-      - 'helpdesk/**'
-      - '.github/workflows/atendexa-ci.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'helpdesk/**'
-      - '.github/workflows/atendexa-ci.yml'
+
+# Nota (CICD-03): os filtros `paths: helpdesk/**` foram removidos dos gatilhos
+# acima. Um required status check cujo workflow so dispara sob certos paths
+# fica "Expected — Waiting for status" para sempre em qualquer PR que nao
+# toque esses paths (ex.: PR so em controle-financeiro/ ou divas-lingerie/),
+# bloqueando o merge indefinidamente. Sem filtro, o workflow sempre dispara
+# e o job gate-summary sempre reporta um resultado real.
 
 concurrency:
   group: atendexa-ci-${{ github.workflow }}-${{ github.ref }}
