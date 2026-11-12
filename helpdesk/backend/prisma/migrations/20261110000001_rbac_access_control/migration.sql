@@ -81,3 +81,38 @@ DO $$ BEGIN
     FOREIGN KEY ("actorId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- RBAC-RELEASE-14F-SEC: sem isto, o Supabase expõe estas 4 tabelas via API
+-- REST (PostgREST) às roles "anon"/"authenticated" por privilégio padrão do
+-- schema "public", permitindo leitura/escrita direta contornando o backend.
+-- O backend conecta como a role dona das tabelas (não "anon"/"authenticated"),
+-- que não é afetada por este REVOKE nem por RLS sem FORCE ROW LEVEL SECURITY.
+ALTER TABLE "access_groups" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "permissions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "access_group_permissions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "audit_logs" ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "access_groups" FROM PUBLIC;
+REVOKE ALL ON TABLE "permissions" FROM PUBLIC;
+REVOKE ALL ON TABLE "access_group_permissions" FROM PUBLIC;
+REVOKE ALL ON TABLE "audit_logs" FROM PUBLIC;
+
+-- "anon"/"authenticated" só existem em projetos Supabase (ausentes em
+-- PostgreSQL local/CI) — revogação condicional para continuar idempotente.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    EXECUTE 'REVOKE ALL ON TABLE "access_groups" FROM anon';
+    EXECUTE 'REVOKE ALL ON TABLE "permissions" FROM anon';
+    EXECUTE 'REVOKE ALL ON TABLE "access_group_permissions" FROM anon';
+    EXECUTE 'REVOKE ALL ON TABLE "audit_logs" FROM anon';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    EXECUTE 'REVOKE ALL ON TABLE "access_groups" FROM authenticated';
+    EXECUTE 'REVOKE ALL ON TABLE "permissions" FROM authenticated';
+    EXECUTE 'REVOKE ALL ON TABLE "access_group_permissions" FROM authenticated';
+    EXECUTE 'REVOKE ALL ON TABLE "audit_logs" FROM authenticated';
+  END IF;
+END $$;
+-- Nenhuma POLICY é criada deliberadamente: nenhum acesso público/anônimo/
+-- autenticado-via-API é permitido nestas 4 tabelas.

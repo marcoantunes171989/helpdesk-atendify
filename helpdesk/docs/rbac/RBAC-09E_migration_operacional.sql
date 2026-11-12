@@ -19,6 +19,17 @@
 -- IF NOT EXISTS, CREATE INDEX IF NOT EXISTS, ADD CONSTRAINT protegido por
 -- DO $$ ... EXCEPTION WHEN duplicate_object).
 --
+-- RBAC-RELEASE-14F-SEC: a versão original deste script criava as 4 tabelas
+-- RBAC sem RLS e sem revogar os privilégios padrão que o Supabase concede a
+-- "anon"/"authenticated" sobre qualquer tabela nova em "public" — isso
+-- exporia access_groups/permissions/access_group_permissions/audit_logs via
+-- API REST (PostgREST) a qualquer cliente com a chave anon/pública,
+-- permitindo leitura e ESCRITA direta (ex.: um usuário anônimo criar seu
+-- próprio access_group_permissions ligando-se a um grupo de superadmin,
+-- contornando completamente o backend e o middleware RBAC). A seção 1.5
+-- abaixo corrige isso dentro da MESMA transação da criação das tabelas,
+-- antes do COMMIT — não há intervalo em que os objetos ficam desprotegidos.
+--
 -- IMPORTANTE sobre IF NOT EXISTS: isso evita erro se o objeto já existe com
 -- o MESMO formato esperado. NÃO garante compatibilidade se um objeto
 -- existente tiver tipo, default ou estrutura diferente do esperado (ex.: uma
@@ -187,13 +198,59 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
--- 1.5 — Verificação interna pré-commit: se algo essencial não existir agora,
+-- 1.5 — RBAC-RELEASE-14F-SEC: proteção de RLS e revogação de privilégios
+-- públicos nas 4 tabelas RBAC, NA MESMA TRANSAÇÃO da criação acima, antes do
+-- COMMIT. Sem isso, o schema "public" do Supabase expõe automaticamente
+-- qualquer tabela nova via API REST (PostgREST) às roles "anon" (visitante
+-- não autenticado) e "authenticated" (qualquer sessão Supabase Auth válida)
+-- — via privilégios padrão concedidas por Supabase a essas roles sobre o
+-- schema "public". O backend Prisma NÃO usa essas roles: conecta como a
+-- role dona das tabelas ("postgres" via Session Pooler, confirmado em
+-- RBAC-RELEASE-13H/13I — PGUSER no formato "postgres.<project-ref>"), e RLS
+-- não restringe o dono da tabela por padrão (sem FORCE ROW LEVEL SECURITY),
+-- então nenhum GRANT adicional é necessário para preservar o acesso do
+-- backend.
+ALTER TABLE "access_groups" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "permissions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "access_group_permissions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "audit_logs" ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "access_groups" FROM PUBLIC;
+REVOKE ALL ON TABLE "permissions" FROM PUBLIC;
+REVOKE ALL ON TABLE "access_group_permissions" FROM PUBLIC;
+REVOKE ALL ON TABLE "audit_logs" FROM PUBLIC;
+
+-- As roles "anon"/"authenticated" só existem em projetos Supabase (ausentes
+-- em PostgreSQL local isolado de teste) — revogação condicional para que
+-- este script continue idempotente e executável em ambos os ambientes.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    EXECUTE 'REVOKE ALL ON TABLE "access_groups" FROM anon';
+    EXECUTE 'REVOKE ALL ON TABLE "permissions" FROM anon';
+    EXECUTE 'REVOKE ALL ON TABLE "access_group_permissions" FROM anon';
+    EXECUTE 'REVOKE ALL ON TABLE "audit_logs" FROM anon';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    EXECUTE 'REVOKE ALL ON TABLE "access_groups" FROM authenticated';
+    EXECUTE 'REVOKE ALL ON TABLE "permissions" FROM authenticated';
+    EXECUTE 'REVOKE ALL ON TABLE "access_group_permissions" FROM authenticated';
+    EXECUTE 'REVOKE ALL ON TABLE "audit_logs" FROM authenticated';
+  END IF;
+END $$;
+-- Nenhuma POLICY é criada deliberadamente: nenhuma leitura ou escrita
+-- pública/anônima/autenticada-via-API é permitida nestas 4 tabelas.
+
+-- Verificação interna pré-commit: se algo essencial não existir agora, ou se
+-- a proteção de RLS/privilégios acima não tiver sido aplicada com sucesso,
 -- aborta a transação de propósito (RAISE EXCEPTION força ROLLBACK automático
 -- antes mesmo de chegar ao COMMIT abaixo).
 DO $$
 DECLARE
   missing_tables INT;
   missing_columns INT;
+  unprotected_rls INT;
+  leaked_grants INT;
 BEGIN
   SELECT count(*) INTO missing_tables
   FROM (VALUES ('access_groups'), ('permissions'), ('access_group_permissions'), ('audit_logs')) AS t(name)
@@ -209,8 +266,20 @@ BEGIN
     WHERE table_schema = 'public' AND table_name = 'users' AND column_name = c.name
   );
 
-  IF missing_tables > 0 OR missing_columns > 0 THEN
-    RAISE EXCEPTION 'RBAC-09E: validacao interna falhou — tabelas ausentes=%, colunas ausentes=%', missing_tables, missing_columns;
+  SELECT count(*) INTO unprotected_rls
+  FROM pg_tables
+  WHERE schemaname = 'public'
+    AND tablename IN ('access_groups', 'permissions', 'access_group_permissions', 'audit_logs')
+    AND rowsecurity IS DISTINCT FROM true;
+
+  SELECT count(*) INTO leaked_grants
+  FROM information_schema.role_table_grants
+  WHERE table_schema = 'public'
+    AND table_name IN ('access_groups', 'permissions', 'access_group_permissions', 'audit_logs')
+    AND grantee IN ('PUBLIC', 'anon', 'authenticated');
+
+  IF missing_tables > 0 OR missing_columns > 0 OR unprotected_rls > 0 OR leaked_grants > 0 THEN
+    RAISE EXCEPTION 'RBAC-09E/14F-SEC: validacao interna falhou — tabelas ausentes=%, colunas ausentes=%, tabelas sem RLS=%, grants publicos remanescentes=%', missing_tables, missing_columns, unprotected_rls, leaked_grants;
   END IF;
 END $$;
 
@@ -272,11 +341,37 @@ SELECT count(*) AS total_usuarios,
        count(*) FILTER (WHERE "accessGroupId" IS NULL) AS sem_grupo_ainda
 FROM "users";
 
+-- 2.6 — RBAC-RELEASE-14F-SEC: confirmar RLS habilitado nas 4 tabelas
+-- (esperado: 4 linhas, todas com rowsecurity = true)
+SELECT tablename, rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+  AND tablename IN ('access_groups', 'permissions', 'access_group_permissions', 'audit_logs')
+ORDER BY tablename;
+
+-- 2.7 — RBAC-RELEASE-14F-SEC: confirmar que NENHUM privilégio permanece
+-- concedido a PUBLIC/anon/authenticated nas 4 tabelas (esperado: 0 linhas)
+SELECT table_name, grantee, privilege_type
+FROM information_schema.role_table_grants
+WHERE table_schema = 'public'
+  AND table_name IN ('access_groups', 'permissions', 'access_group_permissions', 'audit_logs')
+  AND grantee IN ('PUBLIC', 'anon', 'authenticated');
+
+-- 2.8 — RBAC-RELEASE-14F-SEC: confirmar que a role de conexão atual (a usada
+-- pelo backend) ainda consegue ler as 4 tabelas (prova de que o acesso do
+-- backend foi preservado; esperado: 1 linha, sem erro de permissão)
+SELECT
+  (SELECT count(*) FROM "access_groups") AS access_groups_legivel,
+  (SELECT count(*) FROM "permissions") AS permissions_legivel,
+  (SELECT count(*) FROM "access_group_permissions") AS access_group_permissions_legivel,
+  (SELECT count(*) FROM "audit_logs") AS audit_logs_legivel;
+
 -- CRITÉRIO DE INTERRUPÇÃO DA FASE 2 (equivale à Fase C do plano em
 -- INFRAESTRUTURA.md seção 13): se 2.1 ≠ 4 linhas, 2.2 ≠ 3 linhas, 2.3 ≠ 8
--- linhas ou 2.4 ≠ 4 linhas → NÃO prosseguir para o seed (Fase D/seção 13).
--- Investigar a divergência; considerar restaurar backup se houve alteração
--- estrutural inesperada em "users".
+-- linhas, 2.4 ≠ 4 linhas, 2.6 ≠ 4 linhas com rowsecurity=true, 2.7 ≠ 0
+-- linhas, ou 2.8 falhar com erro de permissão → NÃO prosseguir para o seed
+-- (Fase D/seção 13). Investigar a divergência; considerar restaurar backup
+-- se houve alteração estrutural inesperada em "users".
 
 
 -- ============================================================================
