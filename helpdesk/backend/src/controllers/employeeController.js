@@ -1,8 +1,23 @@
 ﻿const prisma = require('../prisma');
 
+// ETAPA 6 (RBAC-03): CPF, e-mail, telefone, salário e data de contratação são
+// dados sensíveis do colaborador. Quem não tem employees.read (ex.: CLIENT
+// escolhendo o funcionário ao abrir um chamado) só recebe o necessário para
+// o formulário — nome, cargo e empresa — sem expor dados de outras pessoas.
+const PUBLIC_SELECT = {
+  id: true, code: true, name: true, position: true, active: true, companyId: true,
+  company: { select: { id: true, name: true, fantasia: true } },
+};
+const FULL_INCLUDE = { company: { select: { id: true, name: true, fantasia: true } } };
+
+function hasFullAccess(req) {
+  return req.permissions?.has('employees.read');
+}
+
 exports.list = async (req, res) => {
   const { search, active, companyId } = req.query;
   const where = {};
+  const full = hasFullAccess(req);
 
   if (search) {
     where.OR = [
@@ -18,7 +33,7 @@ exports.list = async (req, res) => {
 
   const employees = await prisma.employee.findMany({
     where,
-    include: { company: { select: { id: true, name: true, fantasia: true } } },
+    ...(full ? { include: FULL_INCLUDE } : { select: PUBLIC_SELECT }),
     orderBy: { code: { sort: 'asc', nulls: 'last' } },
   });
 
@@ -26,9 +41,10 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
+  const full = hasFullAccess(req);
   const employee = await prisma.employee.findUnique({
     where: { id: req.params.id },
-    include: { company: { select: { id: true, name: true, fantasia: true } } },
+    ...(full ? { include: FULL_INCLUDE } : { select: PUBLIC_SELECT }),
   });
 
   if (!employee) return res.status(404).json({ error: 'Funcionário não encontrado' });

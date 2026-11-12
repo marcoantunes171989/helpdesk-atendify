@@ -22,6 +22,9 @@ const moduloTreinamentoRoutes= require('./routes/modulosTreinamento');
 const treinamentoRoutes      = require('./routes/treinamentos');
 const visitaRoutes           = require('./routes/visitas');
 const agendaTecnicaRoutes    = require('./routes/agendaTecnica');
+const accessGroupRoutes      = require('./routes/accessGroups');
+const permissionRoutes       = require('./routes/permissions');
+const auditLogRoutes         = require('./routes/auditLogs');
 
 const app = express();
 
@@ -65,6 +68,9 @@ app.use('/api/modulos-treinamento',moduloTreinamentoRoutes);
 app.use('/api/treinamentos',      treinamentoRoutes);
 app.use('/api/visitas',           visitaRoutes);
 app.use('/api/agenda-tecnica',    agendaTecnicaRoutes);
+app.use('/api/access-groups',     accessGroupRoutes);
+app.use('/api/permissions',       permissionRoutes);
+app.use('/api/audit-logs',        auditLogRoutes);
 
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.message);

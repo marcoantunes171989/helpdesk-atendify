@@ -1,67 +1,11 @@
-# Atendexa — CI/CD (CICD-01 → CICD-04)
+# Atendexa — CI/CD (CICD-01 a CICD-13)
 
-> Preparado em 2026-11-11, atualizado em 2026-11-11 (CICD-04). Define o
-> pipeline permanente de CI/CD do Atendexa.
-> **Nada neste documento foi ativado remotamente.** Workflow, scripts e esta
-> documentação existem no worktree isolado (`C:/Projetos/atendexa-cicd-worktree`),
-> não commitados na `main` real, aguardando autorização.
-
-## 0. CICD-04 — causa do bloqueio da CICD-03 e o que foi corrigido
-
-A CICD-03 preparou workflow e scripts (seções 1–9 abaixo) mas o pacote **nunca
-rodou um teste real**: `helpdesk/backend` e `helpdesk/frontend`, na `main`
-real (`origin/main` = `1b37bfa`), **não tinham nenhuma infraestrutura de
-teste** — sem `jest`, sem `vitest`, sem script `npm test`, sem um único
-arquivo `*.test.js`/`*.test.jsx`. Os 65 testes Jest e 22 testes Vitest citados
-na seção 3 vieram da branch `feat/atendexa-rbac-access-control` e testavam
-código RBAC (`requirePermission`, `resolve.js`, `accessGroupController`,
-`userStatusCache`, rotas de treinamento) que **não existe na `main`** — ou
-seja, o workflow da CICD-03, se executado contra a `main` real, teria todo
-job `backend`/`frontend` falhando em `npm test` (script inexistente).
-
-**Correção aplicada nesta etapa (worktree isolado, base `1b37bfa` = `origin/main`
-exato, sem divergência):**
-
-| Área | Antes (CICD-03) | Depois (CICD-04) |
-|---|---|---|
-| `helpdesk/backend/package.json` | sem `test`, sem `jest` | `"test": "jest --runInBand"`, `devDependencies.jest`, `devDependencies.supertest`, bloco `jest` (testEnvironment node) |
-| `helpdesk/backend` testes | 10 arquivos RBAC-dependentes (não copiados) | 2 arquivos novos, escritos contra o código real da `main`: `src/middleware/__tests__/auth.test.js` (7 testes — JWT puro, sem cache/tokenVersion, que só existem na branch RBAC) e `src/controllers/__tests__/dashboardController.test.js` (3 testes — `stats` sem escopo por dono, que só existe na branch RBAC) |
-| `helpdesk/frontend/package.json` | sem `test`, sem `vitest` | `"test": "vitest run"`, `devDependencies` (`vitest`, `jsdom`, `@testing-library/react`, `@testing-library/jest-dom`) |
-| `helpdesk/frontend/vite.config.js` | sem bloco `test` | `test: { environment: 'jsdom', globals: true, setupFiles: './src/test/setup.js' }` |
-| `helpdesk/frontend` testes | 3 arquivos RBAC-dependentes (não copiados: `rbac.test.jsx`, e os outros dois exercitam telas que a `main` não tem do mesmo jeito) | 2 arquivos novos: `src/test/authContext.test.jsx` (3 testes — login/logout reais do `AuthContext` da `main`) e `src/test/login.render.test.jsx` (1 teste — renderização dos campos `email`/`password` da tela `Login.jsx` real da `main`) |
-| `src/test/setup.js` | — | novo — polyfill de `window.matchMedia` (ausente no jsdom), exigido pelo `useBreakpoint` do AntD |
-
-**Resultado real desta sessão:** `npm test` do backend → **8/8 testes passando**
-(Jest). `npm test` do frontend → **4/4 testes passando** (Vitest). `npm run
-build` do frontend → build de produção concluído (bundle gerado, sem erro).
-Nenhum teste "RBAC" foi portado — todos os 10 arquivos de teste da branch RBAC
-foram classificados como Categoria C/D (dependem de código inexistente na
-`main`: `requirePermission.js`, `permissions/resolve.js`,
-`permissions/catalog.js`, `accessGroupController.js`,
-`utils/userStatusCache.js`, `routes/trainingRoutes.js` — nenhum desses
-arquivos existe em `origin/main`) e **não entraram no pacote**.
-
-### 0.1 Testes negativos executados nesta sessão (prova de que os gates bloqueiam de verdade)
-
-| Teste | Procedimento | Resultado |
-|---|---|---|
-| `secret-scan.js` — positivo | Rodado contra as 127 arquivos rastreados do worktree | `OK`, exit 0 |
-| `secret-scan.js` — negativo | Criado arquivo temporário com uma linha `DATABASE_URL` sintética no formato `postgres://usuario:senha@host` (fixture descartável, não reproduzida aqui literalmente para não disparar o próprio scanner nesta documentação), removido logo depois | Detectado e bloqueado (`FALHOU`, exit 1) |
-| Jest — negativo | Criado teste temporário `expect(1+1).toBe(3)`, removido logo depois | `npm test` retornou exit code real **1** (falha real, não só mensagem) |
-| Vitest — negativo | Mesmo procedimento no frontend | `npm test` retornou exit code real **1** |
-| YAML do workflow | `npx js-yaml .github/workflows/atendexa-ci.yml` | Sintaxe válida |
-| SHAs das actions fixadas | `gh api repos/actions/checkout/git/refs/tags/v7.0.1` e `repos/actions/setup-node/.../v7.1.0` comparados ao SHA fixado no workflow | Ambos conferem exatamente com os SHAs usados (`3d3c42e5...` e `949feb24...`) |
-| `gate-summary` — lógica | Leitura do step: `if [ "$X.result" != "success" ]` para os 3 jobs obrigatórios | Cobre `failure`, `cancelled` **e** `skipped` — nenhum caminho produz PASS falso |
-| Escopo (Etapa 8) | `git diff --stat origin/main` sobre o worktree completo | 10 arquivos, todos justificáveis (workflow, docs, scripts CI, infra de teste, package.json/lock); `git diff --stat origin/main -- controle-financeiro divas-lingerie helpdesk/backend/prisma` → vazio (zero mudança em outros projetos, zero mudança em schema/migrations) |
-
-**Não executado nesta sessão (limitação declarada):** `prisma generate` real
-em container Linux (sem Docker disponível neste ambiente) — validado
-indiretamente: `prisma/schema.prisma` não define `binaryTargets` fixo, então
-o Prisma CLI baixa o engine correto para `ubuntu-latest` automaticamente (não
-depende da DLL do Windows, que só afeta o ambiente de desenvolvimento local).
-O `npx prisma generate` local (Windows) funcionou sem erro nesta sessão. A
-confirmação definitiva só é possível com a execução real do GitHub Actions
-(fora do escopo autorizado desta etapa — ver seção 8).
+> Preparado em 2026-11-11 (CICD-01). Define o pipeline permanente de CI/CD do
+> Atendexa. **Atualizado em 2026-11-11 (CICD-13)** para refletir a ativação
+> real do pipeline (CICD-10/11/12): workflow commitado, PR #8 mergeado em
+> `main`, branch protection e required status check ativos, deploy de produção
+> confirmado no SHA integrado. Ver seção 9 para o status certificado e as
+> pendências ainda abertas (Render, RBAC).
 
 ## 1. Diagnóstico encontrado nesta auditoria
 
@@ -100,17 +44,24 @@ com base apenas no sucesso do build nativo de cada plataforma.
 
 ### 1.3 Configuração efetiva confirmada (fonte: painéis + APIs, não arquivos)
 
+**Atualizado em CICD-13 (2026-11-11), após ativação CICD-10/11/12.** Estado
+anterior ("sem branch protection, 0 workflows") descrevia o diagnóstico
+pré-ativação (CICD-01) e não é mais válido — mantido apenas como histórico na
+seção 1.1 acima.
+
 | Plataforma | Confirmado | Como |
 |---|---|---|
-| GitHub | Repo `marcoantunes171989/helpdesk-atendify`, branch padrão `main`, **sem branch protection, sem ruleset**, Actions habilitado (`allowed_actions: all`), **0 secrets configurados**, **0 workflows registrados** | `gh api` direto |
-| Vercel | Projeto único `helpdesk-atendify` (`prj_q8XH6M3sBuidepqVTurXP6vmHMiY`), framework `vite`, Git Integration ativa em `main` (últimos deploys de produção têm `githubCommitRef: main` e SHA correspondente ao `origin/main` real), domínios de produção intactos | MCP Vercel (`get_project`, `list_deployments`) |
-| Render | Serviço `helpdesk-atendify`, Root Directory `helpdesk/backend`, Build `npm install && npx prisma generate`, Start `node src/app.js`, Auto-Deploy `On Commit` — **diverge do `render.yaml` versionado** (nome, root dir e build command diferentes) | Confirmado por captura de painel em auditoria anterior (RBAC-09C/seção 14 de `INFRAESTRUTURA.md`); sem MCP/API do Render nesta sessão para reconfirmar automaticamente |
+| GitHub | Repo `marcoantunes171989/helpdesk-atendify`, branch `main` **protegida**: PR obrigatório, required status check `Gate final — resumo`, **strict mode ativo** (branch deve estar atualizada antes do merge), proteção **aplicável a administradores** (`enforce_admins: true`), force push e exclusão de branch **proibidos**, auto-merge **desativado** no repositório, GitHub Actions ativo com **1 workflow registrado**. PR #8 ("chore(ci): ativar pipeline automatizado Atendexa") integrado em `main` por **squash merge**, gerando o commit `d56a47ecc2d6448e31617e46b93624141fa932ca`. Os **5 checks** desse commit (`Gate final — resumo`, `Supabase Preview`, `Gate 04/06 — Frontend`, `Gate 04/06 — Backend`, `Gate 07 — Seguranca`) estão todos `completed`/`success` | `gh api .../branches/main/protection`, `gh pr view 8`, `gh api .../commits/d56a47e.../check-runs`, `gh api .../actions/workflows` |
+| Vercel | Projeto `helpdesk-atendify` (`prj_q8XH6M3sBuidepqVTurXP6vmHMiY`), framework `vite`. Deployment de produção `dpl_48ZTExnTupaBLKmjwsvdjjxB6VK8` confirmado `READY`/`target: production`, `githubCommitSha: d56a47ecc2d6448e31617e46b93624141fa932ca` (mesmo SHA do merge do PR #8), alias de produção (`www.atendexa.com.br` etc.) aplicado sem erro. Smoke tests executados nesta sessão: frontend 200, `API /health` 200 (healthcheck do backend via Render, abaixo), rota protegida sem token → comportamento esperado — todos aprovados | MCP Vercel (`get_deployment` com `withGitRepoInfo`), checagem HTTP somente-leitura nesta sessão |
+| Render | **API respondendo saudável** (`GET /health` → `200` confirmado nesta sessão, somente leitura). **Não certificado nesta sessão**: qual SHA está efetivamente em execução (`SHA LIVE`) e se a configuração do painel (Root Directory, Build/Start command, Auto-Deploy) ainda diverge do `render.yaml` versionado, como já registrado em auditoria anterior (RBAC-09C/seção 14 de `INFRAESTRUTURA.md`). Sem MCP/API do Render nesta sessão para reconfirmar automaticamente — **não declarar Render sincronizado sem essa evidência** | Checagem HTTP somente-leitura nesta sessão (`/health` → 200); divergência de configuração herdada de auditoria anterior, não reconfirmada agora |
 | Supabase | Não inspecionado nesta sessão (conector MCP não autenticado) | — |
+| RBAC | Trabalho de RBAC (branch `feat/atendexa-rbac-access-control`) existe localmente e **ainda não foi publicado/mergeado em `main`** (confirmado: busca por commits RBAC em `origin/main` não retorna nenhum) | `git log origin/main --oneline \| grep -i rbac` → vazio |
 
 **Risco já documentado e ainda em aberto** (seção 14.2–14.3 de
-`INFRAESTRUTURA.md`): o commit publicado no Render pode estar atrasado frente a
-`origin/main`. Isso deve ser confirmado pelo proprietário antes de qualquer
-merge que dependa de deploy coordenado Render+Vercel.
+`INFRAESTRUTURA.md`): o SHA efetivamente ao vivo no Render e a configuração
+real do painel ainda não foram recertificados nesta sessão. Isso deve ser
+confirmado pelo proprietário antes de qualquer merge que dependa de deploy
+coordenado Render+Vercel.
 
 ## 2. Estratégia única escolhida
 
@@ -122,12 +73,11 @@ merge que dependa de deploy coordenado Render+Vercel.
   correta) — não duplicado por Actions.
 - **Deploy backend**: mantém o Auto-Deploy nativo do Render — não duplicado por
   Actions.
-- **Gate de promoção**: nesta fase, sem Vercel "Deployment Checks" confirmado
-  disponível no plano, a trava fica em: (a) branch protection do GitHub
-  exigindo o workflow como *required status check* antes do merge em `main`, e
-  (b) mudar o Auto-Deploy do Render de "On Commit" para "After CI Checks Pass"
-  — **ambas as mudanças são remotas e não foram aplicadas** (fora do escopo
-  autorizado desta tarefa).
+- **Gate de promoção**: (a) branch protection do GitHub exigindo o workflow
+  (`Gate final — resumo`) como *required status check* antes do merge em
+  `main` — **aplicado e confirmado** (ver seção 1.3); (b) mudar o Auto-Deploy
+  do Render de "On Commit" para "After CI Checks Pass" — **ainda não
+  confirmado nesta sessão** (sem MCP/API do Render para verificar o painel).
 
 ## 3. O workflow (`.github/workflows/atendexa-ci.yml`)
 
@@ -201,55 +151,38 @@ proposta sem pausa de confirmação a cada etapa de baixo risco — mas commit e
 push desta própria tarefa (CICD-01) **não foram executados**, conforme
 restrição explícita do pedido original.
 
-## 8. Procedimento de ativação inicial (pendente de autorização do proprietário)
+## 8. Procedimento de ativação inicial — executado (CICD-10/11/12)
 
-1. Revisar e aprovar `.github/workflows/atendexa-ci.yml` e remover (ou arquivar)
-   `helpdesk/.github/workflows/deploy.yml`, que é redundante e nunca foi
-   executável.
-2. Commit + push deste conjunto de arquivos (workflow, scripts, esta
-   documentação) para `main` (ou via PR).
-3. Confirmar no GitHub que o workflow aparece em Actions após o push
-   (`gh api .../actions/workflows` deve deixar de retornar `total_count: 0`).
-4. Decidir e aplicar (ação remota, fora desta sessão): branch protection em
-   `main` exigindo o workflow como status check obrigatório.
-5. Decidir e aplicar (ação remota): mudar Auto-Deploy do Render de
-   "On Commit" para "After CI Checks Pass", se disponível no plano.
-6. Validar um push real de teste (mudança trivial, Tipo A) ponta a ponta antes
-   de confiar o fluxo a tarefas de maior risco.
+1. ✅ Workflow `.github/workflows/atendexa-ci.yml` revisado e aprovado.
+2. ✅ Commit + push via PR #8 ("chore(ci): ativar pipeline automatizado
+   Atendexa"), integrado em `main` por squash merge
+   (`d56a47ecc2d6448e31617e46b93624141fa932ca`).
+3. ✅ Confirmado no GitHub: 1 workflow registrado em Actions
+   (`gh api .../actions/workflows` → `total_count: 1`).
+4. ✅ Branch protection aplicada em `main`: PR obrigatório, required status
+   check `Gate final — resumo`, strict mode, aplicável a administradores,
+   force push e exclusão proibidos.
+5. ⬜ Mudar Auto-Deploy do Render de "On Commit" para "After CI Checks Pass" —
+   **não confirmado nesta sessão** (sem MCP/API do Render).
+6. ✅ Push real de teste validado ponta a ponta: PR #8 passou pelos 5 checks,
+   foi integrado, e o deploy de produção na Vercel confirmou o mesmo SHA
+   (`dpl_48ZTExnTupaBLKmjwsvdjjxB6VK8`, READY) com smoke tests aprovados.
 
-## 9. Status final — CICD-01/03
+## 9. Status final (CICD-13)
 
-**PREPARADO.** Workflow, scripts e documentação prontos e testados localmente.
-Ativação (passos da seção 8) requer autorização explícita e ações remotas que
-este pedido não autorizou.
+**CERTIFICAÇÃO DOCUMENTAL CONCLUÍDA PARA GITHUB + VERCEL.** Pipeline ativado,
+testado e confirmado ponta a ponta nesses dois componentes, com evidência
+reproduzível (seção 1.3).
 
-## 10. Status final — CICD-04
+**Pendências que permanecem abertas, não certificadas nesta sessão:**
 
-**PASS_COM_LIMITAÇÕES.**
+- **Render**: API responde saudável (`/health` → 200), mas o SHA
+  efetivamente em execução (`SHA LIVE`) e a configuração real do painel
+  (Root Directory, Build/Start command, Auto-Deploy) não foram
+  reconfirmados — divergência frente ao `render.yaml` já registrada em
+  auditoria anterior e não revalidada agora.
+- **RBAC**: trabalho em `feat/atendexa-rbac-access-control` ainda não
+  publicado em `main`.
 
-O que passou de verdade nesta sessão, em ambiente local isolado (seção 0):
-- `npm test` do backend (Jest): 8/8 testes reais, contra o código atual da
-  `main`, sem RBAC.
-- `npm test` do frontend (Vitest): 4/4 testes reais, idem.
-- `npm run build` do frontend: build de produção sem erro.
-- `secret-scan.js`: positivo e negativo confirmados.
-- Testes negativos de Jest/Vitest: confirmado que falha real produz exit
-  code 1 (não há falso PASS).
-- YAML do workflow: sintaticamente válido; SHAs das actions fixadas
-  conferem com as tags oficiais reivindicadas.
-- Escopo: nenhum arquivo RBAC, de schema, de migration/seed, ou de outro
-  projeto do monorepo entrou no pacote.
-
-O que **não** foi validado nesta sessão (requer ação remota, fora da
-autorização desta etapa — ver seção 8, passos 2–7):
-- Execução real do workflow no GitHub Actions (descoberta, jobs, gate-summary
-  rodando de fato em `ubuntu-latest`).
-- `prisma generate` em container Linux real (só validado por inferência: sem
-  `binaryTargets` fixo no schema, o engine correto é baixado automaticamente).
-- Qualquer configuração de branch protection, required status check ou
-  mudança do Auto-Deploy do Render — todas são ações remotas pendentes de
-  autorização explícita do proprietário.
-
-Nada foi commitado, nenhum push foi feito, nenhuma branch foi criada, nenhuma
-migration/seed foi aplicada, nenhuma configuração remota (GitHub/Vercel/Render/
-Supabase) foi alterada nesta sessão.
+Nenhuma dessas pendências foi declarada resolvida; esta atualização apenas
+documenta o que já está evidenciado e mantém as duas como abertas.

@@ -1,10 +1,13 @@
 jest.mock('../../prisma', () => ({
   ticket: {
     count: jest.fn().mockResolvedValue(0),
-    groupBy: jest.fn().mockResolvedValue([]),
     findMany: jest.fn().mockResolvedValue([]),
+    groupBy: jest.fn().mockResolvedValue([]),
+    aggregate: jest.fn().mockResolvedValue({ _avg: { satisfaction: null }, _count: { satisfaction: 0 } }),
   },
   category: { findMany: jest.fn().mockResolvedValue([]) },
+  ticketStatusRef: { findMany: jest.fn().mockResolvedValue([]) },
+  user: { count: jest.fn().mockResolvedValue(5), findMany: jest.fn().mockResolvedValue([]) },
 }));
 
 const prisma = require('../../prisma');
@@ -14,57 +17,69 @@ function mockRes() {
   return { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
 }
 
-describe('dashboardController.stats (main)', () => {
+describe('dashboardController — isolamento de dados por role (ETAPA 2 do RBAC-03)', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('consulta contagens sem filtro de dono (visão global, sem RBAC de escopo)', async () => {
-    prisma.ticket.count
-      .mockResolvedValueOnce(10) // total
-      .mockResolvedValueOnce(4)  // open
-      .mockResolvedValueOnce(2)  // inProgress
-      .mockResolvedValueOnce(3)  // resolved
-      .mockResolvedValueOnce(1)  // closed
-      .mockResolvedValueOnce(0); // overdueSla
+  test('stats: CLIENT só vê os próprios chamados (where.userId)', async () => {
+    const req = { query: {}, dbUser: { id: 'client-1', role: 'CLIENT' } };
+    await ctrl.stats(req, mockRes());
 
-    const req = {};
-    const res = mockRes();
-    await ctrl.stats(req, res);
-
-    expect(prisma.ticket.count).toHaveBeenNthCalledWith(1, { where: {} });
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      summary: { total: 10, open: 4, inProgress: 2, resolved: 3, closed: 1, overdueSla: 0 },
-    }));
+    for (const call of prisma.ticket.count.mock.calls) {
+      expect(call[0].where.userId).toBe('client-1');
+    }
   });
 
-  test('monta byCategory combinando groupBy com os nomes das categorias', async () => {
-    prisma.ticket.groupBy.mockImplementation(({ by }) => {
-      if (by[0] === 'categoryId') {
-        return Promise.resolve([{ categoryId: 'c1', _count: 7 }]);
-      }
-      return Promise.resolve([]);
-    });
-    prisma.category.findMany.mockResolvedValue([{ id: 'c1', name: 'Rede' }]);
+  test('stats: ADMIN vê todos os chamados (sem filtro de userId)', async () => {
+    const req = { query: {}, dbUser: { id: 'admin-1', role: 'ADMIN' } };
+    await ctrl.stats(req, mockRes());
 
-    const res = mockRes();
-    await ctrl.stats({}, res);
-
-    const payload = res.json.mock.calls[0][0];
-    expect(payload.byCategory).toEqual([{ categoryId: 'c1', _count: 7, name: 'Rede' }]);
+    for (const call of prisma.ticket.count.mock.calls) {
+      expect(call[0].where.userId).toBeUndefined();
+    }
   });
 
-  test('categoria sem nome encontrado cai para "Sem categoria"', async () => {
-    prisma.ticket.groupBy.mockImplementation(({ by }) => {
-      if (by[0] === 'categoryId') {
-        return Promise.resolve([{ categoryId: 'c-desconhecida', _count: 1 }]);
-      }
-      return Promise.resolve([]);
-    });
-    prisma.category.findMany.mockResolvedValue([]);
-
+  test('kpis: CLIENT não recebe a contagem de agentes online (métrica interna da equipe)', async () => {
+    const req = { query: {}, dbUser: { id: 'client-1', role: 'CLIENT' } };
     const res = mockRes();
-    await ctrl.stats({}, res);
+    await ctrl.kpis(req, res);
 
+    expect(prisma.user.count).not.toHaveBeenCalled();
     const payload = res.json.mock.calls[0][0];
-    expect(payload.byCategory[0].name).toBe('Sem categoria');
+    expect(payload.kpis.agentes_online.value).toBeNull();
+    expect(payload.kpis.agentes_online.restricted).toBe(true);
+  });
+
+  test('kpis: ADMIN recebe a contagem de agentes online', async () => {
+    const req = { query: {}, dbUser: { id: 'admin-1', role: 'ADMIN' } };
+    const res = mockRes();
+    await ctrl.kpis(req, res);
+
+    expect(prisma.user.count).toHaveBeenCalled();
+    const payload = res.json.mock.calls[0][0];
+    expect(payload.kpis.agentes_online.value).toBe(5);
+  });
+
+  test('agents: CLIENT recebe lista vazia e marcada como restrita, sem consultar o desempenho de outros usuários', async () => {
+    const req = { query: {}, dbUser: { id: 'client-1', role: 'CLIENT' } };
+    const res = mockRes();
+    await ctrl.agents(req, res);
+
+    expect(prisma.user.findMany).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({ agents: [], restricted: true });
+  });
+
+  test('agents: AGENT/ADMIN continuam recebendo o relatório de desempenho da equipe', async () => {
+    const req = { query: {}, dbUser: { id: 'agent-1', role: 'AGENT' } };
+    await ctrl.agents(req, mockRes());
+
+    expect(prisma.user.findMany).toHaveBeenCalled();
+  });
+
+  test('queue: CLIENT só vê os próprios chamados na fila em tempo real', async () => {
+    const req = { query: {}, dbUser: { id: 'client-1', role: 'CLIENT' } };
+    await ctrl.queue(req, mockRes());
+
+    const call = prisma.ticket.findMany.mock.calls[0][0];
+    expect(call.where.userId).toBe('client-1');
   });
 });

@@ -1,5 +1,8 @@
-import { MoonOutlined, SunOutlined, LaptopOutlined, CheckOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import { MoonOutlined, SunOutlined, LaptopOutlined, CheckOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message } from 'antd';
 import { useTheme } from '../contexts/ThemeContext';
+import { authService } from '../services/api';
 
 const OPTIONS = [
   {
@@ -24,6 +27,28 @@ const OPTIONS = [
 
 export default function Settings() {
   const { preference, setPreference } = useTheme();
+  const [pwdForm] = Form.useForm();
+  const [saving, setSaving] = useState(false);
+
+  const handleChangePassword = async (values) => {
+    setSaving(true);
+    try {
+      const { token } = await authService.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        confirmNewPassword: values.confirmNewPassword,
+      });
+      // A troca de senha revoga o token anterior (ETAPA 3) — salvamos o novo
+      // token já emitido pelo backend para que esta sessão continue logada.
+      if (token) localStorage.setItem('token', token);
+      message.success('Senha alterada com sucesso');
+      pwdForm.resetFields();
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao alterar a senha');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="page-wrap">
@@ -106,6 +131,68 @@ export default function Settings() {
               );
             })}
           </div>
+        </div>
+
+        <div style={{
+          background: 'var(--cl-bg)',
+          border: '1px solid var(--cl-border)',
+          borderRadius: 16,
+          padding: '24px 28px',
+          marginTop: 20,
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          boxShadow: 'var(--cl-shadow)',
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.12em', color: 'var(--cl-primary-text)', marginBottom: 6,
+          }}>
+            <LockOutlined /> Segurança
+          </div>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, marginBottom: 20, marginTop: 0 }}>
+            Altere sua própria senha de acesso
+          </p>
+
+          <Form form={pwdForm} layout="vertical" onFinish={handleChangePassword}>
+            <Form.Item
+              name="currentPassword"
+              label="Senha atual"
+              rules={[{ required: true, message: 'Informe a senha atual' }]}
+            >
+              <Input.Password placeholder="Senha atual" size="large" autoComplete="current-password" />
+            </Form.Item>
+            <Form.Item
+              name="newPassword"
+              label="Nova senha"
+              rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}
+            >
+              <Input.Password placeholder="Mínimo 6 caracteres" size="large" autoComplete="new-password" />
+            </Form.Item>
+            <Form.Item
+              name="confirmNewPassword"
+              label="Confirmar nova senha"
+              dependencies={['newPassword']}
+              rules={[
+                { required: true, message: 'Confirme a nova senha' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('newPassword') === value) return Promise.resolve();
+                    return Promise.reject(new Error('As senhas não coincidem'));
+                  },
+                }),
+              ]}
+            >
+              <Input.Password placeholder="Repita a nova senha" size="large" autoComplete="new-password" />
+            </Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={saving}
+              style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)' }}
+            >
+              Alterar senha
+            </Button>
+          </Form>
         </div>
       </div>
     </div>

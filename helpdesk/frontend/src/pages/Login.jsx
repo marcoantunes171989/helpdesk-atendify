@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const BREAKPOINT = 768;
 const PHOTO_URL = '/Atendexa.png';
+const PHOTO_URL_WEBP = '/Atendexa.webp';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function Login() {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      await login(values.email, values.password);
+      await login(values.identifier, values.password);
     } catch (err) {
       message.error(err.response?.data?.error || 'Credenciais inválidas');
     } finally {
@@ -86,21 +87,24 @@ export default function Login() {
       `}</style>
 
       {/* Imagem de fundo — preenche toda a tela sem barras */}
-      <img
-        src={PHOTO_URL}
-        alt=""
-        fetchPriority="high"
-        decoding="sync"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center 20%',
-          zIndex: 0,
-        }}
-      />
+      <picture>
+        <source srcSet={PHOTO_URL_WEBP} type="image/webp" />
+        <img
+          src={PHOTO_URL}
+          alt=""
+          fetchPriority="high"
+          decoding="sync"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center 20%',
+            zIndex: 0,
+          }}
+        />
+      </picture>
 
       {/* Overlay direcional: escurece só o lado direito para contraste do card */}
       <div style={{
@@ -237,16 +241,13 @@ export default function Login() {
           <div className="glass-form">
             <Form layout="vertical" onFinish={handleSubmit} autoComplete="off">
               <Form.Item
-                name="email"
-                label={<span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>E-mail</span>}
-                rules={[
-                  { required: true, message: 'Informe o e-mail' },
-                  { type: 'email', message: 'E-mail inválido' },
-                ]}
+                name="identifier"
+                label={<span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>E-mail ou usuário</span>}
+                rules={[{ required: true, message: 'Informe o e-mail ou nome de usuário' }]}
                 style={{ marginBottom: 16 }}
               >
                 <Input
-                  placeholder="seu@email.com"
+                  placeholder="seu@email.com ou usuário"
                   size="large"
                   style={{ borderRadius: 9, height: 48 }}
                 />

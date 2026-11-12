@@ -147,8 +147,8 @@ export default function Treinamentos() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const { user } = useAuth();
-  const canEdit = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role);
+  const { can } = useAuth();
+  const canEdit = can('treinamentos.create') || can('treinamentos.update') || can('treinamentos.delete');
 
   const load = useCallback(() => {
     setLoading(true);

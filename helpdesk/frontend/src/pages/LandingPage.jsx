@@ -122,13 +122,16 @@ export default function LandingPage() {
       {/* ── Hero com foto da marca ── */}
       <section className="lp-hero">
         {/* Foto de fundo */}
-        <img
-          src="/Atendexa.png"
-          alt=""
-          fetchPriority="high"
-          decoding="sync"
-          className="lp-hero-bg"
-        />
+        <picture>
+          <source srcSet="/Atendexa.webp" type="image/webp" />
+          <img
+            src="/Atendexa.png"
+            alt=""
+            fetchPriority="high"
+            decoding="sync"
+            className="lp-hero-bg"
+          />
+        </picture>
         {/* Overlay degradê — mais escuro à esquerda para o texto */}
         <div className="lp-hero-overlay" />
 

@@ -60,10 +60,19 @@ function normalizeName(str) {
   return (str || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
+// ETAPA 2 (RBAC-03): o Atendexa não usa Company como tenant de usuários (é
+// staff global) — a única relação legítima entre um usuário CLIENT e os
+// dados do dashboard é a autoria do chamado (ticket.userId). SUPER_ADMIN,
+// ADMIN e AGENT continuam com a visão global (equipe de suporte), igual ao
+// comportamento já existente em ticketController para listagem de chamados.
+function ticketScope(req) {
+  return req.dbUser.role === 'CLIENT' ? { userId: req.dbUser.id } : {};
+}
+
 // ─── Legacy (backwards compat) ────────────────────────────────────────────────
 
 exports.stats = async (req, res) => {
-  const where = {};
+  const where = ticketScope(req);
   const [total, open, inProgress, resolved, closed, overdueSla] = await Promise.all([
     prisma.ticket.count({ where }),
     prisma.ticket.count({ where: { ...where, status: 'OPEN' } }),
@@ -114,6 +123,7 @@ exports.kpis = async (req, res) => {
   const { period = '14d', from, to } = req.query;
   const { start, end } = getPeriodRange(period, from, to);
   const { prevStart, prevEnd } = getPrevRange(start, end);
+  const scope = ticketScope(req);
 
   const todayStart = new Date(); todayStart.setUTCHours(0, 0, 0, 0);
   const todayEnd   = new Date(); todayEnd.setUTCHours(23, 59, 59, 999);
@@ -126,27 +136,31 @@ exports.kpis = async (req, res) => {
     waitingClientStatus,
     satisfactionCurr,
   ] = await Promise.all([
-    prisma.ticket.count({ where: { status: 'OPEN' } }),
-    prisma.ticket.count({ where: { status: 'IN_PROGRESS' } }),
+    prisma.ticket.count({ where: { ...scope, status: 'OPEN' } }),
+    prisma.ticket.count({ where: { ...scope, status: 'IN_PROGRESS' } }),
     prisma.ticket.count({
-      where: { slaDeadline: { lt: new Date() }, status: { notIn: ['RESOLVED', 'CLOSED', 'CANCELLED'] } },
+      where: { ...scope, slaDeadline: { lt: new Date() }, status: { notIn: ['RESOLVED', 'CLOSED', 'CANCELLED'] } },
     }),
     prisma.ticket.count({
-      where: { resolvedAt: { gte: todayStart, lte: todayEnd }, status: { in: ['RESOLVED', 'CLOSED'] } },
+      where: { ...scope, resolvedAt: { gte: todayStart, lte: todayEnd }, status: { in: ['RESOLVED', 'CLOSED'] } },
     }),
-    prisma.ticket.count({ where: { createdAt: { gte: todayStart, lte: todayEnd } } }),
+    prisma.ticket.count({ where: { ...scope, createdAt: { gte: todayStart, lte: todayEnd } } }),
     prisma.ticket.findMany({
-      where: { createdAt: { gte: start, lte: end } },
+      where: { ...scope, createdAt: { gte: start, lte: end } },
       select: { id: true, status: true, createdAt: true, resolvedAt: true, slaDeadline: true },
     }),
     prisma.ticket.findMany({
-      where: { createdAt: { gte: prevStart, lte: prevEnd } },
+      where: { ...scope, createdAt: { gte: prevStart, lte: prevEnd } },
       select: { id: true, status: true, createdAt: true, resolvedAt: true, slaDeadline: true },
     }),
-    prisma.user.count({ where: { role: { in: ['AGENT', 'ADMIN', 'SUPER_ADMIN'] }, active: true } }),
+    // Contagem de agentes é uma métrica operacional da equipe, não dado do
+    // cliente — mantida global, mas só exposta a quem não é CLIENT.
+    req.dbUser.role === 'CLIENT'
+      ? Promise.resolve(null)
+      : prisma.user.count({ where: { role: { in: ['AGENT', 'ADMIN', 'SUPER_ADMIN'] }, active: true } }),
     prisma.ticketStatusRef.findMany({ where: { active: true }, select: { id: true, name: true } }),
     prisma.ticket.aggregate({
-      where: { resolvedAt: { gte: start, lte: end }, satisfaction: { not: null } },
+      where: { ...scope, resolvedAt: { gte: start, lte: end }, satisfaction: { not: null } },
       _avg: { satisfaction: true },
       _count: { satisfaction: true },
     }),
@@ -170,7 +184,7 @@ exports.kpis = async (req, res) => {
   // inventamos um número (fica null → "Não configurado" no front).
   const waitingRef = waitingClientStatus.find(s => normalizeName(s.name).includes('aguardando') && normalizeName(s.name).includes('cliente'));
   const waitingClientCount = waitingRef
-    ? await prisma.ticket.count({ where: { statusId: waitingRef.id } })
+    ? await prisma.ticket.count({ where: { ...scope, statusId: waitingRef.id } })
     : null;
 
   res.json({
@@ -202,7 +216,7 @@ exports.kpis = async (req, res) => {
         delta_pct: slaPct !== null && prevSlaPct !== null ? delta(slaPct, prevSlaPct) : null,
         trend: trendOf(slaPct, prevSlaPct),
       },
-      agentes_online: { value: agentCount, total_ativos: agentCount, delta_pct: null, trend: null },
+      agentes_online: { value: agentCount, total_ativos: agentCount, delta_pct: null, trend: null, restricted: agentCount === null },
     },
   });
 };
@@ -212,9 +226,11 @@ exports.kpis = async (req, res) => {
 exports.volume = async (req, res) => {
   const { period = '14d', from, to } = req.query;
   const { start, end } = getPeriodRange(period, from, to);
+  const scope = ticketScope(req);
 
   const tickets = await prisma.ticket.findMany({
     where: {
+      ...scope,
       OR: [
         { createdAt: { gte: start, lte: end } },
         { resolvedAt: { gte: start, lte: end } },
@@ -251,18 +267,19 @@ exports.categories = async (req, res) => {
   const { period = '14d', from, to, limit = '10' } = req.query;
   const { start, end } = getPeriodRange(period, from, to);
   const { prevStart, prevEnd } = getPrevRange(start, end);
+  const scope = ticketScope(req);
 
   const [byCategory, byCategoryPrev] = await Promise.all([
     prisma.ticket.groupBy({
       by: ['categoryId'],
-      where: { categoryId: { not: null }, createdAt: { gte: start, lte: end } },
+      where: { ...scope, categoryId: { not: null }, createdAt: { gte: start, lte: end } },
       _count: true,
       orderBy: { _count: { categoryId: 'desc' } },
       take: Number(limit),
     }),
     prisma.ticket.groupBy({
       by: ['categoryId'],
-      where: { categoryId: { not: null }, createdAt: { gte: prevStart, lte: prevEnd } },
+      where: { ...scope, categoryId: { not: null }, createdAt: { gte: prevStart, lte: prevEnd } },
       _count: true,
     }),
   ]);
@@ -294,9 +311,10 @@ exports.categories = async (req, res) => {
 exports.slaByPriority = async (req, res) => {
   const { period = '14d', from, to } = req.query;
   const { start, end } = getPeriodRange(period, from, to);
+  const scope = ticketScope(req);
 
   const tickets = await prisma.ticket.findMany({
-    where: { createdAt: { gte: start, lte: end }, slaDeadline: { not: null } },
+    where: { ...scope, createdAt: { gte: start, lte: end }, slaDeadline: { not: null } },
     select: { id: true, priority: true, status: true, resolvedAt: true, slaDeadline: true },
   });
 
@@ -320,16 +338,17 @@ exports.slaByPriority = async (req, res) => {
 exports.byStatus = async (req, res) => {
   const { period = '14d', from, to } = req.query;
   const { start, end } = getPeriodRange(period, from, to);
+  const scope = ticketScope(req);
 
   const [byStatusId, byRawStatus] = await Promise.all([
     prisma.ticket.groupBy({
       by: ['statusId'],
-      where: { statusId: { not: null }, createdAt: { gte: start, lte: end } },
+      where: { ...scope, statusId: { not: null }, createdAt: { gte: start, lte: end } },
       _count: true,
     }),
     prisma.ticket.groupBy({
       by: ['status'],
-      where: { statusId: null, createdAt: { gte: start, lte: end } },
+      where: { ...scope, statusId: null, createdAt: { gte: start, lte: end } },
       _count: true,
     }),
   ]);
@@ -358,6 +377,13 @@ exports.byStatus = async (req, res) => {
 // ─── Agent Performance ────────────────────────────────────────────────────────
 
 exports.agents = async (req, res) => {
+  // Desempenho individual da equipe de suporte é informação interna da
+  // operação, não um recurso do CLIENT — não há "próprios dados" aqui para
+  // escopar, então o acesso é negado por completo (ETAPA 2).
+  if (req.dbUser.role === 'CLIENT') {
+    return res.json({ agents: [], restricted: true });
+  }
+
   const { period = '14d', from, to } = req.query;
   const { start, end } = getPeriodRange(period, from, to);
 
@@ -406,9 +432,10 @@ exports.agents = async (req, res) => {
 
 exports.queue = async (req, res) => {
   const now = new Date();
+  const scope = ticketScope(req);
 
   const openTickets = await prisma.ticket.findMany({
-    where: { status: { in: ['OPEN', 'IN_PROGRESS'] } },
+    where: { ...scope, status: { in: ['OPEN', 'IN_PROGRESS'] } },
     select: { id: true, priority: true, status: true, createdAt: true, slaDeadline: true },
   });
 

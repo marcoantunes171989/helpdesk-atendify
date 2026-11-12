@@ -1,31 +1,34 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import AppLayout from './components/AppLayout';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Companies from './pages/Companies';
-import Users from './pages/Users';
-import Categories from './pages/Categories';
-import Tickets from './pages/Tickets';
-import TicketDetail from './pages/TicketDetail';
-import Employees from './pages/Employees';
-import CompanyDetail from './pages/CompanyDetail';
-import Status from './pages/Status';
-import Technicians from './pages/Technicians';
-import Settings from './pages/Settings';
-import States from './pages/States';
-import Cities from './pages/Cities';
-import KnowledgeBase from './pages/KnowledgeBase';
-import Reports from './pages/Reports';
-import CRM from './pages/CRM';
-import Implantacoes from './pages/Implantacoes';
-import EtapasTreinamento from './pages/EtapasTreinamento';
-import ModulosTreinamento from './pages/ModulosTreinamento';
-import Treinamentos from './pages/Treinamentos';
-import Visitas from './pages/Visitas';
-import AgendaTecnica from './pages/AgendaTecnica';
+
+const AppLayout = lazy(() => import('./components/AppLayout'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Companies = lazy(() => import('./pages/Companies'));
+const Users = lazy(() => import('./pages/Users'));
+const Categories = lazy(() => import('./pages/Categories'));
+const Tickets = lazy(() => import('./pages/Tickets'));
+const TicketDetail = lazy(() => import('./pages/TicketDetail'));
+const Employees = lazy(() => import('./pages/Employees'));
+const CompanyDetail = lazy(() => import('./pages/CompanyDetail'));
+const Status = lazy(() => import('./pages/Status'));
+const Technicians = lazy(() => import('./pages/Technicians'));
+const Settings = lazy(() => import('./pages/Settings'));
+const States = lazy(() => import('./pages/States'));
+const Cities = lazy(() => import('./pages/Cities'));
+const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase'));
+const Reports = lazy(() => import('./pages/Reports'));
+const CRM = lazy(() => import('./pages/CRM'));
+const Implantacoes = lazy(() => import('./pages/Implantacoes'));
+const EtapasTreinamento = lazy(() => import('./pages/EtapasTreinamento'));
+const ModulosTreinamento = lazy(() => import('./pages/ModulosTreinamento'));
+const Treinamentos = lazy(() => import('./pages/Treinamentos'));
+const Visitas = lazy(() => import('./pages/Visitas'));
+const AgendaTecnica = lazy(() => import('./pages/AgendaTecnica'));
+const AccessGroups = lazy(() => import('./pages/AccessGroups'));
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -33,9 +36,15 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+// DENY BY DEFAULT: sem a permissão exigida, a rota não é acessível mesmo por URL direta.
+function PermissionRoute({ permission, children }) {
+  const { can } = useAuth();
+  return can(permission) ? children : <Navigate to="/app" replace />;
+}
+
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <Spin fullscreen />;
+  if (loading) return children;
   return user ? <Navigate to="/app" replace /> : children;
 }
 
@@ -44,28 +53,29 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+      <Route path="/app" element={<PrivateRoute><Suspense fallback={<Spin fullscreen />}><AppLayout /></Suspense></PrivateRoute>}>
         <Route index element={<Dashboard />} />
-        <Route path="companies" element={<Companies />} />
-        <Route path="companies/:id" element={<CompanyDetail />} />
-        <Route path="users" element={<Users />} />
-        <Route path="categories" element={<Categories />} />
-        <Route path="tickets" element={<Tickets />} />
-        <Route path="tickets/:id" element={<TicketDetail />} />
-        <Route path="employees" element={<Employees />} />
-        <Route path="statuses" element={<Status />} />
-        <Route path="technicians" element={<Technicians />} />
-        <Route path="states" element={<States />} />
-        <Route path="cities" element={<Cities />} />
-        <Route path="knowledge" element={<KnowledgeBase />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="crm" element={<CRM />} />
-        <Route path="implantacoes" element={<Implantacoes />} />
-        <Route path="modulos-treinamento" element={<ModulosTreinamento />} />
-        <Route path="etapas-treinamento" element={<EtapasTreinamento />} />
-        <Route path="treinamentos" element={<Treinamentos />} />
-        <Route path="visitas" element={<Visitas />} />
-        <Route path="agenda-tecnica" element={<AgendaTecnica />} />
+        <Route path="companies" element={<PermissionRoute permission="companies.read"><Companies /></PermissionRoute>} />
+        <Route path="companies/:id" element={<PermissionRoute permission="companies.read"><CompanyDetail /></PermissionRoute>} />
+        <Route path="users" element={<PermissionRoute permission="users.read"><Users /></PermissionRoute>} />
+        <Route path="access-groups" element={<PermissionRoute permission="access_groups.read"><AccessGroups /></PermissionRoute>} />
+        <Route path="categories" element={<PermissionRoute permission="categories.read"><Categories /></PermissionRoute>} />
+        <Route path="tickets" element={<PermissionRoute permission="tickets.read"><Tickets /></PermissionRoute>} />
+        <Route path="tickets/:id" element={<PermissionRoute permission="tickets.read"><TicketDetail /></PermissionRoute>} />
+        <Route path="employees" element={<PermissionRoute permission="employees.read"><Employees /></PermissionRoute>} />
+        <Route path="statuses" element={<PermissionRoute permission="statuses.read"><Status /></PermissionRoute>} />
+        <Route path="technicians" element={<PermissionRoute permission="technicians.read"><Technicians /></PermissionRoute>} />
+        <Route path="states" element={<PermissionRoute permission="states_cities.read"><States /></PermissionRoute>} />
+        <Route path="cities" element={<PermissionRoute permission="states_cities.read"><Cities /></PermissionRoute>} />
+        <Route path="knowledge" element={<PermissionRoute permission="knowledge.read"><KnowledgeBase /></PermissionRoute>} />
+        <Route path="reports" element={<PermissionRoute permission="reports.read"><Reports /></PermissionRoute>} />
+        <Route path="crm" element={<PermissionRoute permission="crm.read"><CRM /></PermissionRoute>} />
+        <Route path="implantacoes" element={<PermissionRoute permission="implantacoes.read"><Implantacoes /></PermissionRoute>} />
+        <Route path="modulos-treinamento" element={<PermissionRoute permission="treinamentos.read"><ModulosTreinamento /></PermissionRoute>} />
+        <Route path="etapas-treinamento" element={<PermissionRoute permission="treinamentos.read"><EtapasTreinamento /></PermissionRoute>} />
+        <Route path="treinamentos" element={<PermissionRoute permission="treinamentos.read"><Treinamentos /></PermissionRoute>} />
+        <Route path="visitas" element={<PermissionRoute permission="visitas.read"><Visitas /></PermissionRoute>} />
+        <Route path="agenda-tecnica" element={<PermissionRoute permission="agenda_tecnica.read"><AgendaTecnica /></PermissionRoute>} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
