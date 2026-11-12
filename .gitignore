@@ -5,3 +5,11 @@
 /.claude/
 /auditoria/
 node_modules/
+/rbac-test-local/
+
+# RBAC-10B — backups logicos locais e artefatos de teste (nunca commitar dumps/credenciais)
+atendexa-backups/
+atendexa-backups-TESTE-LOCAL/
+*.dump
+*.sql.gz
+*.manifest.json

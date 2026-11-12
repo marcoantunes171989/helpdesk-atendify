@@ -1,8 +1,11 @@
-# Atendexa — CI/CD (CICD-01)
+# Atendexa — CI/CD (CICD-01 a CICD-13)
 
-> Preparado em 2026-11-11. Define o pipeline permanente de CI/CD do Atendexa.
-> **Nada neste documento foi ativado remotamente.** Workflow, scripts e esta
-> documentação existem localmente, não commitados, aguardando autorização.
+> Preparado em 2026-11-11 (CICD-01). Define o pipeline permanente de CI/CD do
+> Atendexa. **Atualizado em 2026-11-11 (CICD-13)** para refletir a ativação
+> real do pipeline (CICD-10/11/12): workflow commitado, PR #8 mergeado em
+> `main`, branch protection e required status check ativos, deploy de produção
+> confirmado no SHA integrado. Ver seção 9 para o status certificado e as
+> pendências ainda abertas (Render, RBAC).
 
 ## 1. Diagnóstico encontrado nesta auditoria
 
@@ -41,17 +44,24 @@ com base apenas no sucesso do build nativo de cada plataforma.
 
 ### 1.3 Configuração efetiva confirmada (fonte: painéis + APIs, não arquivos)
 
+**Atualizado em CICD-13 (2026-11-11), após ativação CICD-10/11/12.** Estado
+anterior ("sem branch protection, 0 workflows") descrevia o diagnóstico
+pré-ativação (CICD-01) e não é mais válido — mantido apenas como histórico na
+seção 1.1 acima.
+
 | Plataforma | Confirmado | Como |
 |---|---|---|
-| GitHub | Repo `marcoantunes171989/helpdesk-atendify`, branch padrão `main`, **sem branch protection, sem ruleset**, Actions habilitado (`allowed_actions: all`), **0 secrets configurados**, **0 workflows registrados** | `gh api` direto |
-| Vercel | Projeto único `helpdesk-atendify` (`prj_q8XH6M3sBuidepqVTurXP6vmHMiY`), framework `vite`, Git Integration ativa em `main` (últimos deploys de produção têm `githubCommitRef: main` e SHA correspondente ao `origin/main` real), domínios de produção intactos | MCP Vercel (`get_project`, `list_deployments`) |
-| Render | Serviço `helpdesk-atendify`, Root Directory `helpdesk/backend`, Build `npm install && npx prisma generate`, Start `node src/app.js`, Auto-Deploy `On Commit` — **diverge do `render.yaml` versionado** (nome, root dir e build command diferentes) | Confirmado por captura de painel em auditoria anterior (RBAC-09C/seção 14 de `INFRAESTRUTURA.md`); sem MCP/API do Render nesta sessão para reconfirmar automaticamente |
+| GitHub | Repo `marcoantunes171989/helpdesk-atendify`, branch `main` **protegida**: PR obrigatório, required status check `Gate final — resumo`, **strict mode ativo** (branch deve estar atualizada antes do merge), proteção **aplicável a administradores** (`enforce_admins: true`), force push e exclusão de branch **proibidos**, auto-merge **desativado** no repositório, GitHub Actions ativo com **1 workflow registrado**. PR #8 ("chore(ci): ativar pipeline automatizado Atendexa") integrado em `main` por **squash merge**, gerando o commit `d56a47ecc2d6448e31617e46b93624141fa932ca`. Os **5 checks** desse commit (`Gate final — resumo`, `Supabase Preview`, `Gate 04/06 — Frontend`, `Gate 04/06 — Backend`, `Gate 07 — Seguranca`) estão todos `completed`/`success` | `gh api .../branches/main/protection`, `gh pr view 8`, `gh api .../commits/d56a47e.../check-runs`, `gh api .../actions/workflows` |
+| Vercel | Projeto `helpdesk-atendify` (`prj_q8XH6M3sBuidepqVTurXP6vmHMiY`), framework `vite`. Deployment de produção `dpl_48ZTExnTupaBLKmjwsvdjjxB6VK8` confirmado `READY`/`target: production`, `githubCommitSha: d56a47ecc2d6448e31617e46b93624141fa932ca` (mesmo SHA do merge do PR #8), alias de produção (`www.atendexa.com.br` etc.) aplicado sem erro. Smoke tests executados nesta sessão: frontend 200, `API /health` 200 (healthcheck do backend via Render, abaixo), rota protegida sem token → comportamento esperado — todos aprovados | MCP Vercel (`get_deployment` com `withGitRepoInfo`), checagem HTTP somente-leitura nesta sessão |
+| Render | **API respondendo saudável** (`GET /health` → `200` confirmado nesta sessão, somente leitura). **Não certificado nesta sessão**: qual SHA está efetivamente em execução (`SHA LIVE`) e se a configuração do painel (Root Directory, Build/Start command, Auto-Deploy) ainda diverge do `render.yaml` versionado, como já registrado em auditoria anterior (RBAC-09C/seção 14 de `INFRAESTRUTURA.md`). Sem MCP/API do Render nesta sessão para reconfirmar automaticamente — **não declarar Render sincronizado sem essa evidência** | Checagem HTTP somente-leitura nesta sessão (`/health` → 200); divergência de configuração herdada de auditoria anterior, não reconfirmada agora |
 | Supabase | Não inspecionado nesta sessão (conector MCP não autenticado) | — |
+| RBAC | Trabalho de RBAC (branch `feat/atendexa-rbac-access-control`) existe localmente e **ainda não foi publicado/mergeado em `main`** (confirmado: busca por commits RBAC em `origin/main` não retorna nenhum) | `git log origin/main --oneline \| grep -i rbac` → vazio |
 
 **Risco já documentado e ainda em aberto** (seção 14.2–14.3 de
-`INFRAESTRUTURA.md`): o commit publicado no Render pode estar atrasado frente a
-`origin/main`. Isso deve ser confirmado pelo proprietário antes de qualquer
-merge que dependa de deploy coordenado Render+Vercel.
+`INFRAESTRUTURA.md`): o SHA efetivamente ao vivo no Render e a configuração
+real do painel ainda não foram recertificados nesta sessão. Isso deve ser
+confirmado pelo proprietário antes de qualquer merge que dependa de deploy
+coordenado Render+Vercel.
 
 ## 2. Estratégia única escolhida
 
@@ -63,12 +73,11 @@ merge que dependa de deploy coordenado Render+Vercel.
   correta) — não duplicado por Actions.
 - **Deploy backend**: mantém o Auto-Deploy nativo do Render — não duplicado por
   Actions.
-- **Gate de promoção**: nesta fase, sem Vercel "Deployment Checks" confirmado
-  disponível no plano, a trava fica em: (a) branch protection do GitHub
-  exigindo o workflow como *required status check* antes do merge em `main`, e
-  (b) mudar o Auto-Deploy do Render de "On Commit" para "After CI Checks Pass"
-  — **ambas as mudanças são remotas e não foram aplicadas** (fora do escopo
-  autorizado desta tarefa).
+- **Gate de promoção**: (a) branch protection do GitHub exigindo o workflow
+  (`Gate final — resumo`) como *required status check* antes do merge em
+  `main` — **aplicado e confirmado** (ver seção 1.3); (b) mudar o Auto-Deploy
+  do Render de "On Commit" para "After CI Checks Pass" — **ainda não
+  confirmado nesta sessão** (sem MCP/API do Render para verificar o painel).
 
 ## 3. O workflow (`.github/workflows/atendexa-ci.yml`)
 
@@ -142,24 +151,38 @@ proposta sem pausa de confirmação a cada etapa de baixo risco — mas commit e
 push desta própria tarefa (CICD-01) **não foram executados**, conforme
 restrição explícita do pedido original.
 
-## 8. Procedimento de ativação inicial (pendente de autorização do proprietário)
+## 8. Procedimento de ativação inicial — executado (CICD-10/11/12)
 
-1. Revisar e aprovar `.github/workflows/atendexa-ci.yml` e remover (ou arquivar)
-   `helpdesk/.github/workflows/deploy.yml`, que é redundante e nunca foi
-   executável.
-2. Commit + push deste conjunto de arquivos (workflow, scripts, esta
-   documentação) para `main` (ou via PR).
-3. Confirmar no GitHub que o workflow aparece em Actions após o push
-   (`gh api .../actions/workflows` deve deixar de retornar `total_count: 0`).
-4. Decidir e aplicar (ação remota, fora desta sessão): branch protection em
-   `main` exigindo o workflow como status check obrigatório.
-5. Decidir e aplicar (ação remota): mudar Auto-Deploy do Render de
-   "On Commit" para "After CI Checks Pass", se disponível no plano.
-6. Validar um push real de teste (mudança trivial, Tipo A) ponta a ponta antes
-   de confiar o fluxo a tarefas de maior risco.
+1. ✅ Workflow `.github/workflows/atendexa-ci.yml` revisado e aprovado.
+2. ✅ Commit + push via PR #8 ("chore(ci): ativar pipeline automatizado
+   Atendexa"), integrado em `main` por squash merge
+   (`d56a47ecc2d6448e31617e46b93624141fa932ca`).
+3. ✅ Confirmado no GitHub: 1 workflow registrado em Actions
+   (`gh api .../actions/workflows` → `total_count: 1`).
+4. ✅ Branch protection aplicada em `main`: PR obrigatório, required status
+   check `Gate final — resumo`, strict mode, aplicável a administradores,
+   force push e exclusão proibidos.
+5. ⬜ Mudar Auto-Deploy do Render de "On Commit" para "After CI Checks Pass" —
+   **não confirmado nesta sessão** (sem MCP/API do Render).
+6. ✅ Push real de teste validado ponta a ponta: PR #8 passou pelos 5 checks,
+   foi integrado, e o deploy de produção na Vercel confirmou o mesmo SHA
+   (`dpl_48ZTExnTupaBLKmjwsvdjjxB6VK8`, READY) com smoke tests aprovados.
 
-## 9. Status final desta tarefa
+## 9. Status final (CICD-13)
 
-**PREPARADO.** Workflow, scripts e documentação prontos e testados localmente.
-Ativação (passos da seção 8) requer autorização explícita e ações remotas que
-este pedido não autorizou.
+**CERTIFICAÇÃO DOCUMENTAL CONCLUÍDA PARA GITHUB + VERCEL.** Pipeline ativado,
+testado e confirmado ponta a ponta nesses dois componentes, com evidência
+reproduzível (seção 1.3).
+
+**Pendências que permanecem abertas, não certificadas nesta sessão:**
+
+- **Render**: API responde saudável (`/health` → 200), mas o SHA
+  efetivamente em execução (`SHA LIVE`) e a configuração real do painel
+  (Root Directory, Build/Start command, Auto-Deploy) não foram
+  reconfirmados — divergência frente ao `render.yaml` já registrada em
+  auditoria anterior e não revalidada agora.
+- **RBAC**: trabalho em `feat/atendexa-rbac-access-control` ainda não
+  publicado em `main`.
+
+Nenhuma dessas pendências foi declarada resolvida; esta atualização apenas
+documenta o que já está evidenciado e mantém as duas como abertas.
