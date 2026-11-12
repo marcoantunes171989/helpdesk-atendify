@@ -10,7 +10,8 @@
     "start": "npx prisma migrate deploy && node prisma/setup-triggers.js && node prisma/seed.js && node src/app.js",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed.js",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@prisma/client": "^5.14.0",
@@ -23,6 +24,14 @@
     "prisma": "^5.14.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "supertest": "^6.3.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }

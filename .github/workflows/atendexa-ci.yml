@@ -1,0 +1,138 @@
+name: Atendexa CI
+
+# Escopo: monorepo contem outros projetos (controle-financeiro, divas-lingerie).
+# Este workflow so considera alteracoes dentro de helpdesk/** (ou de si mesmo).
+# GitHub Actions so descobre workflows em .github/workflows/ na RAIZ do repo —
+# por isso este arquivo vive aqui e nao em helpdesk/.github/workflows/.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Nota (CICD-03): os filtros `paths: helpdesk/**` foram removidos dos gatilhos
+# acima. Um required status check cujo workflow so dispara sob certos paths
+# fica "Expected — Waiting for status" para sempre em qualquer PR que nao
+# toque esses paths (ex.: PR so em controle-financeiro/ ou divas-lingerie/),
+# bloqueando o merge indefinidamente. Sem filtro, o workflow sempre dispara
+# e o job gate-summary sempre reporta um resultado real.
+
+concurrency:
+  group: atendexa-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+  # Valores fixos e nao sensiveis — usados apenas para `prisma generate` e para o
+  # build do frontend em CI. Nunca apontam para infraestrutura real.
+  CI_DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_atendexa
+  CI_DIRECT_URL: postgresql://ci:ci@localhost:5432/ci_atendexa
+  CI_JWT_SECRET: ci-only-placeholder-secret-not-used-in-production
+  CI_VITE_API_URL: https://ci-placeholder.invalid/api
+
+jobs:
+  secret-scan:
+    name: Gate 07 — Seguranca (ausencia de segredos commitados)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Verificar ausencia de .env e segredos no diff do Atendexa
+        working-directory: helpdesk
+        run: node scripts/ci/secret-scan.js
+
+  backend:
+    name: Gate 04/06 — Backend (testes + build Prisma)
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    defaults:
+      run:
+        working-directory: helpdesk/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: helpdesk/backend/package-lock.json
+
+      - name: Instalar dependencias (deterministico)
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ env.CI_DATABASE_URL }}
+          DIRECT_URL: ${{ env.CI_DIRECT_URL }}
+
+      - name: Testes (Jest)
+        run: npm test
+        env:
+          DATABASE_URL: ${{ env.CI_DATABASE_URL }}
+          DIRECT_URL: ${{ env.CI_DIRECT_URL }}
+          JWT_SECRET: ${{ env.CI_JWT_SECRET }}
+          JWT_EXPIRES_IN: '7d'
+          NODE_ENV: test
+
+      - name: Registrar evidencia
+        if: always()
+        run: echo "### Backend — Node ${{ env.NODE_VERSION }}, Jest executado" >> "$GITHUB_STEP_SUMMARY"
+
+  frontend:
+    name: Gate 04/06 — Frontend (testes + build)
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    defaults:
+      run:
+        working-directory: helpdesk/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: helpdesk/frontend/package-lock.json
+
+      - name: Instalar dependencias (deterministico)
+        run: npm ci
+
+      - name: Testes (Vitest)
+        run: npm test
+
+      - name: Build de producao
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ env.CI_VITE_API_URL }}
+
+      - name: Registrar evidencia
+        if: always()
+        run: echo "### Frontend — Node ${{ env.NODE_VERSION }}, Vitest + build executados" >> "$GITHUB_STEP_SUMMARY"
+
+  gate-summary:
+    name: Gate final — resumo
+    runs-on: ubuntu-latest
+    needs: [secret-scan, backend, frontend]
+    if: always()
+    steps:
+      - name: Falhar se qualquer gate obrigatorio falhou
+        run: |
+          if [ "${{ needs.secret-scan.result }}" != "success" ] || \
+             [ "${{ needs.backend.result }}" != "success" ] || \
+             [ "${{ needs.frontend.result }}" != "success" ]; then
+            echo "Um ou mais gates obrigatorios falharam. Bloqueando publicacao." >&2
+            exit 1
+          fi
+          echo "Todos os gates obrigatorios passaram." >> "$GITHUB_STEP_SUMMARY"
