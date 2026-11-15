@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from '../App';
+import { ThemeProvider } from '../contexts/ThemeContext';
 
 vi.mock('../services/api', () => ({
   authService: {
@@ -8,9 +9,21 @@ vi.mock('../services/api', () => ({
     login: vi.fn(),
     changePassword: vi.fn(),
   },
+  permissionService: {
+    me: vi.fn(),
+    catalog: vi.fn(),
+  },
 }));
 
-import { authService } from '../services/api';
+import { authService, permissionService } from '../services/api';
+
+function renderApp() {
+  return render(
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
+}
 
 function setLocation(path) {
   window.history.pushState({}, '', path);
@@ -27,6 +40,7 @@ describe('Fluxo de autenticacao', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    permissionService.me.mockResolvedValue({ permissions: ['dashboard.read'] });
   });
 
   afterEach(() => {
@@ -36,7 +50,7 @@ describe('Fluxo de autenticacao', () => {
   it('sem token: acesso a /app redireciona para /login', async () => {
     setStoredSession({});
     setLocation('/app');
-    render(<App />);
+    renderApp();
 
     await waitFor(() => {
       expect(screen.getByText(/bem-vindo de volta/i)).toBeInTheDocument();
@@ -44,10 +58,10 @@ describe('Fluxo de autenticacao', () => {
   });
 
   it('token valido: acesso a /app renderiza a area privada (AppLayout)', async () => {
-    authService.me.mockResolvedValue({ id: 1, name: 'Marco', role: 'admin' });
-    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco' } });
+    authService.me.mockResolvedValue({ id: 1, name: 'Marco', role: 'ADMIN' });
+    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco', role: 'ADMIN' } });
     setLocation('/app');
-    render(<App />);
+    renderApp();
 
     await waitFor(() => {
       expect(screen.queryByText(/bem-vindo de volta/i)).not.toBeInTheDocument();
@@ -59,7 +73,7 @@ describe('Fluxo de autenticacao', () => {
     authService.me.mockRejectedValue({ response: { status: 401 } });
     setStoredSession({ token: 'expired-token', user: { id: 1, name: 'Marco' } });
     setLocation('/app');
-    render(<App />);
+    renderApp();
 
     await waitFor(() => {
       expect(screen.getByText(/bem-vindo de volta/i)).toBeInTheDocument();
@@ -71,24 +85,24 @@ describe('Fluxo de autenticacao', () => {
   it('API lenta: PrivateRoute mostra spinner de carregamento enquanto /auth/me nao resolve', async () => {
     let resolveMe;
     authService.me.mockReturnValue(new Promise((resolve) => { resolveMe = resolve; }));
-    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco' } });
+    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco', role: 'ADMIN' } });
     setLocation('/app');
-    const { container } = render(<App />);
+    const { container } = renderApp();
 
     expect(container.querySelector('.ant-spin')).toBeTruthy();
     expect(screen.queryByText(/bem-vindo de volta/i)).not.toBeInTheDocument();
 
-    resolveMe({ id: 1, name: 'Marco' });
+    resolveMe({ id: 1, name: 'Marco', role: 'ADMIN' });
     await waitFor(() => {
       expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0);
     }, { timeout: 15000 });
   });
 
   it('usuario ja autenticado (user no localStorage) acessando /login e redirecionado para /app somente apos validacao', async () => {
-    authService.me.mockResolvedValue({ id: 1, name: 'Marco' });
-    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco' } });
+    authService.me.mockResolvedValue({ id: 1, name: 'Marco', role: 'ADMIN' });
+    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco', role: 'ADMIN' } });
     setLocation('/login');
-    render(<App />);
+    renderApp();
 
     await waitFor(() => {
       expect(screen.queryByText(/bem-vindo de volta/i)).not.toBeInTheDocument();
@@ -98,7 +112,7 @@ describe('Fluxo de autenticacao', () => {
   it('rota publica (/login) permanece acessivel para visitante sem sessao', async () => {
     setStoredSession({});
     setLocation('/login');
-    render(<App />);
+    renderApp();
 
     await waitFor(() => {
       expect(screen.getByText(/bem-vindo de volta/i)).toBeInTheDocument();
@@ -108,13 +122,13 @@ describe('Fluxo de autenticacao', () => {
   it('condicao de corrida: formulario de login renderiza imediatamente mesmo com user otimista no localStorage, sem aguardar a API', async () => {
     let resolveMe;
     authService.me.mockReturnValue(new Promise((resolve) => { resolveMe = resolve; }));
-    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco' } });
+    setStoredSession({ token: 'valid-token', user: { id: 1, name: 'Marco', role: 'ADMIN' } });
     setLocation('/login');
-    render(<App />);
+    renderApp();
 
     expect(screen.getByText(/bem-vindo de volta/i)).toBeInTheDocument();
 
-    resolveMe({ id: 1, name: 'Marco' });
+    resolveMe({ id: 1, name: 'Marco', role: 'ADMIN' });
     await waitFor(() => {
       expect(screen.queryByText(/bem-vindo de volta/i)).not.toBeInTheDocument();
     });
@@ -124,7 +138,7 @@ describe('Fluxo de autenticacao', () => {
     authService.me.mockRejectedValue({ response: { status: 401 } });
     setStoredSession({ token: 'expired-token', user: { id: 1, name: 'Marco' } });
     setLocation('/login');
-    render(<App />);
+    renderApp();
 
     expect(screen.getByText(/bem-vindo de volta/i)).toBeInTheDocument();
 
