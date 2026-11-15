@@ -239,4 +239,29 @@ describe('RBAC — menus e rotas por permissão', () => {
     expect(screen.getByText('Cadastros')).toBeInTheDocument();
     expect(screen.getByText('Gestão')).toBeInTheDocument();
   });
+
+  it('sem settings.read não vê "Configurações" no menu', async () => {
+    authService.me.mockResolvedValue({ id: 11, name: 'Agente', role: 'AGENT' });
+    permissionService.me.mockResolvedValue({ permissions: ['dashboard.read', 'tickets.read'] });
+    setStoredSession({ token: 'valid-token', user: { id: 11, name: 'Agente', role: 'AGENT' } });
+    setLocation('/app');
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0);
+    }, { timeout: 15000 });
+    expect(screen.queryByText('Configurações')).not.toBeInTheDocument();
+  });
+
+  it('acesso direto à rota /app/settings sem settings.read é bloqueado', async () => {
+    authService.me.mockResolvedValue({ id: 12, name: 'Agente', role: 'AGENT' });
+    permissionService.me.mockResolvedValue({ permissions: ['dashboard.read', 'tickets.read'] });
+    setStoredSession({ token: 'valid-token', user: { id: 12, name: 'Agente', role: 'AGENT' } });
+    setLocation('/app/settings');
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.queryByText('Personalize o visual do sistema')).not.toBeInTheDocument();
+    });
+  });
 });

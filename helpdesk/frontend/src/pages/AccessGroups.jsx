@@ -239,7 +239,10 @@ export default function AccessGroups() {
             </Form.Item>
           )}
 
-          <div style={{ fontWeight: 600, fontSize: 13, margin: '12px 0 8px' }}>Matriz de Permissões</div>
+          <div style={{ fontWeight: 600, fontSize: 13, margin: '12px 0 4px' }}>Controle de Telas e Ações</div>
+          <p style={{ color: 'var(--cl-text-muted)', fontSize: 12, margin: '0 0 8px' }}>
+            Marque as telas e ações que este perfil pode usar. Sem a ação <code>read</code>, a tela fica bloqueada no menu e na URL.
+          </p>
           <div style={{ border: '1px solid var(--cl-border)', borderRadius: 8 }}>
             {Object.entries(permissionsByModule).map(([moduleKey, { label, items }]) => {
               const allChecked = items.every(p => selectedPermissions.has(p.key));
@@ -252,7 +255,7 @@ export default function AccessGroups() {
                     onChange={e => toggleModule(moduleKey, e.target.checked)}
                     style={{ fontWeight: 600, marginBottom: 6 }}
                   >
-                    {label}
+                    Tela: {label}
                   </Checkbox>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, paddingLeft: 24 }}>
                     {items.map(perm => (

@@ -82,6 +82,7 @@ export const userService = {
   get: (id) => api.get(`/users/${id}`).then(r => r.data),
   create: (data) => api.post('/users', data).then(r => r.data),
   update: (id, data) => api.put(`/users/${id}`, data).then(r => r.data),
+  setAccessStatus: (id, active) => api.put(`/users/${id}/access-status`, { active }).then(r => r.data),
   resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data).then(r => r.data),
   remove: (id) => api.delete(`/users/${id}`).then(r => r.data),
   checkLinks: (id) => api.get(`/users/${id}/links`).then(r => r.data),

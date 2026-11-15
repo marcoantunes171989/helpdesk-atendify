@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, KeyOutlined, DeleteOutlined, TeamOutlined,
-  ExclamationCircleOutlined,
+  ExclamationCircleOutlined, LockOutlined, UnlockOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { userService, accessGroupService } from '../services/api';
@@ -36,6 +36,8 @@ export default function Users() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState(undefined);
+  const [accessFilter, setAccessFilter] = useState(undefined);
+  const [togglingId, setTogglingId] = useState(null);
   const [form] = Form.useForm();
   const [pwdForm] = Form.useForm();
   const [accessGroups, setAccessGroups] = useState([]);
@@ -115,6 +117,20 @@ export default function Users() {
     }
   };
 
+  const handleAccessToggle = async (record) => {
+    const nextActive = !record.active;
+    setTogglingId(record.id);
+    try {
+      await userService.setAccessStatus(record.id, nextActive);
+      message.success(nextActive ? 'Usuário liberado com sucesso' : 'Usuário bloqueado com sucesso');
+      load();
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao alterar acesso do usuário');
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   const roleOptions = Object.entries(ROLES).map(([v, { label }]) => <Option key={v} value={v}>{label}</Option>);
 
   const filteredUsers = (() => {
@@ -124,6 +140,8 @@ export default function Users() {
       result = result.filter(u => [u.name, u.email, ROLES[u.role]?.label].some(f => normalize(f).includes(q)));
     }
     if (roleFilter) result = result.filter(u => u.role === roleFilter);
+    if (accessFilter === 'liberado') result = result.filter(u => u.active);
+    if (accessFilter === 'bloqueado') result = result.filter(u => !u.active);
     return result;
   })();
 
@@ -166,9 +184,9 @@ export default function Users() {
       ),
     },
     {
-      title: 'Status', dataIndex: 'active', key: 'active',
+      title: 'Acesso', dataIndex: 'active', key: 'active',
       sorter: (a, b) => Number(b.active) - Number(a.active),
-      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{v ? 'Ativo' : 'Inativo'}</Tag>,
+      render: v => <Tag color={v ? 'success' : 'error'} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{v ? 'Liberado' : 'Bloqueado'}</Tag>,
     },
     {
       title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt',
@@ -176,12 +194,24 @@ export default function Users() {
       render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span>,
     },
     {
-      title: '', key: 'actions', width: 110,
+      title: '', key: 'actions', width: 150,
       render: (_, record) => (
-        <Space>
+        <Space onClick={e => e.stopPropagation()}>
           {canUpdate && (
             <Tooltip title="Editar">
               <Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+            </Tooltip>
+          )}
+          {canManage && record.id !== user?.id && (
+            <Tooltip title={record.active ? 'Bloquear usuário' : 'Liberar usuário'}>
+              <Button
+                type="text"
+                icon={record.active ? <LockOutlined /> : <UnlockOutlined />}
+                size="small"
+                style={{ color: record.active ? 'var(--cl-warning)' : 'var(--cl-success, #16a34a)' }}
+                loading={togglingId === record.id}
+                onClick={() => handleAccessToggle(record)}
+              />
             </Tooltip>
           )}
           {canManage && (
@@ -232,6 +262,16 @@ export default function Users() {
           onChange={v => setRoleFilter(v || undefined)}
         >
           {roleOptions}
+        </Select>
+        <Select
+          placeholder="Filtrar por acesso"
+          style={{ width: 180 }}
+          allowClear
+          value={accessFilter}
+          onChange={v => setAccessFilter(v || undefined)}
+        >
+          <Option value="liberado">Liberado</Option>
+          <Option value="bloqueado">Bloqueado</Option>
         </Select>
       </div>
 
@@ -381,8 +421,9 @@ export default function Users() {
               </Select>
             </Form.Item>
             {editing && (
-              <Form.Item name="active" label="Status" valuePropName="checked">
-                <Switch checkedChildren="Ativo" unCheckedChildren="Inativo" />
+              <Form.Item name="active" label="Acesso" valuePropName="checked"
+                extra="Bloqueado impede login e invalida sessões ativas.">
+                <Switch checkedChildren="Liberado" unCheckedChildren="Bloqueado" />
               </Form.Item>
             )}
           </Form>

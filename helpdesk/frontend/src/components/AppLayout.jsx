@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLES } from '../utils/constants';
-import { buildMenuItems, flatMenuKeys } from '../config/menuConfig';
+import { buildMenuItems, flatMenuKeys, firstAccessiblePath } from '../config/menuConfig';
 
 const { Header, Sider, Content } = Layout;
 
@@ -65,7 +65,7 @@ export default function AppLayout() {
     <div className="app-sidebar" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Logo */}
       <div
-        onClick={() => navigate('/app')}
+        onClick={() => navigate(firstAccessiblePath(can))}
         style={{
           height: 64, display: 'flex', alignItems: 'center',
           padding: collapsed && !isMobile ? '0 24px' : '0 20px',

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { firstAccessiblePath } from './config/menuConfig';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 
@@ -37,15 +38,17 @@ function PrivateRoute({ children }) {
 }
 
 // DENY BY DEFAULT: sem a permissão exigida, a rota não é acessível mesmo por URL direta.
+// Redireciona para a primeira tela permitida (evita loop se dashboard.read estiver ausente).
 function PermissionRoute({ permission, children }) {
   const { can } = useAuth();
-  return can(permission) ? children : <Navigate to="/app" replace />;
+  if (can(permission)) return children;
+  return <Navigate to={firstAccessiblePath(can)} replace />;
 }
 
 function PublicRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, can } = useAuth();
   if (loading) return children;
-  return user ? <Navigate to="/app" replace /> : children;
+  return user ? <Navigate to={firstAccessiblePath(can)} replace /> : children;
 }
 
 function AppRoutes() {
@@ -54,7 +57,7 @@ function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/app" element={<PrivateRoute><Suspense fallback={<Spin fullscreen />}><AppLayout /></Suspense></PrivateRoute>}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<PermissionRoute permission="dashboard.read"><Dashboard /></PermissionRoute>} />
         <Route path="companies" element={<PermissionRoute permission="companies.read"><Companies /></PermissionRoute>} />
         <Route path="companies/:id" element={<PermissionRoute permission="companies.read"><CompanyDetail /></PermissionRoute>} />
         <Route path="users" element={<PermissionRoute permission="users.read"><Users /></PermissionRoute>} />
@@ -76,7 +79,7 @@ function AppRoutes() {
         <Route path="treinamentos" element={<PermissionRoute permission="treinamentos.read"><Treinamentos /></PermissionRoute>} />
         <Route path="visitas" element={<PermissionRoute permission="visitas.read"><Visitas /></PermissionRoute>} />
         <Route path="agenda-tecnica" element={<PermissionRoute permission="agenda_tecnica.read"><AgendaTecnica /></PermissionRoute>} />
-        <Route path="settings" element={<Settings />} />
+        <Route path="settings" element={<PermissionRoute permission="settings.read"><Settings /></PermissionRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

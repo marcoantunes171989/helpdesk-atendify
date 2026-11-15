@@ -9,6 +9,7 @@ router.get('/:id/links', auth, requirePermission('users.read'), wrap(ctrl.checkL
 router.get('/:id', auth, requirePermission('users.read'), wrap(ctrl.get));
 router.post('/', auth, requirePermission('users.create'), wrap(ctrl.create));
 router.put('/:id', auth, requirePermission('users.update'), wrap(ctrl.update));
+router.put('/:id/access-status', auth, requirePermission('users.manage'), wrap(ctrl.setAccessStatus));
 router.put('/:id/reset-password', auth, requirePermission('users.manage'), wrap(ctrl.resetPassword));
 router.delete('/:id', auth, requirePermission('users.delete'), wrap(ctrl.remove));
 

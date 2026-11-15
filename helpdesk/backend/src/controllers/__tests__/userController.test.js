@@ -106,3 +106,56 @@ describe('userController — proteção contra escalonamento de privilégios (ET
     expect(prisma.user.update).toHaveBeenCalled();
   });
 });
+
+describe('userController — liberar/bloquear acesso', () => {
+  afterEach(() => jest.clearAllMocks());
+
+  test('setAccessStatus: bloqueia usuário e incrementa tokenVersion', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'u1', role: 'AGENT', active: true, name: 'Agente', email: 'a@a.com' });
+    prisma.user.update.mockResolvedValue({ id: 'u1', active: false });
+    const req = {
+      params: { id: 'u1' },
+      body: { active: false },
+      dbUser: { id: 'admin-1', name: 'Admin', role: 'ADMIN' },
+    };
+    const res = mockRes();
+    await ctrl.setAccessStatus(req, res);
+    expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: 'u1' },
+      data: expect.objectContaining({ active: false, tokenVersion: { increment: 1 } }),
+    }));
+    expect(prisma.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: 'user.block' }),
+    }));
+  });
+
+  test('setAccessStatus: libera usuário sem incrementar tokenVersion', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'u1', role: 'AGENT', active: false, name: 'Agente', email: 'a@a.com' });
+    prisma.user.update.mockResolvedValue({ id: 'u1', active: true });
+    const req = {
+      params: { id: 'u1' },
+      body: { active: true },
+      dbUser: { id: 'admin-1', name: 'Admin', role: 'ADMIN' },
+    };
+    const res = mockRes();
+    await ctrl.setAccessStatus(req, res);
+    expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: { active: true },
+    }));
+    expect(prisma.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: 'user.release' }),
+    }));
+  });
+
+  test('setAccessStatus: não permite bloquear a si mesmo', async () => {
+    const req = {
+      params: { id: 'admin-1' },
+      body: { active: false },
+      dbUser: { id: 'admin-1', name: 'Admin', role: 'ADMIN' },
+    };
+    const res = mockRes();
+    await ctrl.setAccessStatus(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+});

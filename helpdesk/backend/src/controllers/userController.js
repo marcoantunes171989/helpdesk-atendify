@@ -296,3 +296,60 @@ exports.resetPassword = async (req, res) => {
   await logAudit({ actorId: req.dbUser.id, actorName: req.dbUser.name, action: 'user.reset_password', resource: 'User', resourceId: id });
   res.json({ message: 'Senha redefinida com sucesso' });
 };
+
+// Liberação / bloqueio administrativo do acesso do usuário (users.manage).
+// Bloqueio revoga tokens imediatamente via tokenVersion + statusCache.
+exports.setAccessStatus = async (req, res) => {
+  const { id } = req.params;
+  const { active } = req.body;
+
+  if (typeof active !== 'boolean') {
+    return res.status(400).json({ error: 'Informe active como true (liberar) ou false (bloquear)' });
+  }
+
+  if (req.dbUser.id === id && active === false) {
+    return res.status(400).json({ error: 'Não é possível bloquear seu próprio usuário' });
+  }
+
+  const target = await prisma.user.findUnique({ where: { id } });
+  if (!target) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+  if (target.role === 'SUPER_ADMIN' && req.dbUser.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ error: 'Apenas o Super Admin pode alterar o acesso de outro Super Admin' });
+  }
+
+  if (target.active === active) {
+    return res.json({ ...target, message: active ? 'Usuário já está liberado' : 'Usuário já está bloqueado' });
+  }
+
+  if (active === false && ADMIN_ROLES.includes(target.role)) {
+    const otherActiveAdmins = await prisma.user.count({
+      where: { role: { in: ADMIN_ROLES }, active: true, NOT: { id } },
+    });
+    if (otherActiveAdmins === 0) {
+      return res.status(409).json({ error: 'Não é possível bloquear o último administrador do sistema' });
+    }
+  }
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      active,
+      ...(active === false && { tokenVersion: { increment: 1 } }),
+    },
+    select: userSelect,
+  });
+
+  statusCache.invalidate(id);
+
+  await logAudit({
+    actorId: req.dbUser.id,
+    actorName: req.dbUser.name,
+    action: active ? 'user.release' : 'user.block',
+    resource: 'User',
+    resourceId: id,
+    metadata: { name: target.name, email: target.email, active },
+  });
+
+  res.json(user);
+};

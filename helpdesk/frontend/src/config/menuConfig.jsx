@@ -13,9 +13,9 @@ import {
 // se um item deve aparecer (RBAC-UX-01, GATE 07).
 //
 // group: chave de um dos MENU_GROUPS abaixo.
-// permission: chave de permissão exigida (ver backend/src/permissions/catalog.js)
-//   ou null para itens sempre visíveis a qualquer usuário autenticado
-//   (Dashboard e Configurações, como já era o comportamento anterior).
+// permission: chave de permissão exigida (ver backend/src/permissions/catalog.js).
+//   Todas as telas exigem permissão explícita (deny-by-default), inclusive
+//   Dashboard (dashboard.read) e Configurações (settings.read).
 
 export const MENU_GROUPS = [
   { key: 'painel', label: 'Painel' },
@@ -26,7 +26,7 @@ export const MENU_GROUPS = [
 ];
 
 export const MENU_ITEMS = [
-  { key: '/app', label: 'Dashboard', icon: DashboardOutlined, group: 'painel', permission: null, order: 1 },
+  { key: '/app', label: 'Dashboard', icon: DashboardOutlined, group: 'painel', permission: 'dashboard.read', order: 1 },
 
   { key: '/app/tickets', label: 'Chamados', icon: CustomerServiceOutlined, group: 'atendimento', permission: 'tickets.read', order: 1 },
   { key: '/app/agenda-tecnica', label: 'Agenda Técnica', icon: ScheduleOutlined, group: 'atendimento', permission: 'agenda_tecnica.read', order: 2 },
@@ -50,14 +50,14 @@ export const MENU_ITEMS = [
 
   { key: '/app/users', label: 'Usuários', icon: TeamOutlined, group: 'administracao', permission: 'users.read', order: 1 },
   { key: '/app/access-groups', label: 'Perfis de Acesso', icon: SafetyCertificateOutlined, group: 'administracao', permission: 'access_groups.read', order: 2 },
-  { key: '/app/settings', label: 'Configurações', icon: SettingOutlined, group: 'administracao', permission: null, order: 3 },
+  { key: '/app/settings', label: 'Configurações', icon: SettingOutlined, group: 'administracao', permission: 'settings.read', order: 3 },
 ];
 
 // Monta os itens do menu já filtrados por permissão e agrupados para o
 // componente antd <Menu>. Grupos sem nenhum item visível são omitidos
 // (GATE 07/08: "Grupo sem nenhum item permitido: Grupo não aparece").
 export function buildMenuItems(can) {
-  const visible = MENU_ITEMS.filter(item => item.permission === null || can(item.permission));
+  const visible = MENU_ITEMS.filter(item => can(item.permission));
 
   const result = [];
   for (const group of MENU_GROUPS) {
@@ -82,4 +82,10 @@ export function buildMenuItems(can) {
 
 export function flatMenuKeys() {
   return MENU_ITEMS.map(item => item.key);
+}
+
+// Primeira tela que o usuário pode abrir (menu e redirecionamento de rotas negadas).
+export function firstAccessiblePath(can) {
+  const item = MENU_ITEMS.find(entry => can(entry.permission));
+  return item?.key || '/app';
 }
