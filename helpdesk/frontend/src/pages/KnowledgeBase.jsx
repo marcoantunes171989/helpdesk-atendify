@@ -112,8 +112,8 @@ export default function KnowledgeBase() {
   const [aiSources, setAiSources] = useState([]);
   const [aiLoading, setAiLoading] = useState(false);
 
-  const { user } = useAuth();
-  const canEdit = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role);
+  const { can } = useAuth();
+  const canEdit = can('knowledge.create') || can('knowledge.update') || can('knowledge.delete');
 
   const load = () => {
     setLoading(true);

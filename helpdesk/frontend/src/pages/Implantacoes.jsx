@@ -407,8 +407,8 @@ export default function Implantacoes() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const { user } = useAuth();
-  const canEdit = ['SUPER_ADMIN', 'ADMIN', 'AGENT'].includes(user?.role);
+  const { can } = useAuth();
+  const canEdit = can('implantacoes.create') || can('implantacoes.update') || can('implantacoes.delete');
 
   const load = useCallback(() => {
     setLoading(true);

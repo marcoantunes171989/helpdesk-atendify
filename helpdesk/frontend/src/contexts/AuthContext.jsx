@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/api';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { authService, permissionService } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -11,7 +11,17 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+  const [permissions, setPermissions] = useState(() => new Set());
   const [loading, setLoading] = useState(true);
+
+  const loadPermissions = useCallback(async () => {
+    try {
+      const { permissions: perms } = await permissionService.me();
+      setPermissions(new Set(perms));
+    } catch {
+      setPermissions(new Set());
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -19,21 +29,21 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
-    authService.me()
-      .then(setUser)
+    Promise.all([authService.me().then(setUser), loadPermissions()])
       .catch(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [loadPermissions]);
 
-  const login = async (email, password) => {
-    const { token, user } = await authService.login({ email, password });
+  const login = async (identifier, password) => {
+    const { token, user } = await authService.login(identifier, password);
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     setUser(user);
+    await loadPermissions();
     return user;
   };
 
@@ -41,10 +51,14 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+    setPermissions(new Set());
   };
 
+  // SUPER_ADMIN sempre tem acesso total (bypass), espelhando a regra do backend.
+  const can = (permissionKey) => user?.role === 'SUPER_ADMIN' || permissions.has(permissionKey);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, can, reloadPermissions: loadPermissions }}>
       {children}
     </AuthContext.Provider>
   );

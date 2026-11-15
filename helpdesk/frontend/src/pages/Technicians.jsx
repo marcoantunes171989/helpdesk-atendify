@@ -11,12 +11,17 @@ import {
 import dayjs from 'dayjs';
 import { technicianService } from '../services/api';
 import { normalize } from '../utils/constants';
+import { useAuth } from '../contexts/AuthContext';
 
 const { TextArea } = Input;
 
 export default function Technicians() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
+  const { can } = useAuth();
+  const canCreate = can('technicians.create');
+  const canUpdate = can('technicians.update');
+  const canDelete = can('technicians.delete');
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -136,14 +141,18 @@ export default function Technicians() {
       title: '', key: 'actions', width: 80,
       render: (_, record) => (
         <Space>
-          <Tooltip title="Editar">
-            <Button type="text" icon={<EditOutlined />} size="small"
-              style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Remover">
-            <Button type="text" icon={<DeleteOutlined />} size="small" danger
-              onClick={() => setDeleteModal({ id: record.id, name: record.name, tickets: record._count?.tickets ?? 0 })} />
-          </Tooltip>
+          {canUpdate && (
+            <Tooltip title="Editar">
+              <Button type="text" icon={<EditOutlined />} size="small"
+                style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEdit(record)} />
+            </Tooltip>
+          )}
+          {canDelete && (
+            <Tooltip title="Remover">
+              <Button type="text" icon={<DeleteOutlined />} size="small" danger
+                onClick={() => setDeleteModal({ id: record.id, name: record.name, tickets: record._count?.tickets ?? 0 })} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -162,10 +171,12 @@ export default function Technicians() {
             {filteredTechnicians.length} técnico{filteredTechnicians.length !== 1 ? 's' : ''} cadastrado{filteredTechnicians.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
-          style={{ borderRadius: 8, fontWeight: 600 }}>
-          Novo Técnico
-        </Button>
+        {canCreate && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
+            style={{ borderRadius: 8, fontWeight: 600 }}>
+            Novo Técnico
+          </Button>
+        )}
       </div>
 
       <div className="filter-bar">

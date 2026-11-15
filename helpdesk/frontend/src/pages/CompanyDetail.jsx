@@ -44,7 +44,7 @@ export default function CompanyDetail() {
   const isLight = resolvedTheme === 'light';
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { can } = useAuth();
 
   const [company, setCompany] = useState(null);
   const [employees, setEmployees] = useState([]);
@@ -64,7 +64,8 @@ export default function CompanyDetail() {
   const [compSaving, setCompSaving] = useState(false);
   const [compForm] = Form.useForm();
 
-  const canEdit = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
+  const canEditCompany = can('companies.create') || can('companies.update') || can('companies.delete');
+  const canEditEmployees = can('employees.create') || can('employees.update') || can('employees.delete');
 
   const loadAll = async () => {
     setLoading(true);
@@ -162,7 +163,7 @@ export default function CompanyDetail() {
     },
     {
       title: '', key: 'actions', width: 80,
-      render: (_, r) => canEdit && (
+      render: (_, r) => canEditEmployees && (
         <Space>
           <Tooltip title="Editar"><Button type="text" icon={<EditOutlined />} size="small" style={{ color: 'var(--cl-text-soft)' }} onClick={() => openEditEmp(r)} /></Tooltip>
           <Button type="text" icon={<DeleteOutlined />} size="small" danger
@@ -213,7 +214,7 @@ export default function CompanyDetail() {
             </div>
           </div>
         </div>
-        {canEdit && (
+        {canEditCompany && (
           <Button icon={<EditOutlined />} onClick={openEditComp} style={{ borderRadius: 8, fontWeight: 600 }}>
             Editar Empresa
           </Button>
@@ -245,7 +246,7 @@ export default function CompanyDetail() {
               label: <span><IdcardOutlined /> Funcionários ({employees.length})</span>,
               children: (
                 <div style={{ padding: '0 0 16px' }}>
-                  {canEdit && (
+                  {canEditEmployees && (
                     <div style={{ padding: '16px 24px 8px', display: 'flex', justifyContent: 'flex-end' }}>
                       <Button type="primary" icon={<PlusOutlined />} onClick={openCreateEmp}
                         style={{ background: 'var(--cl-primary)', borderColor: 'var(--cl-primary)', borderRadius: 8, fontWeight: 600 }}>

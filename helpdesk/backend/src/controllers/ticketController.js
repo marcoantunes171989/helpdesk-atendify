@@ -39,6 +39,12 @@ exports.list = async (req, res) => {
   if (assignedTo) where.assignedTo = assignedTo;
   if (userId) where.userId = userId;
 
+  // CLIENT só pode ver os próprios chamados — restrição por proprietário
+  // (ETAPA 2). Qualquer tentativa de filtrar por outro userId é ignorada.
+  if (req.user.role === 'CLIENT') {
+    where.userId = req.user.id;
+  }
+
   const andConditions = [];
 
   const statusConditions = [];
@@ -87,6 +93,12 @@ exports.get = async (req, res) => {
   });
 
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
+
+  // CLIENT só pode ver o próprio chamado (restrição por proprietário).
+  if (req.user.role === 'CLIENT' && ticket.userId !== req.user.id) {
+    return res.status(403).json({ error: 'Você não tem acesso a este chamado' });
+  }
+
   res.json(ticket);
 };
 
@@ -156,6 +168,13 @@ exports.update = async (req, res) => {
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
+  // CLIENT não pode editar chamados — operação restrita à equipe de suporte
+  // (AGENT/ADMIN/SUPER_ADMIN). Evita reatribuição/alteração indevida por quem
+  // apenas abriu o chamado.
+  if (req.user.role === 'CLIENT') {
+    return res.status(403).json({ error: 'Clientes não podem editar chamados' });
+  }
+
   const { title, description, status, priority, categoryId, assignedTo, companyId, employeeId } = req.body;
   const data = {};
 
@@ -201,6 +220,11 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   const { id } = req.params;
 
+  // Exclusão de chamados é restrita à equipe de suporte.
+  if (req.user.role === 'CLIENT') {
+    return res.status(403).json({ error: 'Clientes não podem excluir chamados' });
+  }
+
   const ticket = await prisma.ticket.findUnique({ where: { id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
@@ -230,6 +254,10 @@ exports.addComment = async (req, res) => {
 
   const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
+
+  if (req.user.role === 'CLIENT' && ticket.userId !== req.user.id) {
+    return res.status(403).json({ error: 'Você não tem acesso a este chamado' });
+  }
 
   if (ticket.status === 'CLOSED') {
     return res.status(400).json({ error: 'Chamado fechado não aceita trâmites' });
