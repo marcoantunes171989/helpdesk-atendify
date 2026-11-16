@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal, Form, Input, Radio, Switch, Upload, message } from 'antd';
 import KbIcon from './KbIcon';
-import { BACKEND_CATEGORIES, extractUrls, fileExt, splitTags } from './kbModel';
+import { CATEGORIES, extractUrls, fileExt, splitTags } from './kbModel';
 
 const { TextArea } = Input;
 
@@ -21,19 +21,28 @@ const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file.originFileObj || file);
 });
 
-export default function KbArticleForm({ open, mode = 'article', editing, onCancel, onSubmit }) {
+export default function KbArticleForm({ open, mode = 'article', editing, categories = CATEGORIES, onCancel, onSubmit }) {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [saving, setSaving] = useState(false);
   const cfg = MODES[mode] || MODES.article;
+  const categoryOptions = (categories.length ? categories : CATEGORIES)
+    .filter(c => c.active !== false || (editing && (editing.categoryId === c.id || editing.categoryRef?.id === c.id)))
+    .map(c => ({ value: c.id || c.key, label: c.label, key: c.key }));
 
   useEffect(() => {
     if (!open) return;
+    const defaultCat = categoryOptions.find(c => c.key === 'configuracoes') || categoryOptions[0];
     if (editing) {
+      const current = editing.categoryId
+        || editing.categoryRef?.id
+        || categoryOptions.find(c => c.key === editing.categoryRef?.key)?.value
+        || categoryOptions.find(c => (CATEGORIES.find(x => x.key === c.key)?.sources || []).includes(editing.category))?.value
+        || defaultCat?.value;
       form.setFieldsValue({
         title: editing.title,
         content: editing.content,
-        category: editing.category,
+        categoryId: current,
         tags: editing.tags || '',
         active: editing.active !== false,
       });
@@ -42,10 +51,14 @@ export default function KbArticleForm({ open, mode = 'article', editing, onCance
       })));
     } else {
       form.resetFields();
-      form.setFieldsValue({ category: 'CONFIGURACAO', tags: mode === 'link' ? 'link' : '', active: true });
+      form.setFieldsValue({
+        categoryId: defaultCat?.value,
+        tags: mode === 'link' ? 'link' : '',
+        active: true,
+      });
       setFileList([]);
     }
-  }, [open, editing, mode, form]);
+  }, [open, editing, mode, form, categories]);
 
   const beforeUpload = (file) => {
     if (!ALLOWED_EXT.includes(fileExt(file.name))) {
@@ -72,7 +85,19 @@ export default function KbArticleForm({ open, mode = 'article', editing, onCance
         return { name: f.name, mimeType: f.type || 'application/octet-stream', size: f.size, data };
       }));
       const tags = splitTags(values.tags).join(', ') || null;
-      const payload = { title: values.title.trim(), content: values.content, category: values.category, tags, attachments };
+      const selected = (categories.length ? categories : CATEGORIES)
+        .find(c => (c.id || c.key) === values.categoryId);
+      const payload = {
+        title: values.title.trim(),
+        content: values.content,
+        tags,
+        attachments,
+      };
+      if (selected?.id) payload.categoryId = selected.id;
+      else {
+        const key = selected?.key || values.categoryId;
+        payload.category = key === 'configuracoes' ? 'CONFIGURACAO' : 'DUVIDA';
+      }
       if (editing) payload.active = values.active;
       await onSubmit(payload);
     } catch {
@@ -106,9 +131,12 @@ export default function KbArticleForm({ open, mode = 'article', editing, onCance
           <Input placeholder="Ex.: Configuração da impressora fiscal" maxLength={200} />
         </Form.Item>
 
-        <Form.Item name="category" label="Categoria" rules={[{ required: true, message: 'Selecione a categoria' }]}
-          extra="Configuração aparece no cartão Configurações; Dúvida e Erro aparecem em Outros.">
-          <Radio.Group optionType="button" buttonStyle="solid" options={BACKEND_CATEGORIES} />
+        <Form.Item name="categoryId" label="Categoria" rules={[{ required: true, message: 'Selecione a categoria' }]}>
+          <Radio.Group
+            optionType="button"
+            buttonStyle="solid"
+            options={categoryOptions.map(c => ({ value: c.value, label: c.label }))}
+          />
         </Form.Item>
 
         <Form.Item name="tags" label="Palavras-chave"

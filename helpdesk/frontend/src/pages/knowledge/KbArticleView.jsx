@@ -3,7 +3,7 @@ import { Modal, Spin, message } from 'antd';
 import KbIcon from './KbIcon';
 import { ICON_STYLE, FORMAT_TONE } from './KbContentCard';
 import {
-  describe, formatDate, formatSize, fileKind, FILE_KIND_LABEL, BACKEND_CATEGORY_LABEL,
+  describe, formatDate, formatSize, fileKind, FILE_KIND_LABEL,
   videoEmbedUrl, URL_SPLIT_RE, CONTENT_TYPES,
 } from './kbModel';
 import {
@@ -147,7 +147,7 @@ export default function KbArticleView({
           <div className="kb-read-meta">
             <div className="kb-read-tags">
               <span className={`kb-chip tone-${FORMAT_TONE[meta.format] || 'indigo'}`}>{meta.format}</span>
-              <span className="kb-chip tone-slate">{BACKEND_CATEGORY_LABEL[article.category] || article.category}</span>
+              <span className="kb-chip tone-slate">{meta.category?.label || article.categoryRef?.label || article.category}</span>
               {article.code != null && <span className="kb-chip tone-slate">#{article.code}</span>}
               {article.active === false && <span className="kb-chip tone-amber">Inativo</span>}
             </div>

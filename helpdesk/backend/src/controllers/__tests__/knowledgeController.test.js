@@ -12,6 +12,14 @@ jest.mock('../../prisma', () => ({
     create: jest.fn(),
     deleteMany: jest.fn(),
   },
+  knowledgeCategory: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    upsert: jest.fn(),
+  },
   kbQuery: { create: jest.fn() },
 }));
 
@@ -104,5 +112,42 @@ describe('knowledgeController — Etapa A anexos', () => {
     }, res);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(prisma.kbArticle.create).not.toHaveBeenCalled();
+  });
+
+  test('listCategories devolve categorias com contagem', async () => {
+    prisma.knowledgeCategory.upsert.mockResolvedValue({});
+    prisma.knowledgeCategory.findMany.mockResolvedValue([
+      { id: 'c1', key: 'configuracoes', label: 'Configurações', icon: 'settings', tone: 'purple', sortOrder: 10, active: true, _count: { articles: 2 } },
+    ]);
+    const res = mockRes();
+    await ctrl.listCategories({ query: {} }, res);
+    expect(res.json.mock.calls[0][0][0].key).toBe('configuracoes');
+  });
+
+  test('createCategory valida nome e cria', async () => {
+    prisma.knowledgeCategory.create.mockResolvedValue({
+      id: 'c2', key: 'integracoes', label: 'Integrações', icon: 'link', tone: 'blue', sortOrder: 100, active: true, _count: { articles: 0 },
+    });
+    const res = mockRes();
+    await ctrl.createCategory({ body: { label: 'Integrações', icon: 'link', tone: 'blue' } }, res);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(prisma.knowledgeCategory.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ key: 'integracoes', label: 'Integrações' }),
+    }));
+  });
+
+  test('removeCategory desativa quando há artigos', async () => {
+    prisma.knowledgeCategory.findUnique.mockResolvedValue({
+      id: 'c1', key: 'fiscal', label: 'Fiscal', _count: { articles: 3 },
+    });
+    prisma.knowledgeCategory.update.mockResolvedValue({
+      id: 'c1', key: 'fiscal', active: false, _count: { articles: 3 },
+    });
+    const res = mockRes();
+    await ctrl.removeCategory({ params: { id: 'c1' } }, res);
+    expect(prisma.knowledgeCategory.delete).not.toHaveBeenCalled();
+    expect(prisma.knowledgeCategory.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: { active: false },
+    }));
   });
 });

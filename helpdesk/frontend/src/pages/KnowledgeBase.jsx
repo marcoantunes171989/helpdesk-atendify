@@ -12,11 +12,13 @@ import KbContentCard from './knowledge/KbContentCard';
 import KbRightPanel from './knowledge/KbRightPanel';
 import KbArticleView from './knowledge/KbArticleView';
 import KbArticleForm from './knowledge/KbArticleForm';
+import KbCategoryManage from './knowledge/KbCategoryManage';
 import KbAiModal from './knowledge/KbAiModal';
 import KbIcon from './knowledge/KbIcon';
 import useKbPersonal from './knowledge/useKbPersonal';
 import {
-  CATEGORIES, CONTENT_TYPES, SECTIONS, describe, searchArticles, byDateDesc,
+  CATEGORIES, CONTENT_TYPES, SECTIONS, describeWithCatalog, normalizeCategory,
+  searchArticles, byDateDesc,
 } from './knowledge/kbModel';
 import './knowledge/knowledge.css';
 
@@ -43,7 +45,7 @@ const TABS = [
 ];
 
 const SECTION_INFO = {
-  categorias: 'Selecione uma categoria para ver os conteúdos relacionados.',
+  categorias: 'Gerencie as categorias dos cartões e veja quantos conteúdos cada uma possui.',
   favoritos: 'Conteúdos marcados com estrela neste navegador.',
   historico: 'Conteúdos abertos recentemente neste navegador.',
   'primeiros-passos': 'Materiais introdutórios para quem está começando.',
@@ -80,6 +82,7 @@ export default function KnowledgeBase() {
   const { favorites, history, view, toggleFavorite, recordView, clearHistory, setView } = personal;
 
   const [articles, setArticles] = useState([]);
+  const [categories, setCategories] = useState(CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [query, setQuery] = useState('');
@@ -97,14 +100,27 @@ export default function KnowledgeBase() {
     [can],
   );
 
+  const loadCategories = useCallback(async () => {
+    try {
+      const rows = await knowledgeService.listCategories({ all: canUpdate || canCreate ? 1 : undefined });
+      if (Array.isArray(rows) && rows.length > 0) {
+        setCategories(rows.map(normalizeCategory));
+        return;
+      }
+    } catch { /* fallback abaixo */ }
+    setCategories(CATEGORIES);
+  }, [canUpdate, canCreate]);
+
   const load = useCallback(() => {
     setLoading(true);
     setLoadError(false);
-    return knowledgeService.list()
-      .then(data => setArticles(Array.isArray(data) ? data : []))
+    return Promise.all([
+      knowledgeService.list().then(data => setArticles(Array.isArray(data) ? data : [])),
+      loadCategories(),
+    ])
       .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [loadCategories]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -128,7 +144,7 @@ export default function KnowledgeBase() {
 
   const items = useMemo(() => articles
     .filter(a => a.active !== false || canUpdate)
-    .map(a => ({ article: a, meta: describe(a) })), [articles, canUpdate]);
+    .map(a => ({ article: a, meta: describeWithCatalog(a, categories) })), [articles, canUpdate, categories]);
 
   const sectionDef = SECTIONS.find(s => s.key === section);
   const sectionType = sectionDef?.type || null;
@@ -147,9 +163,9 @@ export default function KnowledgeBase() {
 
   const counts = useMemo(() => {
     const c = {};
-    for (const i of sectionItems) c[i.meta.category.key] = (c[i.meta.category.key] || 0) + 1;
+    for (const i of items) c[i.meta.category?.key] = (c[i.meta.category?.key] || 0) + 1;
     return c;
-  }, [sectionItems]);
+  }, [items]);
 
   const ordered = section === 'favoritos' || section === 'historico';
 
@@ -240,10 +256,13 @@ export default function KnowledgeBase() {
 
   const heading = articleId ? null : (section && section !== '' ? {
     title: section === 'primeiros-passos' ? 'Primeiros Passos' : sectionDef?.label,
-    info: section === 'categorias' && (canCreate || canUpdate)
-      ? `${SECTION_INFO.categorias} As categorias são fixas nesta versão; cadastrar novas depende de alteração no backend.`
-      : SECTION_INFO[section] || CONTENT_TYPES.find(t => t.key === sectionType)?.detail?.replace(/[()]/g, ''),
+    info: SECTION_INFO[section] || CONTENT_TYPES.find(t => t.key === sectionType)?.detail?.replace(/[()]/g, ''),
   } : null);
+
+  const selectCategoryAndHome = (key) => {
+    setCategory(key);
+    go('');
+  };
 
   const renderList = () => {
     if (loading) {
@@ -345,7 +364,7 @@ export default function KnowledgeBase() {
                     busy={loading && !!committed}
                   />
 
-                  <KbCategoryCards counts={counts} selected={category} onSelect={setCategory} />
+                  <KbCategoryCards categories={categories} counts={counts} selected={category} onSelect={setCategory} />
 
                   {heading && (
                     <div className="kb-section-head">
@@ -357,6 +376,18 @@ export default function KnowledgeBase() {
                         <button type="button" className="kb-btn-ghost" onClick={clearHistory}>Limpar histórico</button>
                       )}
                     </div>
+                  )}
+
+                  {section === 'categorias' && (
+                    <KbCategoryManage
+                      categories={categories}
+                      canCreate={canCreate}
+                      canUpdate={canUpdate}
+                      onSelect={selectCategoryAndHome}
+                      onCreate={async (payload) => { await knowledgeService.createCategory(payload); await loadCategories(); }}
+                      onUpdate={async (id, payload) => { await knowledgeService.updateCategory(id, payload); await loadCategories(); }}
+                      onRemove={async (id) => { await knowledgeService.removeCategory(id); await loadCategories(); }}
+                    />
                   )}
 
                   <div className="kb-toolbar">
@@ -388,7 +419,7 @@ export default function KnowledgeBase() {
                       <span>
                         {visible.length} {visible.length === 1 ? 'resultado' : 'resultados'}
                         {committed && <> para <strong>"{committed}"</strong></>}
-                        {category && <> em <strong>{CATEGORIES.find(c => c.key === category)?.label}</strong></>}
+                        {category && <> em <strong>{categories.find(c => c.key === category)?.label || category}</strong></>}
                       </span>
                       {committed && (
                         <button type="button" className="kb-inline-link" onClick={() => setAiOpen(true)}>
@@ -420,6 +451,7 @@ export default function KnowledgeBase() {
           open={formState.open}
           mode={formState.mode}
           editing={formState.editing}
+          categories={categories}
           onCancel={() => setFormState({ open: false, mode: 'article', editing: null })}
           onSubmit={handleSubmit}
         />

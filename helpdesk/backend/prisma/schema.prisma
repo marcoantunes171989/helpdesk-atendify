@@ -345,18 +345,38 @@ enum KbCategory {
   CONFIGURACAO
 }
 
-model KbArticle {
-  id          String        @id @default(cuid())
-  code        Int?          @unique
-  title       String
-  content     String        @db.Text
-  category    KbCategory
-  tags        String?
-  active      Boolean       @default(true)
-  attachments KbAttachment[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+// Categorias gerenciáveis (Etapa B). O enum KbCategory acima permanece
+// como coluna legada para compatibilidade; a categoria efetiva é categoryId.
+model KnowledgeCategory {
+  id        String      @id @default(cuid())
+  key       String      @unique
+  label     String
+  icon      String      @default("layers")
+  tone      String      @default("sky")
+  sortOrder Int         @default(0)
+  active    Boolean     @default(true)
+  articles  KbArticle[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
+  @@map("kb_categories")
+}
+
+model KbArticle {
+  id          String             @id @default(cuid())
+  code        Int?               @unique
+  title       String
+  content     String             @db.Text
+  category    KbCategory         @default(DUVIDA)
+  categoryId  String?
+  categoryRef KnowledgeCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags        String?
+  active      Boolean            @default(true)
+  attachments KbAttachment[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([categoryId])
   @@map("kb_articles")
 }
 

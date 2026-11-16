@@ -309,6 +309,10 @@ export const knowledgeService = {
     `/knowledge/attachments/${id}/download`,
     { params: inline ? { inline: 1 } : undefined, responseType: 'blob' },
   ).then((r) => r.data),
+  listCategories: (params) => api.get('/knowledge/categories', { params }).then(r => r.data),
+  createCategory: (data) => api.post('/knowledge/categories', data).then(r => r.data),
+  updateCategory: (id, data) => api.put(`/knowledge/categories/${id}`, data).then(r => r.data),
+  removeCategory: (id) => api.delete(`/knowledge/categories/${id}`).then(r => r.data),
 };
 
 export default api;

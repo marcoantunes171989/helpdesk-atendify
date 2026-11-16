@@ -1,10 +1,11 @@
 import KbIcon from './KbIcon';
 import { CATEGORIES } from './kbModel';
 
-export default function KbCategoryCards({ counts, selected, onSelect }) {
+export default function KbCategoryCards({ categories = CATEGORIES, counts, selected, onSelect }) {
+  const list = (categories?.length ? categories : CATEGORIES).filter(c => c.active !== false);
   return (
     <section className="kb-cats" aria-label="Categorias">
-      {CATEGORIES.map(cat => {
+      {list.map(cat => {
         const active = selected === cat.key;
         const n = counts[cat.key] || 0;
         return (

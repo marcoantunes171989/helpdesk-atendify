@@ -3,6 +3,17 @@ import {
   describe as describeArticle, searchArticles, fileKind, formatDate, videoEmbedUrl, categoryOf, summarize, initials,
 } from '../pages/knowledge/kbModel';
 
+describe('kbModel.categoryOf (Etapa B)', () => {
+  it('prioriza categoryRef da API sobre o enum legado', () => {
+    const cat = categoryOf({
+      category: 'DUVIDA',
+      categoryRef: { id: 'c1', key: 'fiscal', label: 'Fiscal', icon: 'fileText', tone: 'red' },
+    });
+    expect(cat.key).toBe('fiscal');
+    expect(cat.label).toBe('Fiscal');
+  });
+});
+
 const art = (over = {}) => ({
   id: over.id || 'a1', title: 'Título', content: 'Conteúdo longo de exemplo '.repeat(20), category: 'DUVIDA',
   tags: null, attachments: [], createdAt: '2026-11-10T12:00:00Z', updatedAt: '2026-11-12T12:00:00Z', ...over,
