@@ -7,8 +7,16 @@ const {
   sanitizeFileName,
 } = require('../services/kbFileValidation');
 const kbStorage = require('../services/kbStorage');
+const {
+  ALLOWED_ICONS,
+  ALLOWED_TONES,
+  slugifyKey,
+  ensureDefaults,
+  resolveCategoryFields,
+} = require('../services/kbCategories');
 
 const ATT_META = { id: true, name: true, mimeType: true, size: true, sha256: true, storagePath: true, createdAt: true };
+const CAT_META = { id: true, key: true, label: true, icon: true, tone: true, sortOrder: true, active: true };
 
 function stripAttachmentData(article) {
   if (!article) return article;
@@ -80,9 +88,10 @@ function sendAttachment(res, att, buf, { inline }) {
 }
 
 exports.list = async (req, res) => {
-  const { category, search } = req.query;
+  const { category, categoryKey, search } = req.query;
   const where = {};
-  if (category && category !== 'ALL') where.category = category;
+  if (categoryKey) where.categoryRef = { key: categoryKey };
+  else if (category && category !== 'ALL') where.category = category;
   if (search) {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
@@ -94,6 +103,7 @@ exports.list = async (req, res) => {
     where,
     include: {
       attachments: { select: ATT_META },
+      categoryRef: { select: CAT_META },
       _count: { select: { attachments: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -109,6 +119,7 @@ exports.get = async (req, res) => {
     where: { id: req.params.id },
     include: {
       attachments: true,
+      categoryRef: { select: CAT_META },
       _count: { select: { attachments: true } },
     },
   });
@@ -117,14 +128,16 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { title, content, category, tags, attachments = [] } = req.body;
+  const { title, content, category, categoryId, tags, attachments = [] } = req.body;
   if (!title?.trim()) return res.status(400).json({ error: 'Título é obrigatório' });
-  if (!category) return res.status(400).json({ error: 'Categoria é obrigatória' });
+  if (!categoryId && !category) return res.status(400).json({ error: 'Categoria é obrigatória' });
 
   let validatedNew = [];
+  let resolved;
   try {
     validatedNew = (attachments || []).filter((a) => a && a.data);
     validatedNew.forEach(validateAttachmentInput);
+    resolved = await resolveCategoryFields({ categoryId, category });
   } catch (err) {
     return res.status(err.status || 400).json({ error: err.message });
   }
@@ -137,7 +150,8 @@ exports.create = async (req, res) => {
       code,
       title: title.trim(),
       content: content || '',
-      category,
+      category: resolved.category,
+      categoryId: resolved.categoryId,
       tags: tags || null,
     },
   });
@@ -151,14 +165,17 @@ exports.create = async (req, res) => {
 
   const full = await prisma.kbArticle.findUnique({
     where: { id: article.id },
-    include: { attachments: { select: ATT_META } },
+    include: {
+      attachments: { select: ATT_META },
+      categoryRef: { select: CAT_META },
+    },
   });
   res.status(201).json(stripAttachmentData(full));
 };
 
 exports.update = async (req, res) => {
   const { id } = req.params;
-  const { title, content, category, tags, active, attachments = [] } = req.body;
+  const { title, content, category, categoryId, tags, active, attachments = [] } = req.body;
 
   const existing = await prisma.kbArticle.findUnique({
     where: { id },
@@ -169,8 +186,12 @@ exports.update = async (req, res) => {
   const keepIds = (attachments || []).filter((a) => a && a.id).map((a) => a.id);
   const newOnes = (attachments || []).filter((a) => a && !a.id && a.data);
 
+  let resolved;
   try {
     newOnes.forEach(validateAttachmentInput);
+    if (categoryId !== undefined || category !== undefined) {
+      resolved = await resolveCategoryFields({ categoryId, category });
+    }
   } catch (err) {
     return res.status(err.status || 400).json({ error: err.message });
   }
@@ -190,7 +211,7 @@ exports.update = async (req, res) => {
     data: {
       ...(title !== undefined && { title }),
       ...(content !== undefined && { content }),
-      ...(category !== undefined && { category }),
+      ...(resolved && { category: resolved.category, categoryId: resolved.categoryId }),
       ...(tags !== undefined && { tags: tags || null }),
       ...(active !== undefined && { active }),
     },
@@ -204,7 +225,10 @@ exports.update = async (req, res) => {
 
   const full = await prisma.kbArticle.findUnique({
     where: { id },
-    include: { attachments: { select: ATT_META } },
+    include: {
+      attachments: { select: ATT_META },
+      categoryRef: { select: CAT_META },
+    },
   });
   res.json(stripAttachmentData(full));
 };
@@ -253,6 +277,7 @@ exports.query = async (req, res) => {
     },
     include: {
       attachments: { select: ATT_META },
+      categoryRef: { select: CAT_META },
     },
     orderBy: { updatedAt: 'desc' },
     take: 5,
@@ -312,4 +337,93 @@ PERGUNTA: ${question}`,
       attachments: a.attachments.map((att) => ({ ...att, hasContent: true })),
     })),
   });
+};
+
+exports.listCategories = async (req, res) => {
+  const includeInactive = String(req.query.all || '') === '1';
+  try {
+    await ensureDefaults();
+  } catch (err) {
+    // Tabela ainda não migrada: devolve vazio para o frontend usar fallback.
+    if (err.code === 'P2021' || /kb_categories|does not exist/i.test(err.message || '')) {
+      return res.json([]);
+    }
+    throw err;
+  }
+  const rows = await prisma.knowledgeCategory.findMany({
+    where: includeInactive ? undefined : { active: true },
+    include: { _count: { select: { articles: true } } },
+    orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
+  });
+  res.json(rows);
+};
+
+exports.createCategory = async (req, res) => {
+  const { label, icon, tone, sortOrder, key: rawKey } = req.body || {};
+  if (!label?.trim()) return res.status(400).json({ error: 'Nome da categoria é obrigatório' });
+  const key = slugifyKey(rawKey || label);
+  if (!key) return res.status(400).json({ error: 'Chave da categoria inválida' });
+  if (icon && !ALLOWED_ICONS.has(icon)) return res.status(400).json({ error: 'Ícone não permitido' });
+  if (tone && !ALLOWED_TONES.has(tone)) return res.status(400).json({ error: 'Cor não permitida' });
+
+  try {
+    const created = await prisma.knowledgeCategory.create({
+      data: {
+        key,
+        label: label.trim(),
+        icon: icon || 'layers',
+        tone: tone || 'sky',
+        sortOrder: Number.isFinite(sortOrder) ? sortOrder : 100,
+      },
+      include: { _count: { select: { articles: true } } },
+    });
+    res.status(201).json(created);
+  } catch (err) {
+    if (err.code === 'P2002') return res.status(409).json({ error: 'Já existe uma categoria com essa chave' });
+    throw err;
+  }
+};
+
+exports.updateCategory = async (req, res) => {
+  const { id } = req.params;
+  const { label, icon, tone, sortOrder, active } = req.body || {};
+  const existing = await prisma.knowledgeCategory.findUnique({ where: { id } });
+  if (!existing) return res.status(404).json({ error: 'Categoria não encontrada' });
+  if (icon && !ALLOWED_ICONS.has(icon)) return res.status(400).json({ error: 'Ícone não permitido' });
+  if (tone && !ALLOWED_TONES.has(tone)) return res.status(400).json({ error: 'Cor não permitida' });
+
+  const updated = await prisma.knowledgeCategory.update({
+    where: { id },
+    data: {
+      ...(label !== undefined && { label: String(label).trim() }),
+      ...(icon !== undefined && { icon }),
+      ...(tone !== undefined && { tone }),
+      ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
+      ...(active !== undefined && { active: Boolean(active) }),
+    },
+    include: { _count: { select: { articles: true } } },
+  });
+  res.json(updated);
+};
+
+exports.removeCategory = async (req, res) => {
+  const { id } = req.params;
+  const existing = await prisma.knowledgeCategory.findUnique({
+    where: { id },
+    include: { _count: { select: { articles: true } } },
+  });
+  if (!existing) return res.status(404).json({ error: 'Categoria não encontrada' });
+  if (existing._count.articles > 0) {
+    const updated = await prisma.knowledgeCategory.update({
+      where: { id },
+      data: { active: false },
+      include: { _count: { select: { articles: true } } },
+    });
+    return res.json({
+      ...updated,
+      message: 'Categoria desativada porque ainda possui conteúdos vinculados',
+    });
+  }
+  await prisma.knowledgeCategory.delete({ where: { id } });
+  res.json({ message: 'Categoria excluída' });
 };

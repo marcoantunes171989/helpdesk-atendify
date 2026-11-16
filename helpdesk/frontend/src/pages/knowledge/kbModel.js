@@ -1,8 +1,7 @@
 import { normalize } from '../../utils/constants';
 
-// Os seis cartões da referência. `sources` lista quais valores do enum KbCategory
-// (backend) alimentam cada cartão; cartões sem fonte exibem 0 até o backend
-// ganhar categorias próprias.
+// Fallback local (Etapa B): usado se a API de categorias ainda não estiver
+// disponível. `sources` mapeia o enum legado KbCategory.
 export const CATEGORIES = [
   { key: 'configuracoes', label: 'Configurações', icon: 'settings', tone: 'purple', sources: ['CONFIGURACAO'] },
   { key: 'treinamentos', label: 'Treinamentos', icon: 'graduation', tone: 'blue', sources: [] },
@@ -12,6 +11,14 @@ export const CATEGORIES = [
   { key: 'outros', label: 'Outros', icon: 'layers', tone: 'sky', sources: ['DUVIDA', 'ERRO'] },
 ];
 
+export const CATEGORY_ICON_OPTIONS = [
+  'settings', 'graduation', 'monitor', 'printer', 'fileText', 'layers',
+  'bookOpen', 'download', 'link', 'star', 'folder', 'sparkles',
+];
+
+export const CATEGORY_TONE_OPTIONS = ['purple', 'blue', 'green', 'orange', 'red', 'sky', 'violet', 'amber', 'indigo'];
+
+/** @deprecated preferir categoryId / categoryRef (Etapa B) */
 export const BACKEND_CATEGORIES = [
   { value: 'CONFIGURACAO', label: 'Configuração' },
   { value: 'DUVIDA', label: 'Dúvida' },
@@ -20,8 +27,32 @@ export const BACKEND_CATEGORIES = [
 
 export const BACKEND_CATEGORY_LABEL = Object.fromEntries(BACKEND_CATEGORIES.map(c => [c.value, c.label]));
 
-export function categoryOf(article) {
-  return CATEGORIES.find(c => c.sources.includes(article.category)) || CATEGORIES[CATEGORIES.length - 1];
+export function normalizeCategory(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    key: row.key,
+    label: row.label,
+    icon: row.icon || 'layers',
+    tone: row.tone || 'sky',
+    sortOrder: row.sortOrder ?? 0,
+    active: row.active !== false,
+    articleCount: row._count?.articles ?? row.articleCount ?? 0,
+    sources: row.sources || [],
+  };
+}
+
+export function categoryOf(article, catalog = CATEGORIES) {
+  if (article?.categoryRef?.key) {
+    const fromCatalog = catalog.find(c => c.key === article.categoryRef.key || c.id === article.categoryRef.id);
+    return normalizeCategory(fromCatalog || article.categoryRef);
+  }
+  if (article?.categoryId) {
+    const byId = catalog.find(c => c.id === article.categoryId);
+    if (byId) return normalizeCategory(byId);
+  }
+  const legacy = catalog.find(c => (c.sources || []).includes(article?.category));
+  return normalizeCategory(legacy || catalog[catalog.length - 1] || CATEGORIES[CATEGORIES.length - 1]);
 }
 
 export const CONTENT_TYPES = [
@@ -135,10 +166,14 @@ export function describe(article) {
 
   return {
     type, format, icon, tags, urls, videoUrl, intro: introTag,
-    category: categoryOf(article),
+    category: categoryOf(article, article._categoryCatalog || CATEGORIES),
     summary: summarize(article.content),
     date: article.updatedAt || article.createdAt,
   };
+}
+
+export function describeWithCatalog(article, catalog) {
+  return describe({ ...article, _categoryCatalog: catalog });
 }
 
 export function summarize(content, max = 140) {

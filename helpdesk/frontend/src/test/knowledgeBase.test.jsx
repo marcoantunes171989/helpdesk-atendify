@@ -16,6 +16,7 @@ vi.mock('../services/api', () => ({
   knowledgeService: {
     list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), query: vi.fn(),
     fetchAttachment: vi.fn(),
+    listCategories: vi.fn(), createCategory: vi.fn(), updateCategory: vi.fn(), removeCategory: vi.fn(),
   },
 }));
 
@@ -66,6 +67,7 @@ describe('Central de Conhecimento', () => {
     authState.permissions = ['knowledge.read'];
     knowledgeService.list.mockResolvedValue(ARTICLES);
     knowledgeService.get.mockImplementation(id => Promise.resolve(ARTICLES.find(a => a.id === id)));
+    knowledgeService.listCategories.mockResolvedValue([]);
   });
 
   it('mostra os conteúdos reais ordenados por data e as contagens reais das categorias', async () => {
