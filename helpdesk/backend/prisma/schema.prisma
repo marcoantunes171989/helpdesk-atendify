@@ -362,6 +362,15 @@ model KnowledgeCategory {
   @@map("kb_categories")
 }
 
+// Tipo explícito do conteúdo (Etapa C). Nulo = derivado no frontend/heurística.
+enum KbContentType {
+  ARTIGO
+  MANUAL
+  VIDEO
+  DOWNLOAD
+  LINK
+}
+
 model KbArticle {
   id          String             @id @default(cuid())
   code        Int?               @unique
@@ -370,6 +379,9 @@ model KbArticle {
   category    KbCategory         @default(DUVIDA)
   categoryId  String?
   categoryRef KnowledgeCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  contentType KbContentType?
+  externalUrl String?
+  featured    Boolean            @default(false)
   tags        String?
   active      Boolean            @default(true)
   attachments KbAttachment[]
@@ -377,6 +389,8 @@ model KbArticle {
   updatedAt   DateTime           @updatedAt
 
   @@index([categoryId])
+  @@index([contentType])
+  @@index([featured])
   @@map("kb_articles")
 }
 
