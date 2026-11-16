@@ -21,9 +21,21 @@ export const PRIORITY = {
   CRITICAL: { label: 'Crítica', color: '#ef4444' },
 };
 
-// Removes diacritical marks so search works with or without accents
-export const normalize = (str) =>
-  (str ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+// Removes diacritical marks so search works with or without accents.
+// As buscas das telas chamam isto para cada linha × campo a cada tecla; o
+// cache evita refazer a normalização Unicode dos mesmos textos.
+const NORMALIZE_CACHE_LIMIT = 50_000;
+const normalizeCache = new Map();
+
+export const normalize = (str) => {
+  if (str === null || str === undefined || str === '') return '';
+  const cached = normalizeCache.get(str);
+  if (cached !== undefined) return cached;
+  const result = str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  if (normalizeCache.size >= NORMALIZE_CACHE_LIMIT) normalizeCache.clear();
+  normalizeCache.set(str, result);
+  return result;
+};
 
 export const canManageUsers = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);
 export const canManageCompanies = (role) => ['SUPER_ADMIN', 'ADMIN'].includes(role);

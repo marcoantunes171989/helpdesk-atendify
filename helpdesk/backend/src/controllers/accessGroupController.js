@@ -2,6 +2,7 @@ const prisma = require('../prisma');
 const { PERMISSION_KEYS } = require('../permissions/catalog');
 const { logAudit } = require('../utils/audit');
 const { isMissingColumnError, rbacSchemaMissingResponse } = require('../utils/schemaCompat');
+const { clearGroupPermissionCache } = require('../permissions/resolve');
 
 const groupSelect = {
   id: true, name: true, description: true, active: true,
@@ -147,6 +148,7 @@ exports.update = async (req, res) => {
     }
 
     const group = await prisma.accessGroup.update({ where: { id }, data, select: groupSelect });
+    clearGroupPermissionCache(id);
     await safeAudit({
       actorId: req.dbUser.id, actorName: req.dbUser.name,
       action: 'access_group.update', resource: 'AccessGroup', resourceId: id,
@@ -171,6 +173,7 @@ exports.remove = async (req, res) => {
     }
 
     await prisma.accessGroup.delete({ where: { id } });
+    clearGroupPermissionCache(id);
     await safeAudit({
       actorId: req.dbUser.id, actorName: req.dbUser.name,
       action: 'access_group.delete', resource: 'AccessGroup', resourceId: id,

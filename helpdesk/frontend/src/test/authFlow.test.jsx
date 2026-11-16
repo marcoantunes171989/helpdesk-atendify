@@ -13,6 +13,7 @@ vi.mock('../services/api', () => ({
     me: vi.fn(),
     catalog: vi.fn(),
   },
+  clearApiCache: vi.fn(),
 }));
 
 import { authService, permissionService } from '../services/api';

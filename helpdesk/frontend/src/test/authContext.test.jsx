@@ -8,6 +8,7 @@ vi.mock('../services/api', () => ({
     login: vi.fn(),
     me: vi.fn(),
   },
+  clearApiCache: vi.fn(),
 }));
 
 function Probe() {
@@ -41,6 +42,22 @@ describe('AuthContext (main)', () => {
     await waitFor(() => expect(screen.getByTestId('user').textContent).toBe('Ana'));
     expect(localStorage.getItem('token')).toBe('jwt-token');
     expect(JSON.parse(localStorage.getItem('user'))).toEqual({ id: 'u1', name: 'Ana', role: 'ADMIN' });
+  });
+
+  test('login usa as permissões retornadas pelo backend e as guarda para a próxima abertura', async () => {
+    authService.login.mockResolvedValue({
+      token: 'jwt-token',
+      user: { id: 'u1', name: 'Ana', role: 'AGENT' },
+      permissions: ['tickets.read'],
+    });
+
+    render(<AuthProvider><Probe /></AuthProvider>);
+    await act(async () => {
+      screen.getByText('entrar').click();
+    });
+
+    await waitFor(() => expect(screen.getByTestId('user').textContent).toBe('Ana'));
+    expect(JSON.parse(localStorage.getItem('permissions'))).toEqual(['tickets.read']);
   });
 
   test('login com credenciais inválidas não grava nada e mantém o usuário nulo', async () => {

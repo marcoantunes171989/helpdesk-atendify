@@ -25,25 +25,37 @@ function startKeepAlive() {
 }
 startKeepAlive();
 
-// Disable browser autofill/autocomplete popups globally on all inputs
-const patchAutocomplete = (root = document) => {
-  root.querySelectorAll('input:not([autocomplete="nope"])').forEach(el => {
+// Disable browser autofill/autocomplete popups globally on all inputs.
+// Só inspeciona os nós recém-adicionados: varrer o documento inteiro a cada
+// mutação travava tabelas grandes, modais e selects.
+const patchAutocomplete = (root) => {
+  if (root.nodeType !== 1) return;
+  if (root.tagName === 'INPUT' && root.getAttribute('autocomplete') !== 'nope') {
+    root.setAttribute('autocomplete', 'nope');
+    return;
+  }
+  root.querySelectorAll?.('input:not([autocomplete="nope"])').forEach(el => {
     el.setAttribute('autocomplete', 'nope');
   });
 };
-const autofillObserver = new MutationObserver(() => patchAutocomplete());
+const autofillObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    mutation.addedNodes.forEach(patchAutocomplete);
+  }
+});
 document.addEventListener('DOMContentLoaded', () => {
-  patchAutocomplete();
+  patchAutocomplete(document.body);
   autofillObserver.observe(document.body, { childList: true, subtree: true });
 });
 
 // Menu do sidebar é sempre navy (Azul-Marinho Profundo #0F172A), independente do tema
 const SIDEBAR_MENU_TOKENS = {
-  itemSelectedBg: 'rgba(37,99,235,0.2)',
-  itemSelectedColor: '#60a5fa',
-  itemHoverBg: 'rgba(255,255,255,0.07)',
-  itemHoverColor: 'rgba(255,255,255,0.88)',
-  itemColor: 'rgba(255,255,255,0.55)',
+  itemSelectedBg: 'rgba(37,99,235,0.35)',
+  itemSelectedColor: '#ffffff',
+  itemHoverBg: 'rgba(255,255,255,0.08)',
+  itemHoverColor: '#ffffff',
+  itemColor: '#ffffff',
+  groupTitleColor: '#ffffff',
 };
 
 const DARK_THEME = {
