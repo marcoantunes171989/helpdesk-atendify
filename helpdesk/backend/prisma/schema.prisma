@@ -361,14 +361,17 @@ model KbArticle {
 }
 
 model KbAttachment {
-  id        String    @id @default(cuid())
-  articleId String
-  article   KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  name      String
-  mimeType  String
-  size      Int
-  data      String    @db.Text
-  createdAt DateTime  @default(now())
+  id          String    @id @default(cuid())
+  articleId   String
+  article     KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  name        String
+  mimeType    String
+  size        Int
+  // Legado: base64 no banco. Novos uploads preferem Storage (storagePath) quando configurado.
+  data        String?   @db.Text
+  storagePath String?
+  sha256      String?
+  createdAt   DateTime  @default(now())
 
   @@map("kb_attachments")
 }

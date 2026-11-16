@@ -4,10 +4,14 @@ const requirePermission = require('../middleware/requirePermission');
 const wrap = require('../middleware/asyncHandler');
 const ctrl = require('../controllers/knowledgeController');
 
-// Leitura/consulta e escrita agora seguem a matriz de permissões (RBAC-05).
-// knowledge.read está nos padrões de ADMIN/AGENT/CLIENT (ver catalog.js),
-// então nenhum usuário legado perde o acesso que já tinha.
+// Leitura/consulta e escrita seguem a matriz de permissões (RBAC-05).
 router.get('/', auth, requirePermission('knowledge.read'), wrap(ctrl.list));
+router.get(
+  '/attachments/:attachmentId/download',
+  auth,
+  requirePermission('knowledge.read'),
+  wrap(ctrl.downloadAttachment),
+);
 router.get('/:id', auth, requirePermission('knowledge.read'), wrap(ctrl.get));
 router.post('/query', auth, requirePermission('knowledge.read'), wrap(ctrl.query));
 router.post('/', auth, requirePermission('knowledge.create'), wrap(ctrl.create));
