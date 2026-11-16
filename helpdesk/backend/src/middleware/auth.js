@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const prisma = require('../prisma');
 const statusCache = require('../utils/userStatusCache');
+const { isMissingColumnError } = require('../utils/schemaCompat');
 
 // Auth via JWT + revalidação de status com cache de curta duração.
 // O payload do token ainda contém id + role (definidos no login), mas a role
@@ -25,14 +26,23 @@ module.exports = async (req, res, next) => {
   let status = statusCache.get(decoded.id);
   if (!status) {
     try {
-      const dbUser = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: { active: true, role: true, tokenVersion: true },
-      });
+      let dbUser;
+      try {
+        dbUser = await prisma.user.findUnique({
+          where: { id: decoded.id },
+          select: { active: true, role: true, tokenVersion: true },
+        });
+      } catch (err) {
+        if (!isMissingColumnError(err)) throw err;
+        const rows = await prisma.$queryRaw`
+          SELECT active, role FROM users WHERE id = ${decoded.id} LIMIT 1
+        `;
+        dbUser = rows[0] ? { ...rows[0], tokenVersion: 0 } : null;
+      }
       if (!dbUser) {
         return res.status(401).json({ error: 'Usuário não encontrado' });
       }
-      status = { active: dbUser.active, role: dbUser.role, tokenVersion: dbUser.tokenVersion };
+      status = { active: dbUser.active, role: dbUser.role, tokenVersion: dbUser.tokenVersion || 0 };
       statusCache.set(decoded.id, status);
     } catch (err) {
       console.error('[AUTH_DB_CHECK_FAILED]', err.message);
