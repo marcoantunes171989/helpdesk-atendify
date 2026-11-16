@@ -84,7 +84,7 @@ exports.create = async (req, res) => {
     if (escalationError) return res.status(403).json({ error: escalationError });
 
     const perms = keys.length
-      ? await prisma.permission.findMany({ where: { key: { in: keys } } })
+      ? (await prisma.permission.findMany({ where: { key: { in: keys } } })) || []
       : [];
     if (perms.length !== keys.length) {
       return res.status(400).json({
@@ -133,7 +133,7 @@ exports.update = async (req, res) => {
       const escalationError = assertNoEscalation(keys, req.permissions, req.dbUser.role);
       if (escalationError) return res.status(403).json({ error: escalationError });
       const perms = keys.length
-        ? await prisma.permission.findMany({ where: { key: { in: keys } } })
+        ? (await prisma.permission.findMany({ where: { key: { in: keys } } })) || []
         : [];
       if (perms.length !== keys.length) {
         return res.status(400).json({
