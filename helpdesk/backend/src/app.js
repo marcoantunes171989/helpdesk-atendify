@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 
 const authRoutes             = require('./routes/auth');
 const companyRoutes          = require('./routes/companies');
@@ -40,7 +41,10 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) callback(null, true);
     else callback(new Error('Not allowed by CORS'));
   },
+  maxAge: 86400,
 }));
+
+app.use(compression({ threshold: 1024 }));
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));

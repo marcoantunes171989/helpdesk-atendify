@@ -12,8 +12,35 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Cache curto para listas de cadastro reutilizadas por várias telas
+// (empresas, técnicos, status, categorias...). Requisições idênticas em
+// andamento são compartilhadas e qualquer gravação bem-sucedida limpa o cache,
+// para que o usuário veja imediatamente o que acabou de salvar.
+const LIST_CACHE_TTL_MS = 30_000;
+const listCache = new Map();
+
+export function clearApiCache() {
+  listCache.clear();
+}
+
+function cachedGet(url, params) {
+  const key = `${url}?${JSON.stringify(params || {})}`;
+  const hit = listCache.get(key);
+  if (hit && hit.expiresAt > Date.now()) {
+    return hit.promise.then(data => (Array.isArray(data) ? [...data] : data));
+  }
+  const promise = api.get(url, { params }).then(r => r.data);
+  listCache.set(key, { promise, expiresAt: Date.now() + LIST_CACHE_TTL_MS });
+  promise.catch(() => listCache.delete(key));
+  return promise.then(data => (Array.isArray(data) ? [...data] : data));
+}
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const method = response.config?.method?.toLowerCase();
+    if (method && method !== 'get') clearApiCache();
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -32,7 +59,7 @@ export const authService = {
 };
 
 export const companyService = {
-  list: (params) => api.get('/companies', { params }).then(r => r.data),
+  list: (params) => cachedGet('/companies', params),
   get: (id) => api.get(`/companies/${id}`).then(r => r.data),
   create: (data) => api.post('/companies', data).then(r => r.data),
   update: (id, data) => api.put(`/companies/${id}`, data).then(r => r.data),
@@ -78,7 +105,7 @@ export const companyAttachmentService = {
 };
 
 export const userService = {
-  list: (params) => api.get('/users', { params }).then(r => r.data),
+  list: (params) => cachedGet('/users', params),
   get: (id) => api.get(`/users/${id}`).then(r => r.data),
   create: (data) => api.post('/users', data).then(r => r.data),
   update: (id, data) => api.put(`/users/${id}`, data).then(r => r.data),
@@ -89,7 +116,7 @@ export const userService = {
 };
 
 export const accessGroupService = {
-  list: (params) => api.get('/access-groups', { params }).then(r => r.data),
+  list: (params) => cachedGet('/access-groups', params),
   get: (id) => api.get(`/access-groups/${id}`).then(r => r.data),
   create: (data) => api.post('/access-groups', data).then(r => r.data),
   update: (id, data) => api.put(`/access-groups/${id}`, data).then(r => r.data),
@@ -97,7 +124,7 @@ export const accessGroupService = {
 };
 
 export const permissionService = {
-  catalog: () => api.get('/permissions/catalog').then(r => r.data),
+  catalog: () => cachedGet('/permissions/catalog'),
   me: () => api.get('/permissions/me').then(r => r.data),
 };
 
@@ -106,7 +133,7 @@ export const auditLogService = {
 };
 
 export const categoryService = {
-  list: (params) => api.get('/categories', { params }).then(r => r.data),
+  list: (params) => cachedGet('/categories', params),
   create: (data) => api.post('/categories', data).then(r => r.data),
   update: (id, data) => api.put(`/categories/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/categories/${id}`).then(r => r.data),
@@ -126,7 +153,7 @@ export const ticketService = {
 };
 
 export const technicianService = {
-  list: (params) => api.get('/technicians', { params }).then(r => r.data),
+  list: (params) => cachedGet('/technicians', params),
   get: (id) => api.get(`/technicians/${id}`).then(r => r.data),
   create: (data) => api.post('/technicians', data).then(r => r.data),
   update: (id, data) => api.put(`/technicians/${id}`, data).then(r => r.data),
@@ -134,14 +161,14 @@ export const technicianService = {
 };
 
 export const statusService = {
-  list: (params) => api.get('/statuses', { params }).then(r => r.data),
+  list: (params) => cachedGet('/statuses', params),
   create: (data) => api.post('/statuses', data).then(r => r.data),
   update: (id, data) => api.put(`/statuses/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/statuses/${id}`).then(r => r.data),
 };
 
 export const stateService = {
-  list: (params) => api.get('/states', { params }).then(r => r.data),
+  list: (params) => cachedGet('/states', params),
   create: (data) => api.post('/states', data).then(r => r.data),
   update: (id, data) => api.put(`/states/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/states/${id}`).then(r => r.data),
@@ -151,7 +178,7 @@ export const stateService = {
 };
 
 export const cityService = {
-  list: (params) => api.get('/cities', { params }).then(r => r.data),
+  list: (params) => cachedGet('/cities', params),
   get: (id) => api.get(`/cities/${id}`).then(r => r.data),
   create: (data) => api.post('/cities', data).then(r => r.data),
   update: (id, data) => api.put(`/cities/${id}`, data).then(r => r.data),
@@ -172,7 +199,7 @@ export const dashboardService = {
 };
 
 export const employeeService = {
-  list: (params) => api.get('/employees', { params }).then(r => r.data),
+  list: (params) => cachedGet('/employees', params),
   get: (id) => api.get(`/employees/${id}`).then(r => r.data),
   create: (data) => api.post('/employees', data).then(r => r.data),
   update: (id, data) => api.put(`/employees/${id}`, data).then(r => r.data),
@@ -212,7 +239,7 @@ export const implantacaoService = {
 };
 
 export const moduloTreinamentoService = {
-  list: (params) => api.get('/modulos-treinamento', { params }).then(r => r.data),
+  list: (params) => cachedGet('/modulos-treinamento', params),
   get: (id) => api.get(`/modulos-treinamento/${id}`).then(r => r.data),
   create: (data) => api.post('/modulos-treinamento', data).then(r => r.data),
   update: (id, data) => api.put(`/modulos-treinamento/${id}`, data).then(r => r.data),
@@ -220,7 +247,7 @@ export const moduloTreinamentoService = {
 };
 
 export const etapaTreinamentoService = {
-  list: (params) => api.get('/etapas-treinamento', { params }).then(r => r.data),
+  list: (params) => cachedGet('/etapas-treinamento', params),
   get: (id) => api.get(`/etapas-treinamento/${id}`).then(r => r.data),
   create: (data) => api.post('/etapas-treinamento', data).then(r => r.data),
   update: (id, data) => api.put(`/etapas-treinamento/${id}`, data).then(r => r.data),

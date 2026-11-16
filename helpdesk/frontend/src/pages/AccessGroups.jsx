@@ -4,12 +4,23 @@ import {
 } from 'antd';
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, SafetyCertificateOutlined,
-  ExclamationCircleOutlined,
+  ExclamationCircleOutlined, SearchOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { accessGroupService, permissionService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { normalize } from '../utils/constants';
+
+const ACTION_LABELS = {
+  read: 'Visualizar',
+  create: 'Incluir',
+  update: 'Editar',
+  delete: 'Excluir',
+  export: 'Exportar',
+  manage: 'Gerenciar',
+};
+
+const actionLabel = (action) => ACTION_LABELS[action] || action;
 
 export default function AccessGroups() {
   const { can } = useAuth();
@@ -22,6 +33,7 @@ export default function AccessGroups() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  const [permissionSearch, setPermissionSearch] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState(new Set());
   const [form] = Form.useForm();
 
@@ -48,10 +60,29 @@ export default function AccessGroups() {
     return map;
   }, [catalog]);
 
+  // Busca por nome da tela (ex.: "chamados"), chave do módulo (ex.: "tickets")
+  // ou ação em português (ex.: "excluir"). Se a tela bate, mostra todas as
+  // ações dela; se só a ação bate, mostra apenas as ações correspondentes.
+  const visibleModules = useMemo(() => {
+    const term = normalize(permissionSearch.trim());
+    const entries = Object.entries(permissionsByModule);
+    if (!term) return entries;
+    return entries
+      .map(([moduleKey, mod]) => {
+        const moduleMatches = normalize(mod.label).includes(term) || normalize(moduleKey).includes(term);
+        if (moduleMatches) return [moduleKey, mod];
+        const items = mod.items.filter(p =>
+          normalize(actionLabel(p.action)).includes(term) || normalize(p.action).includes(term));
+        return items.length ? [moduleKey, { ...mod, items }] : null;
+      })
+      .filter(Boolean);
+  }, [permissionsByModule, permissionSearch]);
+
   const openCreate = () => {
     setEditing(null);
     form.resetFields();
     setSelectedPermissions(new Set());
+    setPermissionSearch('');
     setDrawerOpen(true);
   };
 
@@ -59,7 +90,20 @@ export default function AccessGroups() {
     setEditing(record);
     form.setFieldsValue({ name: record.name, description: record.description, active: record.active });
     setSelectedPermissions(new Set(record.permissions));
+    setPermissionSearch('');
     setDrawerOpen(true);
+  };
+
+  const setVisiblePermissions = (checked) => {
+    setSelectedPermissions(prev => {
+      const next = new Set(prev);
+      for (const [, { items }] of visibleModules) {
+        for (const perm of items) {
+          if (checked) next.add(perm.key); else next.delete(perm.key);
+        }
+      }
+      return next;
+    });
   };
 
   const togglePermission = (key, checked) => {
@@ -70,10 +114,10 @@ export default function AccessGroups() {
     });
   };
 
-  const toggleModule = (moduleKey, checked) => {
+  const toggleModule = (items, checked) => {
     setSelectedPermissions(prev => {
       const next = new Set(prev);
-      for (const perm of permissionsByModule[moduleKey].items) {
+      for (const perm of items) {
         if (checked) next.add(perm.key); else next.delete(perm.key);
       }
       return next;
@@ -172,7 +216,7 @@ export default function AccessGroups() {
         <div>
           <h1 className="page-title">Perfis de Acesso</h1>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 13, margin: '4px 0 0' }}>
-            {filteredGroups.length} perfil{filteredGroups.length !== 1 ? 'is' : ''} cadastrado{filteredGroups.length !== 1 ? 's' : ''}
+            {filteredGroups.length} {filteredGroups.length === 1 ? 'perfil cadastrado' : 'perfis cadastrados'}
           </p>
         </div>
         {canCreate && (
@@ -239,12 +283,38 @@ export default function AccessGroups() {
             </Form.Item>
           )}
 
-          <div style={{ fontWeight: 600, fontSize: 13, margin: '12px 0 4px' }}>Controle de Telas e Ações</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '12px 0 4px' }}>
+            <span style={{ fontWeight: 600, fontSize: 13 }}>Controle de Telas e Ações</span>
+            <span style={{ fontSize: 12, color: 'var(--cl-text-muted)' }}>
+              {selectedPermissions.size} de {catalog.permissions.length} permissões selecionadas
+            </span>
+          </div>
           <p style={{ color: 'var(--cl-text-muted)', fontSize: 12, margin: '0 0 8px' }}>
-            Marque as telas e ações que este perfil pode usar. Sem a ação <code>read</code>, a tela fica bloqueada no menu e na URL.
+            Marque as telas e ações que este perfil pode usar. Sem a ação <strong>Visualizar</strong>, a tela fica bloqueada no menu e no endereço (URL).
           </p>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+            <Input
+              prefix={<SearchOutlined />}
+              placeholder="Buscar tela, módulo ou ação (ex.: Chamados, Empresas, Excluir)"
+              allowClear
+              value={permissionSearch}
+              onChange={e => setPermissionSearch(e.target.value)}
+              style={{ flex: 1, minWidth: 240 }}
+            />
+            <Button onClick={() => setVisiblePermissions(true)} disabled={visibleModules.length === 0}>
+              Marcar {permissionSearch ? 'filtradas' : 'todas'}
+            </Button>
+            <Button onClick={() => setVisiblePermissions(false)} disabled={visibleModules.length === 0}>
+              Limpar {permissionSearch ? 'filtradas' : 'todas'}
+            </Button>
+          </div>
           <div style={{ border: '1px solid var(--cl-border)', borderRadius: 8 }}>
-            {Object.entries(permissionsByModule).map(([moduleKey, { label, items }]) => {
+            {visibleModules.length === 0 && (
+              <div style={{ padding: 16, textAlign: 'center', color: 'var(--cl-text-muted)', fontSize: 13 }}>
+                Nenhuma tela ou ação encontrada para "{permissionSearch}".
+              </div>
+            )}
+            {visibleModules.map(([moduleKey, { label, items }]) => {
               const allChecked = items.every(p => selectedPermissions.has(p.key));
               const someChecked = items.some(p => selectedPermissions.has(p.key));
               return (
@@ -252,7 +322,7 @@ export default function AccessGroups() {
                   <Checkbox
                     checked={allChecked}
                     indeterminate={!allChecked && someChecked}
-                    onChange={e => toggleModule(moduleKey, e.target.checked)}
+                    onChange={e => toggleModule(items, e.target.checked)}
                     style={{ fontWeight: 600, marginBottom: 6 }}
                   >
                     Tela: {label}
@@ -264,7 +334,7 @@ export default function AccessGroups() {
                         checked={selectedPermissions.has(perm.key)}
                         onChange={e => togglePermission(perm.key, e.target.checked)}
                       >
-                        {perm.action}
+                        {actionLabel(perm.action)}
                       </Checkbox>
                     ))}
                   </div>

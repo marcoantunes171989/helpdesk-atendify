@@ -16,6 +16,7 @@ function renderApp() {
 vi.mock('../services/api', () => ({
   authService: { me: vi.fn(), login: vi.fn(), changePassword: vi.fn() },
   permissionService: { me: vi.fn(), catalog: vi.fn() },
+  clearApiCache: vi.fn(),
 }));
 
 import { authService, permissionService } from '../services/api';

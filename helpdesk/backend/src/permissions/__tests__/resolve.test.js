@@ -3,11 +3,28 @@ jest.mock('../../prisma', () => ({
 }));
 
 const prisma = require('../../prisma');
-const { resolveEffectivePermissions } = require('../resolve');
+const { resolveEffectivePermissions, clearGroupPermissionCache } = require('../resolve');
 const { PERMISSION_KEYS } = require('../catalog');
 
 describe('resolveEffectivePermissions', () => {
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => {
+    jest.clearAllMocks();
+    clearGroupPermissionCache();
+  });
+
+  test('permissões do grupo ficam em cache até o grupo ser alterado', async () => {
+    prisma.accessGroup.findUnique.mockResolvedValue({
+      active: true,
+      permissions: [{ permission: { key: 'tickets.read' } }],
+    });
+    await resolveEffectivePermissions({ role: 'CLIENT', accessGroupId: 'gc' });
+    await resolveEffectivePermissions({ role: 'CLIENT', accessGroupId: 'gc' });
+    expect(prisma.accessGroup.findUnique).toHaveBeenCalledTimes(1);
+
+    clearGroupPermissionCache('gc');
+    await resolveEffectivePermissions({ role: 'CLIENT', accessGroupId: 'gc' });
+    expect(prisma.accessGroup.findUnique).toHaveBeenCalledTimes(2);
+  });
 
   test('SUPER_ADMIN sempre tem acesso total (bypass)', async () => {
     const perms = await resolveEffectivePermissions({ role: 'SUPER_ADMIN', accessGroupId: null });

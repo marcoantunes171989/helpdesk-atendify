@@ -17,10 +17,10 @@ const MODULES = {
   dashboard:        { label: 'Dashboard',              actions: [ACTIONS.READ] },
   companies:        { label: 'Empresas',               actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE, ACTIONS.EXPORT] },
   users:            { label: 'Usuários',                actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE, ACTIONS.MANAGE] },
-  access_groups:    { label: 'Grupos de Acesso',        actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
+  access_groups:    { label: 'Perfis de Acesso',        actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   categories:       { label: 'Categorias',              actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   tickets:          { label: 'Chamados',                actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE, ACTIONS.EXPORT, ACTIONS.MANAGE] },
-  employees:        { label: 'Colaboradores',           actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
+  employees:        { label: 'Funcionários',            actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   technicians:      { label: 'Técnicos',                actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   statuses:         { label: 'Status',                  actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   states_cities:    { label: 'Estados e Cidades',        actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
@@ -29,9 +29,18 @@ const MODULES = {
   crm:              { label: 'CRM',                      actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   implantacoes:     { label: 'Implantações',             actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   treinamentos:     { label: 'Treinamentos',             actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
-  visitas:          { label: 'Visitas',                  actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
+  visitas:          { label: 'Visitas Técnicas',         actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   agenda_tecnica:   { label: 'Agenda Técnica',            actions: [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE, ACTIONS.DELETE] },
   settings:         { label: 'Configurações',             actions: [ACTIONS.READ, ACTIONS.UPDATE] },
+};
+
+const ACTION_LABELS = {
+  read: 'Visualizar',
+  create: 'Incluir',
+  update: 'Editar',
+  delete: 'Excluir',
+  export: 'Exportar',
+  manage: 'Gerenciar',
 };
 
 function buildPermissionList() {
@@ -43,7 +52,8 @@ function buildPermissionList() {
         module: moduleKey,
         moduleLabel: label,
         action,
-        description: `${label} — ${action}`,
+        actionLabel: ACTION_LABELS[action],
+        description: `${label} — ${ACTION_LABELS[action]}`,
       });
     }
   }

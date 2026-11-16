@@ -17,6 +17,21 @@ export default function Login() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
+  // Baixa o layout e o dashboard enquanto o usuário digita as credenciais,
+  // para que a primeira tela abra sem esperar o download após o login.
+  useEffect(() => {
+    const prefetch = () => {
+      import('../components/AppLayout');
+      import('./Dashboard');
+    };
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(prefetch, { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(prefetch, 800);
+    return () => clearTimeout(id);
+  }, []);
+
   const handleSubmit = async (values) => {
     setLoading(true);
     try {

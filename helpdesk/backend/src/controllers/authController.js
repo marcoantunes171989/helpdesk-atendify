@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../prisma');
 const statusCache = require('../utils/userStatusCache');
 const { isMissingColumnError } = require('../utils/schemaCompat');
+const { resolveEffectivePermissions } = require('../permissions/resolve');
 
 function signToken(user) {
   return jwt.sign(
@@ -85,7 +86,8 @@ exports.login = async (req, res) => {
 
   const token = signToken(user);
   const { password: _, ...userWithoutPassword } = user;
-  res.json({ token, user: userWithoutPassword });
+  const permissions = await resolveEffectivePermissions(user);
+  res.json({ token, user: userWithoutPassword, permissions: Array.from(permissions) });
 };
 
 exports.me = async (req, res) => {

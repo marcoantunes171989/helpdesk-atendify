@@ -41,7 +41,7 @@ input:-webkit-autofill:focus {
   --cl-page-grad:  linear-gradient(160deg,#090912 0%,#0d0d1a 55%,#080810 100%);
   --cl-shadow:     0 4px 28px rgba(0,0,0,0.35);
   --cl-title-grad: linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.58) 100%);
-  --cl-sidebar-text: rgba(255,255,255,0.82);
+  --cl-sidebar-text: #ffffff;
   --cl-sidebar-logo: #fff;
   /* Semantic accent tokens (dark variants — lighter for contrast on dark bg) */
   --cl-primary:      #2563eb;
@@ -81,7 +81,7 @@ input:-webkit-autofill:focus {
   --cl-page-grad:  #f8fafc;
   --cl-shadow:     0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
   --cl-title-grad: linear-gradient(135deg,#0f172a 0%,#0f172a 100%);
-  --cl-sidebar-text: rgba(255,255,255,0.82);
+  --cl-sidebar-text: #ffffff;
   --cl-sidebar-logo: #fff;
   /* Semantic accent tokens — exact spec hex */
   --cl-primary:      #2563eb;
@@ -168,8 +168,6 @@ h1, h2, h3, h4, h5 {
    ============================================================ */
 .page-table-wrap {
   background: var(--cl-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--cl-border);
   border-radius: 16px;
   overflow: hidden;
@@ -200,8 +198,6 @@ h1, h2, h3, h4, h5 {
   margin-bottom: 16px;
   padding: 12px 16px;
   background: var(--cl-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   border: 1px solid var(--cl-border);
 }
@@ -448,7 +444,7 @@ h1, h2, h3, h4, h5 {
   background: var(--cl-bg-soft) !important;
   color: var(--cl-text-muted) !important;
   border-bottom: 1px solid var(--cl-border-subtle) !important;
-  font-size: 10px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
   text-transform: uppercase;
   letter-spacing: 0.08em !important;
@@ -681,10 +677,19 @@ h1, h2, h3, h4, h5 {
   text-overflow: unset !important;
   white-space: normal !important;
 }
-.app-sidebar .ant-menu-item:hover { background: rgba(255,255,255,0.07) !important; color: rgba(255,255,255,0.88) !important; }
-.app-sidebar .ant-menu-item-selected { background: rgba(37,99,235,0.2) !important; color: #60a5fa !important; }
-.app-sidebar .ant-menu-item-selected .anticon { color: #60a5fa !important; }
+.app-sidebar .ant-menu-item:hover { background: rgba(255,255,255,0.08) !important; color: #ffffff !important; }
+.app-sidebar .ant-menu-item-selected { background: rgba(37,99,235,0.35) !important; color: #ffffff !important; font-weight: 600; }
+.app-sidebar .ant-menu-item-selected .anticon { color: #ffffff !important; }
 .app-sidebar .ant-menu-item .anticon { color: inherit !important; vertical-align: middle !important; }
+.app-sidebar .ant-menu-item-group-title {
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.app-sidebar .ant-menu-item-selected::after { border-right-color: #ffffff !important; }
 
 /* Scrollbar minimalista no menu lateral */
 .sidebar-menu-scroll { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,0.2) transparent; }
@@ -832,4 +837,43 @@ textarea.ant-input { border-radius: 8px !important; }
 /* Remove filled rectangle cursor overlay on BarCharts (keep line cursor on LineCharts) */
 .recharts-rectangle.recharts-tooltip-cursor {
   display: none !important;
+}
+
+/* ============================================================
+   UX global (todas as telas)
+   ============================================================ */
+
+/* Foco visível para quem navega pelo teclado, sem afetar o clique do mouse */
+.ant-btn:focus-visible,
+.ant-input:focus-visible,
+.ant-checkbox-input:focus-visible + .ant-checkbox-inner,
+.ant-menu-item:focus-visible,
+a:focus-visible {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px;
+}
+
+/* Linhas de tabela clicáveis indicam a ação */
+.page-table-wrap .ant-table-tbody > tr.ant-table-row[style*="cursor"] > td,
+.page-table-wrap .ant-table-tbody > tr.clickable-row > td { cursor: pointer; }
+
+/* Números alinhados em colunas (códigos, quantidades, datas) */
+.page-table-wrap .ant-table-tbody > tr > td { font-variant-numeric: tabular-nums; }
+
+/* Botões de ação de rodapé de modal com área de toque confortável */
+.ant-modal-footer .ant-btn { min-width: 96px; }
+
+/* Celular: filtros empilhados e campos ocupando a largura toda */
+@media (max-width: 575px) {
+  .filter-bar { flex-direction: column; align-items: stretch; padding: 10px 12px; }
+  .filter-bar > * { width: 100% !important; min-width: 0 !important; flex: none !important; }
+  .ant-modal { max-width: calc(100vw - 16px) !important; margin: 8px auto !important; }
+}
+
+/* Respeita a preferência do sistema por menos animação */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
