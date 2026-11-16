@@ -30,11 +30,15 @@ describe('accessGroupController — vedar concessão de permissões que o ator n
 
   test('create: ator pode criar grupo com permissões que ele possui', async () => {
     prisma.accessGroup.findFirst.mockResolvedValue(null);
-    prisma.permission.findUnique.mockResolvedValue({ id: 'p1' });
-    prisma.accessGroup.create.mockResolvedValue({ id: 'g1', permissions: [] });
+    prisma.permission.findMany.mockResolvedValue([{ id: 'p1', key: 'users.read' }]);
+    prisma.accessGroup.create.mockResolvedValue({
+      id: 'g1', name: 'Grupo X', description: null, active: true,
+      createdAt: new Date(), updatedAt: new Date(),
+      _count: { users: 0 }, permissions: [],
+    });
     const req = {
       body: { name: 'Grupo X', permissions: ['users.read'] },
-      dbUser: { id: 'admin-1', role: 'ADMIN' },
+      dbUser: { id: 'admin-1', name: 'Admin', role: 'ADMIN' },
       permissions: new Set(['users.read']),
     };
     const res = mockRes();
@@ -44,11 +48,18 @@ describe('accessGroupController — vedar concessão de permissões que o ator n
 
   test('create: SUPER_ADMIN não sofre a checagem de escalonamento', async () => {
     prisma.accessGroup.findFirst.mockResolvedValue(null);
-    prisma.permission.findUnique.mockResolvedValue({ id: 'p1' });
-    prisma.accessGroup.create.mockResolvedValue({ id: 'g1', permissions: [] });
+    prisma.permission.findMany.mockResolvedValue([
+      { id: 'p1', key: 'users.delete' },
+      { id: 'p2', key: 'access_groups.delete' },
+    ]);
+    prisma.accessGroup.create.mockResolvedValue({
+      id: 'g1', name: 'Grupo X', description: null, active: true,
+      createdAt: new Date(), updatedAt: new Date(),
+      _count: { users: 0 }, permissions: [],
+    });
     const req = {
       body: { name: 'Grupo X', permissions: ['users.delete', 'access_groups.delete'] },
-      dbUser: { id: 'root', role: 'SUPER_ADMIN' },
+      dbUser: { id: 'root', name: 'Root', role: 'SUPER_ADMIN' },
       permissions: new Set(), // nem precisa ter as permissões no set
     };
     const res = mockRes();
