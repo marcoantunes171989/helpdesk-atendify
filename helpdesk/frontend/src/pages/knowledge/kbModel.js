@@ -132,16 +132,36 @@ function explicitType(tags) {
   return null;
 }
 
-// Deriva tipo, formato e ícone do conteúdo a partir dos dados existentes
-// (tags, anexos e links do texto). Não altera o registro.
+const DB_TYPE_MAP = {
+  ARTIGO: 'artigo', MANUAL: 'manual', VIDEO: 'video', DOWNLOAD: 'download', LINK: 'link',
+};
+
+export const CONTENT_TYPE_OPTIONS = [
+  { value: 'ARTIGO', label: 'Artigo', key: 'artigo' },
+  { value: 'MANUAL', label: 'Manual', key: 'manual' },
+  { value: 'VIDEO', label: 'Vídeo', key: 'video' },
+  { value: 'DOWNLOAD', label: 'Download', key: 'download' },
+  { value: 'LINK', label: 'Link', key: 'link' },
+];
+
+function typeFromDb(contentType) {
+  if (!contentType) return null;
+  return DB_TYPE_MAP[String(contentType).toUpperCase()] || null;
+}
+
+// Prioridade: contentType no banco → tags → anexos/URL → artigo.
 export function describe(article) {
   const tags = splitTags(article.tags);
   const kinds = (article.attachments || []).map(fileKind);
-  const urls = extractUrls(article.content);
-  const videoUrl = urls.find(u => VIDEO_HOST_RE.test(u)) || null;
+  const external = article.externalUrl && /^https:\/\//i.test(article.externalUrl) ? article.externalUrl : null;
+  const urls = [...(external ? [external] : []), ...extractUrls(article.content)]
+    .filter((u, i, arr) => arr.indexOf(u) === i);
+  const videoUrl = (external && VIDEO_HOST_RE.test(external) ? external : null)
+    || urls.find(u => VIDEO_HOST_RE.test(u))
+    || null;
   const plain = (article.content || '').replace(URL_RE, '').trim();
 
-  let type = explicitType(tags);
+  let type = typeFromDb(article.contentType) || explicitType(tags);
   if (!type) {
     if (kinds.includes('video') || videoUrl) type = 'video';
     else if (kinds.includes('pdf') || kinds.includes('doc')) type = 'manual';
@@ -163,9 +183,10 @@ export function describe(article) {
   } else { format = 'Artigo'; icon = 'article'; }
 
   const introTag = tags.some(t => INTRO_TAGS.includes(normalize(t)));
+  const intro = article.featured === true || introTag;
 
   return {
-    type, format, icon, tags, urls, videoUrl, intro: introTag,
+    type, format, icon, tags, urls, videoUrl, externalUrl: external, intro,
     category: categoryOf(article, article._categoryCatalog || CATEGORIES),
     summary: summarize(article.content),
     date: article.updatedAt || article.createdAt,

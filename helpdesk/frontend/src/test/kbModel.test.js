@@ -14,6 +14,25 @@ describe('kbModel.categoryOf (Etapa B)', () => {
   });
 });
 
+describe('kbModel.describe (Etapa C)', () => {
+  it('prioriza contentType do banco sobre tags/anexos', () => {
+    const m = describeArticle(art({
+      contentType: 'LINK',
+      tags: 'manual',
+      externalUrl: 'https://exemplo.com/doc',
+      attachments: [{ name: 'a.pdf', mimeType: 'application/pdf' }],
+    }));
+    expect(m.type).toBe('link');
+    expect(m.externalUrl).toBe('https://exemplo.com/doc');
+    expect(m.urls[0]).toBe('https://exemplo.com/doc');
+  });
+
+  it('featured marca intro mesmo sem tag', () => {
+    const m = describeArticle(art({ featured: true, tags: null }));
+    expect(m.intro).toBe(true);
+  });
+});
+
 const art = (over = {}) => ({
   id: over.id || 'a1', title: 'Título', content: 'Conteúdo longo de exemplo '.repeat(20), category: 'DUVIDA',
   tags: null, attachments: [], createdAt: '2026-11-10T12:00:00Z', updatedAt: '2026-11-12T12:00:00Z', ...over,

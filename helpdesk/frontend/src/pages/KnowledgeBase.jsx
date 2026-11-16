@@ -48,7 +48,7 @@ const SECTION_INFO = {
   categorias: 'Gerencie as categorias dos cartões e veja quantos conteúdos cada uma possui.',
   favoritos: 'Conteúdos marcados com estrela neste navegador.',
   historico: 'Conteúdos abertos recentemente neste navegador.',
-  'primeiros-passos': 'Materiais introdutórios para quem está começando.',
+  'primeiros-passos': 'Materiais marcados como Primeiros Passos / Comece por aqui.',
 };
 
 function parsePath(splat = '') {
@@ -294,7 +294,9 @@ export default function KnowledgeBase() {
       if (section === 'primeiros-passos') {
         return (
           <EmptyState icon="rocket" title="Nenhum material introdutório ainda">
-            {canUpdate ? 'Adicione a palavra-chave "primeiros passos" aos conteúdos que devem aparecer aqui.' : 'Os materiais introdutórios aparecerão aqui assim que forem publicados.'}
+            {canUpdate
+              ? 'Ao editar um conteúdo, ative a opção “Primeiros Passos” para destacá-lo aqui.'
+              : 'Os materiais introdutórios aparecerão aqui assim que forem publicados.'}
           </EmptyState>
         );
       }

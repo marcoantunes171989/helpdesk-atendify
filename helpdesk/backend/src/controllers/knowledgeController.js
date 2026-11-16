@@ -14,6 +14,7 @@ const {
   ensureDefaults,
   resolveCategoryFields,
 } = require('../services/kbCategories');
+const { resolveContentFields } = require('../services/kbContentFields');
 
 const ATT_META = { id: true, name: true, mimeType: true, size: true, sha256: true, storagePath: true, createdAt: true };
 const CAT_META = { id: true, key: true, label: true, icon: true, tone: true, sortOrder: true, active: true };
@@ -88,10 +89,12 @@ function sendAttachment(res, att, buf, { inline }) {
 }
 
 exports.list = async (req, res) => {
-  const { category, categoryKey, search } = req.query;
+  const { category, categoryKey, search, contentType, featured } = req.query;
   const where = {};
   if (categoryKey) where.categoryRef = { key: categoryKey };
   else if (category && category !== 'ALL') where.category = category;
+  if (contentType) where.contentType = String(contentType).toUpperCase();
+  if (featured === '1' || featured === 'true') where.featured = true;
   if (search) {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
@@ -134,10 +137,12 @@ exports.create = async (req, res) => {
 
   let validatedNew = [];
   let resolved;
+  let contentFields;
   try {
     validatedNew = (attachments || []).filter((a) => a && a.data);
     validatedNew.forEach(validateAttachmentInput);
     resolved = await resolveCategoryFields({ categoryId, category });
+    contentFields = resolveContentFields(req.body, { patch: false });
   } catch (err) {
     return res.status(err.status || 400).json({ error: err.message });
   }
@@ -153,6 +158,7 @@ exports.create = async (req, res) => {
       category: resolved.category,
       categoryId: resolved.categoryId,
       tags: tags || null,
+      ...contentFields,
     },
   });
 
@@ -187,10 +193,20 @@ exports.update = async (req, res) => {
   const newOnes = (attachments || []).filter((a) => a && !a.id && a.data);
 
   let resolved;
+  let contentFields = {};
   try {
     newOnes.forEach(validateAttachmentInput);
     if (categoryId !== undefined || category !== undefined) {
       resolved = await resolveCategoryFields({ categoryId, category });
+    }
+    contentFields = resolveContentFields(req.body, { patch: true });
+    if (contentFields.contentType === 'LINK') {
+      const url = contentFields.externalUrl !== undefined ? contentFields.externalUrl : existing.externalUrl;
+      if (!url) {
+        const err = new Error('URL externa é obrigatória para links');
+        err.status = 400;
+        throw err;
+      }
     }
   } catch (err) {
     return res.status(err.status || 400).json({ error: err.message });
@@ -214,6 +230,7 @@ exports.update = async (req, res) => {
       ...(resolved && { category: resolved.category, categoryId: resolved.categoryId }),
       ...(tags !== undefined && { tags: tags || null }),
       ...(active !== undefined && { active }),
+      ...contentFields,
     },
   });
 
