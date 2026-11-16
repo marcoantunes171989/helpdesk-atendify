@@ -56,6 +56,16 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route
+        path="/app/knowledge/*"
+        element={(
+          <PrivateRoute>
+            <PermissionRoute permission="knowledge.read">
+              <Suspense fallback={<Spin fullscreen />}><KnowledgeBase /></Suspense>
+            </PermissionRoute>
+          </PrivateRoute>
+        )}
+      />
       <Route path="/app" element={<PrivateRoute><Suspense fallback={<Spin fullscreen />}><AppLayout /></Suspense></PrivateRoute>}>
         <Route index element={<PermissionRoute permission="dashboard.read"><Dashboard /></PermissionRoute>} />
         <Route path="companies" element={<PermissionRoute permission="companies.read"><Companies /></PermissionRoute>} />
@@ -70,7 +80,6 @@ function AppRoutes() {
         <Route path="technicians" element={<PermissionRoute permission="technicians.read"><Technicians /></PermissionRoute>} />
         <Route path="states" element={<PermissionRoute permission="states_cities.read"><States /></PermissionRoute>} />
         <Route path="cities" element={<PermissionRoute permission="states_cities.read"><Cities /></PermissionRoute>} />
-        <Route path="knowledge" element={<PermissionRoute permission="knowledge.read"><KnowledgeBase /></PermissionRoute>} />
         <Route path="reports" element={<PermissionRoute permission="reports.read"><Reports /></PermissionRoute>} />
         <Route path="crm" element={<PermissionRoute permission="crm.read"><CRM /></PermissionRoute>} />
         <Route path="implantacoes" element={<PermissionRoute permission="implantacoes.read"><Implantacoes /></PermissionRoute>} />
