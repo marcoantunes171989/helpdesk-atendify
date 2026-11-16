@@ -65,14 +65,20 @@ exports.create = async (req, res) => {
   const escalationError = assertNoEscalation(keys, req.permissions, req.dbUser.role);
   if (escalationError) return res.status(403).json({ error: escalationError });
 
+  const perms = keys.length
+    ? await prisma.permission.findMany({ where: { key: { in: keys } } })
+    : [];
+  if (perms.length !== keys.length) {
+    return res.status(400).json({
+      error: 'Catálogo de permissões incompleto no banco. Execute o seed de permissões antes de criar perfis.',
+    });
+  }
+
   const group = await prisma.accessGroup.create({
     data: {
       name, description,
       permissions: {
-        create: await Promise.all(keys.map(async key => {
-          const perm = await prisma.permission.findUnique({ where: { key } });
-          return { permissionId: perm.id };
-        })),
+        create: perms.map(p => ({ permissionId: p.id })),
       },
     },
     select: groupSelect,
@@ -99,7 +105,14 @@ exports.update = async (req, res) => {
     const keys = validPermissionKeys(permissions);
     const escalationError = assertNoEscalation(keys, req.permissions, req.dbUser.role);
     if (escalationError) return res.status(403).json({ error: escalationError });
-    const perms = await prisma.permission.findMany({ where: { key: { in: keys } } });
+    const perms = keys.length
+      ? await prisma.permission.findMany({ where: { key: { in: keys } } })
+      : [];
+    if (perms.length !== keys.length) {
+      return res.status(400).json({
+        error: 'Catálogo de permissões incompleto no banco. Execute o seed de permissões antes de editar perfis.',
+      });
+    }
     data.permissions = {
       deleteMany: {},
       create: perms.map(p => ({ permissionId: p.id })),

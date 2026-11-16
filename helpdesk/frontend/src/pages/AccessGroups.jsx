@@ -94,7 +94,14 @@ export default function AccessGroups() {
       setDrawerOpen(false);
       load();
     } catch (err) {
-      message.error(err.response?.data?.error || 'Erro ao salvar grupo de acesso');
+      const status = err.response?.status;
+      const apiError = err.response?.data?.error;
+      message.error(
+        apiError
+        || (status === 404
+          ? 'API de perfis indisponível (backend desatualizado no Render).'
+          : 'Erro ao salvar grupo de acesso')
+      );
     } finally {
       setSaving(false);
     }
