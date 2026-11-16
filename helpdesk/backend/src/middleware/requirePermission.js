@@ -1,6 +1,23 @@
 const prisma = require('../prisma');
 const { resolveEffectivePermissions } = require('../permissions/resolve');
 const { logAudit } = require('../utils/audit');
+const { isMissingColumnError } = require('../utils/schemaCompat');
+
+async function loadDbUser(userId) {
+  try {
+    return await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, role: true, active: true, accessGroupId: true },
+    });
+  } catch (err) {
+    if (!isMissingColumnError(err)) throw err;
+    const rows = await prisma.$queryRaw`
+      SELECT id, name, role, active FROM users WHERE id = ${userId} LIMIT 1
+    `;
+    const row = rows[0] || null;
+    return row ? { ...row, accessGroupId: null } : null;
+  }
+}
 
 // Middleware de autorização granular (DENY BY DEFAULT).
 // Diferente do middleware `auth` (que só decodifica o JWT para rotas de alto
@@ -15,10 +32,7 @@ function requirePermission(permissionKey) {
       return res.status(401).json({ error: 'Token não fornecido' });
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: { id: true, name: true, role: true, active: true, accessGroupId: true },
-    });
+    const dbUser = await loadDbUser(req.user.id);
 
     if (!dbUser || !dbUser.active) {
       return res.status(401).json({ error: 'Usuário inativo ou não encontrado' });
@@ -26,14 +40,19 @@ function requirePermission(permissionKey) {
 
     const permissions = await resolveEffectivePermissions(dbUser);
     if (!permissions.has(permissionKey)) {
-      await logAudit({
-        actorId: dbUser.id,
-        actorName: dbUser.name,
-        action: 'access_denied',
-        resource: permissionKey,
-        resourceId: null,
-        metadata: { path: req.originalUrl, method: req.method },
-      });
+      try {
+        await logAudit({
+          actorId: dbUser.id,
+          actorName: dbUser.name,
+          action: 'access_denied',
+          resource: permissionKey,
+          resourceId: null,
+          metadata: { path: req.originalUrl, method: req.method },
+        });
+      } catch (err) {
+        // audit_logs pode ainda não existir pré-migration
+        if (!isMissingColumnError(err)) throw err;
+      }
       return res.status(403).json({ error: 'Acesso negado' });
     }
 
@@ -55,10 +74,7 @@ function loadPermissions() {
       return res.status(401).json({ error: 'Token não fornecido' });
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: { id: true, name: true, role: true, active: true, accessGroupId: true },
-    });
+    const dbUser = await loadDbUser(req.user.id);
 
     if (!dbUser || !dbUser.active) {
       return res.status(401).json({ error: 'Usuário inativo ou não encontrado' });
