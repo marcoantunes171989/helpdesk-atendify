@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../prisma');
 const { logAudit } = require('../utils/audit');
 const statusCache = require('../utils/userStatusCache');
+const { isMissingColumnError, rbacSchemaMissingResponse } = require('../utils/schemaCompat');
 
 const userSelect = {
   id: true, code: true, name: true, username: true, email: true,
@@ -26,23 +27,32 @@ exports.list = async (req, res) => {
   if (role) where.role = role;
   if (active !== undefined) where.active = active === 'true';
 
-  const users = await prisma.user.findMany({
-    where,
-    select: userSelect,
-    orderBy: { code: { sort: 'asc', nulls: 'last' } },
-  });
-
-  res.json(users);
+  try {
+    const users = await prisma.user.findMany({
+      where,
+      select: userSelect,
+      orderBy: { code: { sort: 'asc', nulls: 'last' } },
+    });
+    res.json(users);
+  } catch (err) {
+    if (isMissingColumnError(err)) return rbacSchemaMissingResponse(res);
+    throw err;
+  }
 };
 
 exports.get = async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.params.id },
-    select: userSelect,
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      select: userSelect,
+    });
 
-  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-  res.json(user);
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+    res.json(user);
+  } catch (err) {
+    if (isMissingColumnError(err)) return rbacSchemaMissingResponse(res);
+    throw err;
+  }
 };
 
 async function assertUniqueIdentifiers({ email, username }, excludeId) {
@@ -96,6 +106,7 @@ exports.create = async (req, res) => {
     return res.status(403).json({ error: 'Você não pode criar um usuário com privilégio superior ao seu' });
   }
 
+  try {
   const dupError = await assertUniqueIdentifiers({ email, username });
   if (dupError) return res.status(409).json({ error: dupError });
 
@@ -124,6 +135,10 @@ exports.create = async (req, res) => {
   });
 
   res.status(201).json(user);
+  } catch (err) {
+    if (isMissingColumnError(err)) return rbacSchemaMissingResponse(res);
+    throw err;
+  }
 };
 
 exports.update = async (req, res) => {
