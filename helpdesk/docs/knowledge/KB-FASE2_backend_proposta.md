@@ -1,6 +1,6 @@
 # Central de Conhecimento — Fase 2 (proposta de backend)
 
-Status: **proposta, não executada**. Nenhuma alteração de banco, API ou storage foi feita. Cada item depende de autorização.
+Status: **em andamento por etapas** (A→B→C→D→E). Etapa A implementada no código — migration/storage de produção dependem de autorização.
 
 ## Situação atual (Fase 1, só frontend)
 

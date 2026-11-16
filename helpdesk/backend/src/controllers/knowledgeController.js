@@ -1,4 +1,83 @@
 ﻿const prisma = require('../prisma');
+const {
+  validateAttachmentInput,
+  isExecutableName,
+  safeResponseMime,
+  canInline,
+  sanitizeFileName,
+} = require('../services/kbFileValidation');
+const kbStorage = require('../services/kbStorage');
+
+const ATT_META = { id: true, name: true, mimeType: true, size: true, sha256: true, storagePath: true, createdAt: true };
+
+function stripAttachmentData(article) {
+  if (!article) return article;
+  const { attachments, ...rest } = article;
+  return {
+    ...rest,
+    attachments: (attachments || []).map(({ data, ...meta }) => ({
+      ...meta,
+      hasContent: true,
+    })),
+  };
+}
+
+async function persistAttachments(articleId, rawList = []) {
+  const created = [];
+  for (const raw of rawList) {
+    const validated = validateAttachmentInput(raw);
+    let storagePath = null;
+    let data = null;
+
+    if (kbStorage.enabled()) {
+      storagePath = await kbStorage.upload(articleId, validated.name, validated.buffer, validated.mimeType);
+    } else {
+      data = validated.buffer.toString('base64');
+    }
+
+    const row = await prisma.kbAttachment.create({
+      data: {
+        articleId,
+        name: validated.name,
+        mimeType: validated.mimeType,
+        size: validated.size,
+        sha256: validated.sha256,
+        storagePath,
+        data,
+      },
+      select: ATT_META,
+    });
+    created.push({ ...row, hasContent: true });
+  }
+  return created;
+}
+
+async function loadAttachmentBytes(att) {
+  if (att.storagePath) {
+    return kbStorage.download(att.storagePath);
+  }
+  if (att.data) {
+    return Buffer.from(att.data, 'base64');
+  }
+  const err = new Error('Conteúdo do anexo indisponível');
+  err.status = 404;
+  throw err;
+}
+
+function sendAttachment(res, att, buf, { inline }) {
+  const executable = isExecutableName(att.name);
+  const disposition = (!inline || executable || !canInline(att)) ? 'attachment' : 'inline';
+  const mime = disposition === 'attachment'
+    ? (executable ? 'application/octet-stream' : (safeResponseMime(att) === 'application/octet-stream' ? 'application/octet-stream' : safeResponseMime(att)))
+    : safeResponseMime(att);
+  const safeName = sanitizeFileName(att.name);
+  res.setHeader('Content-Type', mime);
+  res.setHeader('Content-Length', buf.length);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(safeName)}"`);
+  if (att.sha256) res.setHeader('X-Content-SHA256', att.sha256);
+  res.send(buf);
+}
 
 exports.list = async (req, res) => {
   const { category, search } = req.query;
@@ -14,12 +93,15 @@ exports.list = async (req, res) => {
   const articles = await prisma.kbArticle.findMany({
     where,
     include: {
-      attachments: { select: { id: true, name: true, mimeType: true, size: true } },
+      attachments: { select: ATT_META },
       _count: { select: { attachments: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
-  res.json(articles);
+  res.json(articles.map((a) => ({
+    ...a,
+    attachments: a.attachments.map((att) => ({ ...att, hasContent: true })),
+  })));
 };
 
 exports.get = async (req, res) => {
@@ -31,54 +113,79 @@ exports.get = async (req, res) => {
     },
   });
   if (!article) return res.status(404).json({ error: 'Artigo não encontrado' });
-  res.json(article);
+  res.json(stripAttachmentData(article));
 };
 
 exports.create = async (req, res) => {
   const { title, content, category, tags, attachments = [] } = req.body;
+  if (!title?.trim()) return res.status(400).json({ error: 'Título é obrigatório' });
+  if (!category) return res.status(400).json({ error: 'Categoria é obrigatória' });
+
+  let validatedNew = [];
+  try {
+    validatedNew = (attachments || []).filter((a) => a && a.data);
+    validatedNew.forEach(validateAttachmentInput);
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message });
+  }
+
   const last = await prisma.kbArticle.findFirst({ orderBy: { code: 'desc' } });
   const code = (last?.code ?? 0) + 1;
+
   const article = await prisma.kbArticle.create({
     data: {
       code,
-      title,
-      content,
+      title: title.trim(),
+      content: content || '',
       category,
       tags: tags || null,
-      ...(attachments.length > 0 && {
-        attachments: {
-          create: attachments.map(a => ({
-            name: a.name,
-            mimeType: a.mimeType,
-            size: a.size,
-            data: a.data,
-          })),
-        },
-      }),
-    },
-    include: {
-      attachments: { select: { id: true, name: true, mimeType: true, size: true } },
     },
   });
-  res.status(201).json(article);
+
+  try {
+    await persistAttachments(article.id, validatedNew);
+  } catch (err) {
+    await prisma.kbArticle.delete({ where: { id: article.id } }).catch(() => {});
+    return res.status(err.status || 500).json({ error: err.message || 'Falha ao gravar anexos' });
+  }
+
+  const full = await prisma.kbArticle.findUnique({
+    where: { id: article.id },
+    include: { attachments: { select: ATT_META } },
+  });
+  res.status(201).json(stripAttachmentData(full));
 };
 
 exports.update = async (req, res) => {
   const { id } = req.params;
   const { title, content, category, tags, active, attachments = [] } = req.body;
 
-  const existingIds = attachments.filter(a => a.id).map(a => a.id);
-  const newOnes = attachments.filter(a => !a.id && a.data);
+  const existing = await prisma.kbArticle.findUnique({
+    where: { id },
+    include: { attachments: true },
+  });
+  if (!existing) return res.status(404).json({ error: 'Artigo não encontrado' });
 
-  if (existingIds.length > 0) {
-    await prisma.kbAttachment.deleteMany({
-      where: { articleId: id, id: { notIn: existingIds } },
-    });
-  } else {
-    await prisma.kbAttachment.deleteMany({ where: { articleId: id } });
+  const keepIds = (attachments || []).filter((a) => a && a.id).map((a) => a.id);
+  const newOnes = (attachments || []).filter((a) => a && !a.id && a.data);
+
+  try {
+    newOnes.forEach(validateAttachmentInput);
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message });
   }
 
-  const article = await prisma.kbArticle.update({
+  const toDelete = existing.attachments.filter((a) => !keepIds.includes(a.id));
+  for (const att of toDelete) {
+    if (att.storagePath) await kbStorage.remove(att.storagePath);
+  }
+  if (toDelete.length > 0) {
+    await prisma.kbAttachment.deleteMany({
+      where: { articleId: id, id: { in: toDelete.map((a) => a.id) } },
+    });
+  }
+
+  await prisma.kbArticle.update({
     where: { id },
     data: {
       ...(title !== undefined && { title }),
@@ -86,36 +193,54 @@ exports.update = async (req, res) => {
       ...(category !== undefined && { category }),
       ...(tags !== undefined && { tags: tags || null }),
       ...(active !== undefined && { active }),
-      ...(newOnes.length > 0 && {
-        attachments: {
-          create: newOnes.map(a => ({
-            name: a.name,
-            mimeType: a.mimeType,
-            size: a.size,
-            data: a.data,
-          })),
-        },
-      }),
-    },
-    include: {
-      attachments: { select: { id: true, name: true, mimeType: true, size: true } },
     },
   });
 
-  res.json(article);
+  try {
+    await persistAttachments(id, newOnes);
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message || 'Falha ao gravar anexos' });
+  }
+
+  const full = await prisma.kbArticle.findUnique({
+    where: { id },
+    include: { attachments: { select: ATT_META } },
+  });
+  res.json(stripAttachmentData(full));
 };
 
 exports.remove = async (req, res) => {
+  const article = await prisma.kbArticle.findUnique({
+    where: { id: req.params.id },
+    include: { attachments: { select: { storagePath: true } } },
+  });
+  if (!article) return res.status(404).json({ error: 'Artigo não encontrado' });
+
+  for (const att of article.attachments) {
+    if (att.storagePath) await kbStorage.remove(att.storagePath);
+  }
   await prisma.kbArticle.delete({ where: { id: req.params.id } });
   res.json({ message: 'Artigo excluído com sucesso' });
+};
+
+exports.downloadAttachment = async (req, res) => {
+  const att = await prisma.kbAttachment.findUnique({ where: { id: req.params.attachmentId } });
+  if (!att) return res.status(404).json({ error: 'Anexo não encontrado' });
+  try {
+    const buf = await loadAttachmentBytes(att);
+    const inline = String(req.query.inline || '') === '1' || String(req.query.disposition || '') === 'inline';
+    sendAttachment(res, att, buf, { inline });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message || 'Falha ao baixar anexo' });
+  }
 };
 
 exports.query = async (req, res) => {
   const { question } = req.body;
   if (!question?.trim()) return res.status(400).json({ error: 'Pergunta é obrigatória' });
 
-  const words = question.split(/\s+/).filter(w => w.length > 3).slice(0, 8);
-  const searchClauses = words.flatMap(w => [
+  const words = question.split(/\s+/).filter((w) => w.length > 3).slice(0, 8);
+  const searchClauses = words.flatMap((w) => [
     { title: { contains: w, mode: 'insensitive' } },
     { content: { contains: w, mode: 'insensitive' } },
     { tags: { contains: w, mode: 'insensitive' } },
@@ -127,7 +252,7 @@ exports.query = async (req, res) => {
       ...(searchClauses.length > 0 && { OR: searchClauses }),
     },
     include: {
-      attachments: { select: { id: true, name: true, mimeType: true, size: true } },
+      attachments: { select: ATT_META },
     },
     orderBy: { updatedAt: 'desc' },
     take: 5,
@@ -180,5 +305,11 @@ PERGUNTA: ${question}`,
 
   await prisma.kbQuery.create({ data: { question, aiAnswer } });
 
-  res.json({ answer: aiAnswer, sources: articles });
+  res.json({
+    answer: aiAnswer,
+    sources: articles.map((a) => ({
+      ...a,
+      attachments: a.attachments.map((att) => ({ ...att, hasContent: true })),
+    })),
+  });
 };

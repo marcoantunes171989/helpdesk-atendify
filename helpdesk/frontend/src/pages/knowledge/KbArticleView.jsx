@@ -6,7 +6,10 @@ import {
   describe, formatDate, formatSize, fileKind, FILE_KIND_LABEL, BACKEND_CATEGORY_LABEL,
   videoEmbedUrl, URL_SPLIT_RE, CONTENT_TYPES,
 } from './kbModel';
-import { attachmentBlobUrl, attachmentText, downloadAttachment, inlineImageSrc, previewMode } from './attachments';
+import {
+  attachmentObjectUrl, attachmentText, canDownload, canPreview,
+  downloadAttachment, previewMode,
+} from './attachments';
 
 const KIND_ICON = { pdf: 'fileText', exe: 'exe', zip: 'archive', sheet: 'sheet', doc: 'fileText', video: 'monitorPlay', image: 'image', text: 'fileText', file: 'paperclip' };
 const KIND_TONE = { pdf: 'red', exe: 'gray', zip: 'amber', sheet: 'green', doc: 'blue', video: 'violet', image: 'sky', text: 'indigo', file: 'indigo' };
@@ -26,26 +29,69 @@ function Preview({ att, onClose }) {
   const mode = att ? previewMode(att) : null;
   const [url, setUrl] = useState(null);
   const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!att) return undefined;
-    if (mode === 'text') { setText(attachmentText(att)); return undefined; }
-    if (mode === 'pdf' || mode === 'video') {
-      const u = attachmentBlobUrl(att);
-      setUrl(u);
-      return () => URL.revokeObjectURL(u);
-    }
-    return undefined;
+    let alive = true;
+    let objectUrl;
+    if (!att || !mode) return undefined;
+    setLoading(true);
+    setUrl(null);
+    setText('');
+    (async () => {
+      try {
+        if (mode === 'text') {
+          const t = await attachmentText(att);
+          if (alive) setText(t);
+        } else {
+          objectUrl = await attachmentObjectUrl(att, { inline: true });
+          if (alive) setUrl(objectUrl);
+        }
+      } catch {
+        if (alive) message.error('Não foi possível abrir o anexo');
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [att, mode]);
 
   return (
     <Modal open={!!att} onCancel={onClose} footer={null} width={mode === 'pdf' ? 960 : 760} centered
       title={att?.name} className="kb-preview-modal" destroyOnHidden>
+      {loading && <div className="kb-read-loading"><Spin /></div>}
       {mode === 'pdf' && url && <iframe title={att.name} src={url} className="kb-preview-pdf" />}
       {mode === 'video' && url && <video src={url} controls className="kb-preview-video" />}
-      {mode === 'image' && <img src={inlineImageSrc(att)} alt={att.name} className="kb-preview-img" />}
-      {mode === 'text' && <pre className="kb-preview-text">{text}</pre>}
+      {mode === 'image' && url && <img src={url} alt={att.name} className="kb-preview-img" />}
+      {mode === 'text' && !loading && <pre className="kb-preview-text">{text}</pre>}
     </Modal>
+  );
+}
+
+function Thumb({ att, onOpen }) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    let objectUrl;
+    (async () => {
+      try {
+        objectUrl = await attachmentObjectUrl(att, { inline: true });
+        if (alive) setSrc(objectUrl);
+      } catch { /* silencioso na galeria */ }
+    })();
+    return () => {
+      alive = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [att]);
+  if (!src) return null;
+  return (
+    <button type="button" className="kb-read-thumb" onClick={() => onOpen(att)} aria-label={`Ampliar imagem ${att.name}`}>
+      <img src={src} alt={att.name} loading="lazy" />
+    </button>
   );
 }
 
@@ -54,6 +100,7 @@ export default function KbArticleView({
 }) {
   const [preview, setPreview] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [busyId, setBusyId] = useState(null);
   const meta = useMemo(() => (article ? describe(article) : null), [article]);
 
   if (loading || !article) {
@@ -69,7 +116,7 @@ export default function KbArticleView({
   const embed = videoEmbedUrl(meta.videoUrl);
   const typeLabel = CONTENT_TYPES.find(t => t.key === meta.type)?.label;
   const attachments = article.attachments || [];
-  const images = attachments.filter(a => inlineImageSrc(a));
+  const images = attachments.filter(a => previewMode(a) === 'image');
 
   const copy = () => {
     const text = `${article.title}\n\n${article.content || ''}`.trim();
@@ -79,43 +126,54 @@ export default function KbArticleView({
     }).catch(() => message.error('Não foi possível copiar'));
   };
 
+  const onDownload = async (att) => {
+    setBusyId(att.id);
+    try {
+      await downloadAttachment(att);
+    } catch {
+      message.error('Não foi possível baixar o anexo');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="kb-read">
       <button type="button" className="kb-back" onClick={onBack}><KbIcon name="arrowLeft" /> Voltar para a Central</button>
 
       <article className="kb-read-card">
         <header className="kb-read-head">
-          <span className={`kb-read-icon tone-${style.tone}`}><KbIcon name={style.icon} /></span>
-          <div className="kb-read-titles">
+          <span className="kb-read-icon" style={{ background: style.bg, color: style.fg }}><KbIcon name={meta.icon} /></span>
+          <div className="kb-read-meta">
             <div className="kb-read-tags">
-              <span className={`kb-tag tone-${FORMAT_TONE[meta.format] || 'indigo'}`}>{meta.format}</span>
-              <span className="kb-tag tone-soft">{meta.category.label}</span>
-              {article.code != null && <span className="kb-read-code">#{String(article.code).padStart(4, '0')}</span>}
-              {article.active === false && <span className="kb-tag tone-gray">Inativo</span>}
+              <span className={`kb-chip tone-${FORMAT_TONE[meta.format] || 'indigo'}`}>{meta.format}</span>
+              <span className="kb-chip tone-slate">{BACKEND_CATEGORY_LABEL[article.category] || article.category}</span>
+              {article.code != null && <span className="kb-chip tone-slate">#{article.code}</span>}
+              {article.active === false && <span className="kb-chip tone-amber">Inativo</span>}
             </div>
-            <h2 className="kb-read-title">{article.title}</h2>
-            <p className="kb-read-meta">
-              <KbIcon name="calendar" /> Atualizado em {formatDate(meta.date)}
-              <span aria-hidden="true">·</span> {typeLabel}
-              <span aria-hidden="true">·</span> {BACKEND_CATEGORY_LABEL[article.category] || article.category}
+            <h2>{article.title}</h2>
+            <p className="kb-read-sub">
+              Atualizado em {formatDate(article.updatedAt || article.createdAt)}
+              {typeLabel ? ` · ${typeLabel}` : ''}
             </p>
           </div>
           <div className="kb-read-actions">
-            <button type="button" className={`kb-icon-btn${favorite ? ' is-fav' : ''}`} onClick={() => onToggleFavorite(article.id)}
-              aria-pressed={favorite} aria-label={favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
+            <button type="button" className={`kb-icon-btn${favorite ? ' is-on' : ''}`}
+              aria-label={favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              onClick={() => onToggleFavorite(article.id)}>
               <KbIcon name="star" filled={favorite} />
             </button>
-            <button type="button" className="kb-icon-btn" onClick={copy} aria-label="Copiar conteúdo">
-              <KbIcon name={copied ? 'check' : 'copy'} />
+            <button type="button" className="kb-btn-ghost" onClick={copy}>
+              <KbIcon name="copy" /> {copied ? 'Copiado' : 'Copiar'}
             </button>
             {canUpdate && (
-              <button type="button" className="kb-icon-btn" onClick={onEdit} aria-label="Editar conteúdo">
-                <KbIcon name="edit" />
+              <button type="button" className="kb-btn-ghost" onClick={onEdit} aria-label="Editar conteúdo">
+                <KbIcon name="edit" /> Editar
               </button>
             )}
             {canDelete && (
-              <button type="button" className="kb-icon-btn is-danger" onClick={onDelete} aria-label="Excluir conteúdo">
-                <KbIcon name="trash" />
+              <button type="button" className="kb-btn-ghost kb-btn-danger" onClick={onDelete} aria-label="Excluir conteúdo">
+                <KbIcon name="trash" /> Excluir
               </button>
             )}
           </div>
@@ -123,7 +181,7 @@ export default function KbArticleView({
 
         {meta.tags.length > 0 && (
           <div className="kb-read-keywords">
-            {meta.tags.map(t => <span key={t} className="kb-keyword">{t}</span>)}
+            {meta.tags.map(t => <span key={t} className="kb-chip tone-violet">{t}</span>)}
           </div>
         )}
 
@@ -139,11 +197,7 @@ export default function KbArticleView({
 
         {images.length > 0 && (
           <div className="kb-read-gallery">
-            {images.map(img => (
-              <button key={img.id} type="button" className="kb-read-thumb" onClick={() => setPreview(img)} aria-label={`Ampliar imagem ${img.name}`}>
-                <img src={inlineImageSrc(img)} alt={img.name} loading="lazy" />
-              </button>
-            ))}
+            {images.map(img => <Thumb key={img.id} att={img} onOpen={setPreview} />)}
           </div>
         )}
 
@@ -182,14 +236,15 @@ export default function KbArticleView({
                       )}
                     </span>
                     <span className="kb-file-actions">
-                      {mode && att.data && (
+                      {canPreview(att) && mode && (
                         <button type="button" className="kb-btn-ghost" onClick={() => setPreview(att)}>
                           <KbIcon name="eye" /> Visualizar
                         </button>
                       )}
-                      {att.data && (
-                        <button type="button" className="kb-btn-primary" onClick={() => downloadAttachment(att)}>
-                          <KbIcon name="download" /> Baixar
+                      {canDownload(att) && (
+                        <button type="button" className="kb-btn-primary" disabled={busyId === att.id}
+                          onClick={() => onDownload(att)}>
+                          <KbIcon name="download" /> {busyId === att.id ? 'Baixando…' : 'Baixar'}
                         </button>
                       )}
                     </span>

@@ -304,6 +304,11 @@ export const knowledgeService = {
   update: (id, data) => api.put(`/knowledge/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/knowledge/${id}`).then(r => r.data),
   query: (data) => api.post('/knowledge/query', data).then(r => r.data),
+  /** Baixa o anexo autenticado. inline=true para preview seguro (PDF/imagem/texto). */
+  fetchAttachment: (id, { inline = false } = {}) => api.get(
+    `/knowledge/attachments/${id}/download`,
+    { params: inline ? { inline: 1 } : undefined, responseType: 'blob' },
+  ).then((r) => r.data),
 };
 
 export default api;

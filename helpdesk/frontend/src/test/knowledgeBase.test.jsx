@@ -15,6 +15,7 @@ vi.mock('../contexts/AuthContext', () => ({
 vi.mock('../services/api', () => ({
   knowledgeService: {
     list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), query: vi.fn(),
+    fetchAttachment: vi.fn(),
   },
 }));
 
