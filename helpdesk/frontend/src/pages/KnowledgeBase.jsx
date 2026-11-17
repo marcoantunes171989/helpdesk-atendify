@@ -18,7 +18,7 @@ import KbIcon from './knowledge/KbIcon';
 import useKbPersonal from './knowledge/useKbPersonal';
 import {
   CATEGORIES, CONTENT_TYPES, SECTIONS, describeWithCatalog, normalizeCategory,
-  searchArticles, byDateDesc,
+  searchArticles, byDateDesc, byViewsDesc,
 } from './knowledge/kbModel';
 import './knowledge/knowledge.css';
 
@@ -173,7 +173,9 @@ export default function KnowledgeBase() {
     let list = category ? sectionItems.filter(i => i.meta.category.key === category) : sectionItems;
     if (committed) return searchArticles(list, committed);
     if (tab === 'favoritos') list = list.filter(i => favorites.includes(i.article.id));
-    if (tab === 'acessados') return [];
+    if (tab === 'acessados') {
+      return [...list].filter(i => (i.article.viewCount || 0) > 0).sort(byViewsDesc);
+    }
     return ordered ? list : [...list].sort(byDateDesc);
   }, [sectionItems, category, committed, tab, favorites, ordered]);
 
@@ -275,14 +277,14 @@ export default function KnowledgeBase() {
         </EmptyState>
       );
     }
-    if (!committed && tab === 'acessados') {
-      return (
-        <EmptyState icon="flame" title="Em breve">
-          A ordenação por mais acessados depende da contagem de visualizações no servidor, que ainda não existe.
-        </EmptyState>
-      );
-    }
     if (visible.length === 0) {
+      if (!committed && tab === 'acessados') {
+        return (
+          <EmptyState icon="flame" title="Nenhuma visualização ainda">
+            Os conteúdos mais abertos pela equipe aparecerão aqui automaticamente.
+          </EmptyState>
+        );
+      }
       if (committed) {
         return (
           <EmptyState icon="search" title={`Nenhum resultado para "${committed}"`}>

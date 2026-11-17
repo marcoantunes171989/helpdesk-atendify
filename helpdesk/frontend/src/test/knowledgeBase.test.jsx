@@ -137,12 +137,16 @@ describe('Central de Conhecimento', () => {
     expect(screen.getByText('Nenhum favorito')).toBeInTheDocument();
   });
 
-  it('Mais Acessados informa que depende do backend, sem dados inventados', async () => {
+  it('Mais Acessados ordena por viewCount e oculta quem ainda não foi visto', async () => {
+    knowledgeService.list.mockResolvedValue([
+      { ...ARTICLES[0], viewCount: 2 },
+      { ...ARTICLES[1], viewCount: 5 },
+      { ...ARTICLES[2], viewCount: 0, active: true },
+    ]);
     renderKb();
-    await waitFor(() => expect(cardTitles()).toHaveLength(2));
+    await waitFor(() => expect(cardTitles()).toHaveLength(3));
     fireEvent.click(screen.getByRole('tab', { name: 'Mais Acessados' }));
-    expect(screen.getByText('Em breve')).toBeInTheDocument();
-    expect(cardTitles()).toHaveLength(0);
+    expect(cardTitles()).toEqual(['Manual fiscal NFC-e', 'Configurar impressora térmica']);
   });
 
   it('alterna entre grade e lista sem mudar os registros', async () => {

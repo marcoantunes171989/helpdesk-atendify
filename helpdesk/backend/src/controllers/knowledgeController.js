@@ -15,6 +15,7 @@ const {
   resolveCategoryFields,
 } = require('../services/kbCategories');
 const { resolveContentFields } = require('../services/kbContentFields');
+const { recordArticleView } = require('../services/kbViews');
 
 const ATT_META = { id: true, name: true, mimeType: true, size: true, sha256: true, storagePath: true, createdAt: true };
 const CAT_META = { id: true, key: true, label: true, icon: true, tone: true, sortOrder: true, active: true };
@@ -89,7 +90,7 @@ function sendAttachment(res, att, buf, { inline }) {
 }
 
 exports.list = async (req, res) => {
-  const { category, categoryKey, search, contentType, featured } = req.query;
+  const { category, categoryKey, search, contentType, featured, sort } = req.query;
   const where = {};
   if (categoryKey) where.categoryRef = { key: categoryKey };
   else if (category && category !== 'ALL') where.category = category;
@@ -102,6 +103,10 @@ exports.list = async (req, res) => {
       { tags: { contains: search, mode: 'insensitive' } },
     ];
   }
+  const orderBy = sort === 'views'
+    ? [{ viewCount: 'desc' }, { updatedAt: 'desc' }]
+    : { createdAt: 'desc' };
+
   const articles = await prisma.kbArticle.findMany({
     where,
     include: {
@@ -109,7 +114,7 @@ exports.list = async (req, res) => {
       categoryRef: { select: CAT_META },
       _count: { select: { attachments: true } },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy,
   });
   res.json(articles.map((a) => ({
     ...a,
@@ -127,6 +132,11 @@ exports.get = async (req, res) => {
     },
   });
   if (!article) return res.status(404).json({ error: 'Artigo não encontrado' });
+
+  const userId = req.dbUser?.id || req.user?.id;
+  // Contagem assíncrona: não atrasa a resposta da leitura.
+  if (userId) recordArticleView(article.id, userId).catch(() => {});
+
   res.json(stripAttachmentData(article));
 };
 
