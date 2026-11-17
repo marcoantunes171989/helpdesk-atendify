@@ -81,6 +81,8 @@ model User {
   treinamentos     Treinamento[]    @relation("TreinamentoTrainer")
   visitas          Visita[]         @relation("VisitaCreatedBy")
   auditLogs        AuditLog[]       @relation("AuditActor")
+  kbFavorites      KbFavorite[]
+  kbHistory        KbHistory[]
 
   @@index([accessGroupId])
   @@map("users")
@@ -387,6 +389,8 @@ model KbArticle {
   active      Boolean            @default(true)
   attachments KbAttachment[]
   views       KbArticleView[]
+  favorites   KbFavorite[]
+  history     KbHistory[]
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 
@@ -407,6 +411,32 @@ model KbArticleView {
   @@id([userId, articleId])
   @@index([articleId])
   @@map("kb_article_views")
+}
+
+// Favoritos por usuário (Etapa E).
+model KbFavorite {
+  userId    String
+  articleId String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([userId, articleId])
+  @@index([articleId])
+  @@map("kb_favorites")
+}
+
+// Histórico de leitura por usuário (Etapa E) — atualizado a cada abertura.
+model KbHistory {
+  userId    String
+  articleId String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  viewedAt  DateTime  @default(now())
+
+  @@id([userId, articleId])
+  @@index([userId, viewedAt])
+  @@map("kb_history")
 }
 
 model KbAttachment {

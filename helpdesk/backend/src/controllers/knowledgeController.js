@@ -16,6 +16,7 @@ const {
 } = require('../services/kbCategories');
 const { resolveContentFields } = require('../services/kbContentFields');
 const { recordArticleView } = require('../services/kbViews');
+const kbPersonal = require('../services/kbPersonal');
 
 const ATT_META = { id: true, name: true, mimeType: true, size: true, sha256: true, storagePath: true, createdAt: true };
 const CAT_META = { id: true, key: true, label: true, icon: true, tone: true, sortOrder: true, active: true };
@@ -134,8 +135,11 @@ exports.get = async (req, res) => {
   if (!article) return res.status(404).json({ error: 'Artigo não encontrado' });
 
   const userId = req.dbUser?.id || req.user?.id;
-  // Contagem assíncrona: não atrasa a resposta da leitura.
-  if (userId) recordArticleView(article.id, userId).catch(() => {});
+  // Contagem e histórico em background: não atrasam a resposta da leitura.
+  if (userId) {
+    recordArticleView(article.id, userId).catch(() => {});
+    kbPersonal.recordHistory(userId, article.id).catch(() => {});
+  }
 
   res.json(stripAttachmentData(article));
 };
@@ -453,4 +457,54 @@ exports.removeCategory = async (req, res) => {
   }
   await prisma.knowledgeCategory.delete({ where: { id } });
   res.json({ message: 'Categoria excluída' });
+};
+
+function requireUserId(req) {
+  const userId = req.dbUser?.id || req.user?.id;
+  if (!userId) {
+    const err = new Error('Não autenticado');
+    err.status = 401;
+    throw err;
+  }
+  return userId;
+}
+
+exports.listMyFavorites = async (req, res) => {
+  const userId = requireUserId(req);
+  res.json({ favorites: await kbPersonal.listFavoriteIds(userId) });
+};
+
+exports.addFavorite = async (req, res) => {
+  try {
+    const userId = requireUserId(req);
+    const favorites = await kbPersonal.addFavorite(userId, req.params.id);
+    res.json({ favorites });
+  } catch (err) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+};
+
+exports.removeFavorite = async (req, res) => {
+  const userId = requireUserId(req);
+  const favorites = await kbPersonal.removeFavorite(userId, req.params.id);
+  res.json({ favorites });
+};
+
+exports.listMyHistory = async (req, res) => {
+  const userId = requireUserId(req);
+  res.json({ history: await kbPersonal.listHistory(userId) });
+};
+
+exports.clearMyHistory = async (req, res) => {
+  const userId = requireUserId(req);
+  res.json({ history: await kbPersonal.clearHistory(userId) });
+};
+
+exports.importMyLocal = async (req, res) => {
+  const userId = requireUserId(req);
+  const data = await kbPersonal.importLocal(userId, {
+    favorites: req.body?.favorites,
+    history: req.body?.history,
+  });
+  res.json(data);
 };

@@ -46,8 +46,8 @@ const TABS = [
 
 const SECTION_INFO = {
   categorias: 'Gerencie as categorias dos cartões e veja quantos conteúdos cada uma possui.',
-  favoritos: 'Conteúdos marcados com estrela neste navegador.',
-  historico: 'Conteúdos abertos recentemente neste navegador.',
+  favoritos: 'Conteúdos marcados com estrela — sincronizados com a sua conta.',
+  historico: 'Conteúdos abertos recentemente — sincronizados com a sua conta.',
   'primeiros-passos': 'Materiais marcados como Primeiros Passos / Comece por aqui.',
 };
 

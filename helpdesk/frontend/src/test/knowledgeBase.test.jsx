@@ -17,6 +17,8 @@ vi.mock('../services/api', () => ({
     list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), query: vi.fn(),
     fetchAttachment: vi.fn(),
     listCategories: vi.fn(), createCategory: vi.fn(), updateCategory: vi.fn(), removeCategory: vi.fn(),
+    listFavorites: vi.fn(), addFavorite: vi.fn(), removeFavorite: vi.fn(),
+    listHistory: vi.fn(), clearHistory: vi.fn(), importLocalPersonal: vi.fn(),
   },
 }));
 
@@ -68,6 +70,11 @@ describe('Central de Conhecimento', () => {
     knowledgeService.list.mockResolvedValue(ARTICLES);
     knowledgeService.get.mockImplementation(id => Promise.resolve(ARTICLES.find(a => a.id === id)));
     knowledgeService.listCategories.mockResolvedValue([]);
+    knowledgeService.listFavorites.mockResolvedValue({ favorites: [] });
+    knowledgeService.listHistory.mockResolvedValue({ history: [] });
+    knowledgeService.addFavorite.mockImplementation(async (id) => ({ favorites: [id] }));
+    knowledgeService.removeFavorite.mockResolvedValue({ favorites: [] });
+    knowledgeService.importLocalPersonal.mockResolvedValue({ favorites: [], history: [] });
   });
 
   it('mostra os conteúdos reais ordenados por data e as contagens reais das categorias', async () => {
@@ -126,15 +133,16 @@ describe('Central de Conhecimento', () => {
     expect(cardTitles()).toHaveLength(2);
   });
 
-  it('favorita, filtra pela aba Favoritos e guarda por usuário', async () => {
+  it('favorita via API, filtra pela aba Favoritos e sincroniza cache local', async () => {
     renderKb();
     await waitFor(() => expect(cardTitles()).toHaveLength(2));
     fireEvent.click(screen.getByRole('button', { name: 'Adicionar "Manual fiscal NFC-e" aos favoritos' }));
-    expect(JSON.parse(localStorage.getItem('kb:favorites:u1'))).toEqual(['a2']);
+    await waitFor(() => expect(knowledgeService.addFavorite).toHaveBeenCalledWith('a2'));
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('kb:favorites:u1'))).toEqual(['a2']));
     fireEvent.click(screen.getByRole('tab', { name: 'Favoritos' }));
     expect(cardTitles()).toEqual(['Manual fiscal NFC-e']);
     fireEvent.click(screen.getByRole('button', { name: 'Remover "Manual fiscal NFC-e" dos favoritos' }));
-    expect(screen.getByText('Nenhum favorito')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Nenhum favorito')).toBeInTheDocument());
   });
 
   it('Mais Acessados ordena por viewCount e oculta quem ainda não foi visto', async () => {
