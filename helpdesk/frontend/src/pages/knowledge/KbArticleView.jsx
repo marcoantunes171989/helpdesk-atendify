@@ -155,6 +155,7 @@ export default function KbArticleView({
             <p className="kb-read-sub">
               Atualizado em {formatDate(article.updatedAt || article.createdAt)}
               {typeLabel ? ` · ${typeLabel}` : ''}
+              {(article.viewCount || 0) > 0 ? ` · ${article.viewCount} visualizaç${article.viewCount === 1 ? 'ão' : 'ões'}` : ''}
             </p>
           </div>
           <div className="kb-read-actions">

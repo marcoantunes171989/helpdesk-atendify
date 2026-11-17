@@ -38,6 +38,12 @@ export default function KbContentCard({ article, meta, favorite, onToggleFavorit
           <KbIcon name="calendar" />
           <time dateTime={meta.date}>{formatDate(meta.date)}</time>
         </span>
+        {(article.viewCount || 0) > 0 && (
+          <span className="kb-card-meta" title={`${article.viewCount} visualizações`}>
+            <KbIcon name="eye" />
+            {article.viewCount}
+          </span>
+        )}
         {article.attachments?.length > 0 && (
           <span className="kb-card-meta" title={`${article.attachments.length} anexo(s)`}>
             <KbIcon name="paperclip" />

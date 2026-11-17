@@ -21,6 +21,11 @@ jest.mock('../../prisma', () => ({
     upsert: jest.fn(),
   },
   kbQuery: { create: jest.fn() },
+  kbArticleView: {
+    findUnique: jest.fn(),
+    upsert: jest.fn(),
+  },
+  $transaction: jest.fn((ops) => Promise.all(ops)),
 }));
 
 jest.mock('../../services/kbStorage', () => ({
@@ -30,7 +35,12 @@ jest.mock('../../services/kbStorage', () => ({
   remove: jest.fn(),
 }));
 
+jest.mock('../../services/kbViews', () => ({
+  recordArticleView: jest.fn().mockResolvedValue(true),
+}));
+
 const prisma = require('../../prisma');
+const { recordArticleView } = require('../../services/kbViews');
 const ctrl = require('../knowledgeController');
 
 function mockRes() {
@@ -45,12 +55,13 @@ function mockRes() {
 describe('knowledgeController — Etapa A anexos', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('get não devolve data base64 dos anexos', async () => {
+  test('get não devolve data base64 dos anexos e registra visualização', async () => {
     prisma.kbArticle.findUnique.mockResolvedValue({
       id: 'a1',
       title: 'Manual',
       content: 'x',
       category: 'CONFIGURACAO',
+      viewCount: 3,
       attachments: [{
         id: 'f1', name: 'n.pdf', mimeType: 'application/pdf', size: 10,
         data: 'JVBERg==', storagePath: null, sha256: null,
@@ -58,11 +69,21 @@ describe('knowledgeController — Etapa A anexos', () => {
       _count: { attachments: 1 },
     });
     const res = mockRes();
-    await ctrl.get({ params: { id: 'a1' } }, res);
+    await ctrl.get({ params: { id: 'a1' }, user: { id: 'u1' } }, res);
     const body = res.json.mock.calls[0][0];
     expect(body.attachments[0].data).toBeUndefined();
     expect(body.attachments[0].hasContent).toBe(true);
     expect(body.attachments[0].name).toBe('n.pdf');
+    expect(recordArticleView).toHaveBeenCalledWith('a1', 'u1');
+  });
+
+  test('list com sort=views ordena por viewCount', async () => {
+    prisma.kbArticle.findMany.mockResolvedValue([]);
+    const res = mockRes();
+    await ctrl.list({ query: { sort: 'views' } }, res);
+    expect(prisma.kbArticle.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      orderBy: [{ viewCount: 'desc' }, { updatedAt: 'desc' }],
+    }));
   });
 
   test('downloadAttachment envia bytes com disposition attachment por padrão', async () => {

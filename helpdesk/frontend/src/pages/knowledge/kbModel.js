@@ -250,6 +250,13 @@ export function searchArticles(items, query) {
     .map(s => s.item);
 }
 
+export function byViewsDesc(a, b) {
+  const va = a.article?.viewCount || 0;
+  const vb = b.article?.viewCount || 0;
+  if (vb !== va) return vb - va;
+  return byDateDesc(a, b);
+}
+
 export function byDateDesc(a, b) {
   return new Date(b.meta.date || 0) - new Date(a.meta.date || 0);
 }
