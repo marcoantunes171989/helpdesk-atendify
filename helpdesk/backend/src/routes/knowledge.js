@@ -17,6 +17,14 @@ router.post('/categories', auth, requirePermission('knowledge.create'), wrap(ctr
 router.put('/categories/:id', auth, requirePermission('knowledge.update'), wrap(ctrl.updateCategory));
 router.delete('/categories/:id', auth, requirePermission('knowledge.update'), wrap(ctrl.removeCategory));
 
+// Etapa E — favoritos e histórico do usuário autenticado
+router.get('/me/favorites', auth, requirePermission('knowledge.read'), wrap(ctrl.listMyFavorites));
+router.get('/me/history', auth, requirePermission('knowledge.read'), wrap(ctrl.listMyHistory));
+router.delete('/me/history', auth, requirePermission('knowledge.read'), wrap(ctrl.clearMyHistory));
+router.post('/me/import-local', auth, requirePermission('knowledge.read'), wrap(ctrl.importMyLocal));
+router.put('/:id/favorite', auth, requirePermission('knowledge.read'), wrap(ctrl.addFavorite));
+router.delete('/:id/favorite', auth, requirePermission('knowledge.read'), wrap(ctrl.removeFavorite));
+
 router.get('/:id', auth, requirePermission('knowledge.read'), wrap(ctrl.get));
 router.post('/query', auth, requirePermission('knowledge.read'), wrap(ctrl.query));
 router.post('/', auth, requirePermission('knowledge.create'), wrap(ctrl.create));

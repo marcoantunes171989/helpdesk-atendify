@@ -39,8 +39,19 @@ jest.mock('../../services/kbViews', () => ({
   recordArticleView: jest.fn().mockResolvedValue(true),
 }));
 
+jest.mock('../../services/kbPersonal', () => ({
+  listFavoriteIds: jest.fn().mockResolvedValue([]),
+  listHistory: jest.fn().mockResolvedValue([]),
+  addFavorite: jest.fn().mockResolvedValue(['a1']),
+  removeFavorite: jest.fn().mockResolvedValue([]),
+  recordHistory: jest.fn().mockResolvedValue(undefined),
+  clearHistory: jest.fn().mockResolvedValue([]),
+  importLocal: jest.fn().mockResolvedValue({ favorites: [], history: [] }),
+}));
+
 const prisma = require('../../prisma');
 const { recordArticleView } = require('../../services/kbViews');
+const kbPersonal = require('../../services/kbPersonal');
 const ctrl = require('../knowledgeController');
 
 function mockRes() {
@@ -75,6 +86,14 @@ describe('knowledgeController — Etapa A anexos', () => {
     expect(body.attachments[0].hasContent).toBe(true);
     expect(body.attachments[0].name).toBe('n.pdf');
     expect(recordArticleView).toHaveBeenCalledWith('a1', 'u1');
+    expect(kbPersonal.recordHistory).toHaveBeenCalledWith('u1', 'a1');
+  });
+
+  test('addFavorite devolve lista atualizada', async () => {
+    const res = mockRes();
+    await ctrl.addFavorite({ params: { id: 'a1' }, user: { id: 'u1' } }, res);
+    expect(kbPersonal.addFavorite).toHaveBeenCalledWith('u1', 'a1');
+    expect(res.json).toHaveBeenCalledWith({ favorites: ['a1'] });
   });
 
   test('list com sort=views ordena por viewCount', async () => {

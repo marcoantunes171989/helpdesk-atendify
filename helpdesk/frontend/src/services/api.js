@@ -313,6 +313,12 @@ export const knowledgeService = {
   createCategory: (data) => api.post('/knowledge/categories', data).then(r => r.data),
   updateCategory: (id, data) => api.put(`/knowledge/categories/${id}`, data).then(r => r.data),
   removeCategory: (id) => api.delete(`/knowledge/categories/${id}`).then(r => r.data),
+  listFavorites: () => api.get('/knowledge/me/favorites').then(r => r.data),
+  addFavorite: (id) => api.put(`/knowledge/${id}/favorite`).then(r => r.data),
+  removeFavorite: (id) => api.delete(`/knowledge/${id}/favorite`).then(r => r.data),
+  listHistory: () => api.get('/knowledge/me/history').then(r => r.data),
+  clearHistory: () => api.delete('/knowledge/me/history').then(r => r.data),
+  importLocalPersonal: (data) => api.post('/knowledge/me/import-local', data).then(r => r.data),
 };
 
 export default api;
