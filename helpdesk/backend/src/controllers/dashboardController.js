@@ -1,4 +1,5 @@
 const prisma = require('../prisma');
+const { clientTicketWhere } = require('../services/ticketAccess');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,13 +61,10 @@ function normalizeName(str) {
   return (str || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
-// ETAPA 2 (RBAC-03): o Atendexa não usa Company como tenant de usuários (é
-// staff global) — a única relação legítima entre um usuário CLIENT e os
-// dados do dashboard é a autoria do chamado (ticket.userId). SUPER_ADMIN,
-// ADMIN e AGENT continuam com a visão global (equipe de suporte), igual ao
-// comportamento já existente em ticketController para listagem de chamados.
+// CLIENT vê os chamados que abriu, os concedidos a ele e os da empresa
+// vinculada. SUPER_ADMIN, ADMIN e AGENT continuam com a visão global.
 function ticketScope(req) {
-  return req.dbUser.role === 'CLIENT' ? { userId: req.dbUser.id } : {};
+  return req.dbUser.role === 'CLIENT' ? clientTicketWhere(req.dbUser.id) : {};
 }
 
 // ─── Legacy (backwards compat) ────────────────────────────────────────────────

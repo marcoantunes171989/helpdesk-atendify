@@ -9,13 +9,14 @@ import {
 import {
   ArrowLeftOutlined, EditOutlined, PlusOutlined,
   CustomerServiceOutlined, IdcardOutlined, DeleteOutlined, BankOutlined,
-  PhoneOutlined, ExclamationCircleOutlined, PaperClipOutlined,
+  PhoneOutlined, ExclamationCircleOutlined, PaperClipOutlined, TeamOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { companyService, employeeService, ticketService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { TICKET_STATUS, PRIORITY } from '../utils/constants';
+import { TICKET_STATUS, PRIORITY, ROLES } from '../utils/constants';
 import CompanyAttachments from '../components/CompanyAttachments';
+import TicketAccessPanel from '../components/TicketAccessPanel';
 
 const { Option } = Select;
 
@@ -64,20 +65,32 @@ export default function CompanyDetail() {
   const [compSaving, setCompSaving] = useState(false);
   const [compForm] = Form.useForm();
 
+  const [companyUsers, setCompanyUsers] = useState([]);
+  const [accessUsers, setAccessUsers] = useState([]);
+  const [linkUserId, setLinkUserId] = useState(null);
+  const [linkSaving, setLinkSaving] = useState(false);
+  const [ticketAccessId, setTicketAccessId] = useState(null);
+
   const canEditCompany = can('companies.create') || can('companies.update') || can('companies.delete');
+  const canLinkUsers = can('companies.update');
+  const canManageTicketAccess = can('tickets.manage');
   const canEditEmployees = can('employees.create') || can('employees.update') || can('employees.delete');
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [comp, emps, tiks] = await Promise.all([
+      const [comp, emps, tiks, linked] = await Promise.all([
         companyService.get(id),
         employeeService.list({ companyId: id }),
         ticketService.list({ companyId: id }),
+        (can('companies.read') || can('companies.update'))
+          ? companyService.listUserAccess(id).catch(() => [])
+          : Promise.resolve([]),
       ]);
       setCompany(comp);
       setEmployees(emps);
       setTickets(Array.isArray(tiks) ? tiks : tiks?.tickets || []);
+      setCompanyUsers(Array.isArray(linked) ? linked : []);
     } catch {
       setError('Erro ao carregar dados da empresa');
     } finally {
@@ -86,6 +99,11 @@ export default function CompanyDetail() {
   };
 
   useEffect(() => { loadAll(); }, [id]);
+
+  useEffect(() => {
+    if (!canLinkUsers) return;
+    ticketService.accessCandidates().then(setAccessUsers).catch(() => setAccessUsers([]));
+  }, [id, canLinkUsers]);
 
   const openCreateEmp = () => { setEditingEmp(null); empForm.resetFields(); setEmpDrawer(true); };
   const openEditEmp = (r) => {
@@ -187,8 +205,43 @@ export default function CompanyDetail() {
     { title: 'Status', dataIndex: 'status', key: 'status', render: v => <Tag color={TICKET_STATUS[v]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{TICKET_STATUS[v]?.label}</Tag> },
     { title: 'Prioridade', dataIndex: 'priority', key: 'priority', render: v => <Tag color={PRIORITY[v]?.color} style={{ borderRadius: 6, background: isLight ? 'transparent' : undefined, border: isLight ? 'none' : undefined }}>{PRIORITY[v]?.label}</Tag> },
     { title: 'Criado em', dataIndex: 'createdAt', key: 'createdAt', render: v => <span style={{ color: 'var(--cl-text-faint)', fontSize: 12 }}>{dayjs(v).format('DD/MM/YYYY')}</span> },
-    { title: '', key: 'action', width: 60, render: (_, r) => <Button type="link" size="small" onClick={() => navigate(`/app/tickets/${r.id}`)}>Ver</Button> },
+    {
+      title: '', key: 'action', width: canManageTicketAccess ? 150 : 60,
+      render: (_, r) => (
+        <Space>
+          {canManageTicketAccess && (
+            <Button type="link" size="small" onClick={() => setTicketAccessId(r.id)}>Acesso</Button>
+          )}
+          <Button type="link" size="small" onClick={() => navigate(`/app/tickets/${r.id}`)}>Ver</Button>
+        </Space>
+      ),
+    },
   ];
+
+  const handleLinkUser = async () => {
+    if (!linkUserId) { message.warning('Selecione um usuário'); return; }
+    setLinkSaving(true);
+    try {
+      const updated = await companyService.addUserAccess(id, linkUserId);
+      setCompanyUsers(updated);
+      setLinkUserId(null);
+      message.success('Usuário vinculado. Ele passa a ver os chamados desta empresa.');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao vincular usuário');
+    } finally {
+      setLinkSaving(false);
+    }
+  };
+
+  const handleUnlinkUser = async (userId) => {
+    try {
+      const updated = await companyService.removeUserAccess(id, userId);
+      setCompanyUsers(updated);
+      message.success('Vínculo removido');
+    } catch (err) {
+      message.error(err.response?.data?.error || 'Erro ao remover vínculo');
+    }
+  };
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}><Spin size="large" /></div>;
   if (error) return <Alert type="error" message={error} />;
@@ -268,6 +321,69 @@ export default function CompanyDetail() {
               ),
             },
             {
+              key: 'access',
+              label: <span><TeamOutlined /> Acesso ({companyUsers.length})</span>,
+              children: (
+                <div style={{ padding: '16px 24px 24px' }}>
+                  <div style={{ fontSize: 13, color: 'var(--cl-text-soft)', marginBottom: 16, lineHeight: 1.5 }}>
+                    Usuários vinculados veem todos os chamados desta empresa e podem incluir trâmites. Na aba Chamados, o botão Acesso oculta um chamado específico ou inclui alguém só naquele chamado.
+                  </div>
+                  {canLinkUsers && (
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                      <Select
+                        showSearch
+                        allowClear
+                        placeholder="Vincular usuário à empresa"
+                        value={linkUserId}
+                        onChange={setLinkUserId}
+                        optionFilterProp="label"
+                        style={{ minWidth: 280, flex: 1 }}
+                      >
+                        {accessUsers.filter(u => !companyUsers.some(linked => linked.id === u.id)).map(u => (
+                          <Option key={u.id} value={u.id} label={`${u.name} ${u.email || ''}`}>
+                            {u.name}{ROLES[u.role]?.label ? ` · ${ROLES[u.role].label}` : ''}
+                          </Option>
+                        ))}
+                      </Select>
+                      <Button type="primary" icon={<PlusOutlined />} loading={linkSaving} onClick={handleLinkUser}>
+                        Vincular
+                      </Button>
+                    </div>
+                  )}
+                  <Table
+                    dataSource={companyUsers}
+                    rowKey="id"
+                    size="middle"
+                    pagination={{ pageSize: 10 }}
+                    locale={{ emptyText: 'Nenhum usuário vinculado' }}
+                    columns={[
+                      {
+                        title: 'Usuário', key: 'name',
+                        render: (_, r) => (
+                          <div>
+                            <div style={{ fontWeight: 600, color: 'var(--cl-text-hi)', fontSize: 13 }}>{r.name}</div>
+                            <div style={{ fontSize: 11, color: 'var(--cl-text-faint)' }}>{r.email}</div>
+                          </div>
+                        ),
+                      },
+                      {
+                        title: 'Perfil', dataIndex: 'role', key: 'role',
+                        render: v => <Tag style={{ borderRadius: 6 }}>{ROLES[v]?.label || v}</Tag>,
+                      },
+                      {
+                        title: '', key: 'actions', width: 110,
+                        render: (_, r) => canLinkUsers && (
+                          <Button type="text" danger icon={<DeleteOutlined />} size="small" onClick={() => handleUnlinkUser(r.id)}>
+                            Remover
+                          </Button>
+                        ),
+                      },
+                    ]}
+                  />
+                </div>
+              ),
+            },
+            {
               key: 'attachments',
               label: <span><PaperClipOutlined /> Anexos</span>,
               children: (
@@ -276,9 +392,20 @@ export default function CompanyDetail() {
                 </div>
               ),
             },
-          ]}
+          ].filter(item => item.key !== 'access' || can('companies.read') || canLinkUsers || canManageTicketAccess)}
         />
       </Card>
+
+      <Modal
+        open={!!ticketAccessId}
+        onCancel={() => setTicketAccessId(null)}
+        title={<span style={{ fontWeight: 700 }}>Acesso deste chamado</span>}
+        footer={<Button onClick={() => setTicketAccessId(null)}>Fechar</Button>}
+        width={640}
+        destroyOnClose
+      >
+        {ticketAccessId && <TicketAccessPanel ticketId={ticketAccessId} />}
+      </Modal>
 
       {/* Modal — Confirmar exclusão de funcionário */}
       <Modal

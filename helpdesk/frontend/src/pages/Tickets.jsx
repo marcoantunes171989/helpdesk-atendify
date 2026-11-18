@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ticketService, categoryService, companyService, employeeService, statusService, technicianService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { TICKET_STATUS, PRIORITY, normalize } from '../utils/constants';
+import { TICKET_STATUS, PRIORITY, ROLES, normalize } from '../utils/constants';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { Option } = Select;
@@ -45,11 +45,12 @@ export default function Tickets() {
   const [search, setSearch] = useState('');
   const [slaExpiredOnly, setSlaExpiredOnly] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const [accessUsers, setAccessUsers] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [form] = Form.useForm();
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -111,6 +112,9 @@ export default function Tickets() {
     setFileList([]);
     setCompanyEmployees([]);
     setDrawerOpen(true);
+    if (can('tickets.manage')) {
+      ticketService.accessCandidates().then(setAccessUsers).catch(() => setAccessUsers([]));
+    }
   };
 
   const closeDrawer = () => {
@@ -543,6 +547,28 @@ export default function Tickets() {
                 {Object.entries(PRIORITY).map(([k, { label }]) => <Option key={k} value={k}>{label}</Option>)}
               </Select>
             </Form.Item>
+            {can('tickets.manage') && (
+              <Form.Item
+                name="viewerUserIds"
+                label="Usuários com acesso"
+                extra="Opcional. Os selecionados passam a ver e tramitar só este chamado."
+              >
+                <Select
+                  mode="multiple"
+                  allowClear
+                  size="large"
+                  placeholder="Selecione os usuários"
+                  showSearch
+                  optionFilterProp="label"
+                >
+                  {accessUsers.map(u => (
+                    <Option key={u.id} value={u.id} label={`${u.name} ${u.email || ''}`}>
+                      {u.name}{ROLES[u.role]?.label ? ` · ${ROLES[u.role].label}` : ''}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
 
             <Form.Item
               label={

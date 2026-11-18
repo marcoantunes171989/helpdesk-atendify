@@ -118,6 +118,53 @@ exports.update = async (req, res) => {
   res.json(company);
 };
 
+const companyUserSelect = { id: true, name: true, email: true, role: true };
+
+async function listCompanyUsers(companyId) {
+  const links = await prisma.companyUserAccess.findMany({
+    where: { companyId },
+    include: { user: { select: companyUserSelect } },
+    orderBy: { createdAt: 'asc' },
+  });
+  return links.map(link => link.user);
+}
+
+exports.listUserAccess = async (req, res) => {
+  const company = await prisma.company.findUnique({ where: { id: req.params.id }, select: { id: true } });
+  if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
+  res.json(await listCompanyUsers(company.id));
+};
+
+exports.addUserAccess = async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'Selecione um usuário' });
+
+  const company = await prisma.company.findUnique({ where: { id }, select: { id: true } });
+  if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, active: true } });
+  if (!user || !user.active) return res.status(400).json({ error: 'Usuário não encontrado ou inativo' });
+
+  try {
+    await prisma.companyUserAccess.create({ data: { companyId: id, userId } });
+  } catch (err) {
+    if (err.code === 'P2002') return res.status(409).json({ error: 'Usuário já vinculado a esta empresa' });
+    throw err;
+  }
+
+  res.status(201).json(await listCompanyUsers(id));
+};
+
+exports.removeUserAccess = async (req, res) => {
+  const { id, userId } = req.params;
+  const company = await prisma.company.findUnique({ where: { id }, select: { id: true } });
+  if (!company) return res.status(404).json({ error: 'Empresa não encontrada' });
+
+  await prisma.companyUserAccess.deleteMany({ where: { companyId: id, userId } });
+  res.json(await listCompanyUsers(id));
+};
+
 exports.remove = async (req, res) => {
   const { id, force } = { ...req.params, ...req.query };
 

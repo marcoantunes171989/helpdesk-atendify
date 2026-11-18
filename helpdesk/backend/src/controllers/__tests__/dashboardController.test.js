@@ -20,12 +20,14 @@ function mockRes() {
 describe('dashboardController — isolamento de dados por role (ETAPA 2 do RBAC-03)', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('stats: CLIENT só vê os próprios chamados (where.userId)', async () => {
+  test('stats: CLIENT vê próprios, concedidos e da empresa (sem filtrar só por userId)', async () => {
     const req = { query: {}, dbUser: { id: 'client-1', role: 'CLIENT' } };
     await ctrl.stats(req, mockRes());
 
     for (const call of prisma.ticket.count.mock.calls) {
-      expect(call[0].where.userId).toBe('client-1');
+      expect(call[0].where.userId).toBeUndefined();
+      expect(JSON.stringify(call[0].where)).toContain('client-1');
+      expect(call[0].where.OR || call[0].where.AND).toBeTruthy();
     }
   });
 
@@ -80,6 +82,7 @@ describe('dashboardController — isolamento de dados por role (ETAPA 2 do RBAC-
     await ctrl.queue(req, mockRes());
 
     const call = prisma.ticket.findMany.mock.calls[0][0];
-    expect(call.where.userId).toBe('client-1');
+    expect(call.where.userId).toBeUndefined();
+    expect(JSON.stringify(call.where)).toContain('client-1');
   });
 });

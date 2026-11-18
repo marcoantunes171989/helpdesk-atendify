@@ -8,6 +8,8 @@ jest.mock('../../prisma', () => ({
   },
   ticketComment: { create: jest.fn(), deleteMany: jest.fn() },
   ticketStatusRef: { findFirst: jest.fn() },
+  ticketUserAccess: { findUnique: jest.fn().mockResolvedValue(null) },
+  companyUserAccess: { findUnique: jest.fn().mockResolvedValue(null) },
   category: { findUnique: jest.fn() },
   $transaction: jest.fn(async (cb) => {
     if (typeof cb === 'function') {
@@ -18,6 +20,7 @@ jest.mock('../../prisma', () => ({
 
 const prisma = require('../../prisma');
 const ctrl = require('../ticketController');
+const { clientTicketWhere } = require('../../services/ticketAccess');
 
 function mockRes() {
   return { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
@@ -26,13 +29,14 @@ function mockRes() {
 describe('ticketController — isolamento por proprietário (CLIENT)', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('list: CLIENT só vê os próprios chamados, mesmo tentando filtrar por outro userId', async () => {
+  test('list: CLIENT vê próprios, concedidos e da empresa, e ignora filtro por outro userId', async () => {
     prisma.ticket.findMany.mockResolvedValue([]);
     const req = { query: { userId: 'outro-usuario' }, user: { id: 'client-1', role: 'CLIENT' } };
     await ctrl.list(req, mockRes());
 
     const whereArg = prisma.ticket.findMany.mock.calls[0][0].where;
-    expect(whereArg.userId).toBe('client-1');
+    expect(whereArg.userId).toBeUndefined();
+    expect(whereArg.AND).toEqual(expect.arrayContaining([clientTicketWhere('client-1')]));
   });
 
   test('list: AGENT pode ver todos os chamados (sem filtro forçado)', async () => {
@@ -50,6 +54,36 @@ describe('ticketController — isolamento por proprietário (CLIENT)', () => {
     const res = mockRes();
     await ctrl.get(req, res);
     expect(res.status).toHaveBeenCalledWith(403);
+  });
+
+  test('get: CLIENT com GRANT neste chamado consegue ler', async () => {
+    prisma.ticket.findUnique.mockResolvedValue({ id: 't1', userId: 'outro-usuario', companyId: 'emp-1' });
+    prisma.ticketUserAccess.findUnique.mockResolvedValueOnce({ mode: 'GRANT' });
+    const req = { params: { id: 't1' }, user: { id: 'client-1', role: 'CLIENT' } };
+    const res = mockRes();
+    await ctrl.get(req, res);
+    expect(res.status).not.toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalled();
+  });
+
+  test('get: CLIENT vinculado à empresa lê o chamado', async () => {
+    prisma.ticket.findUnique.mockResolvedValue({ id: 't1', userId: 'outro-usuario', companyId: 'emp-1' });
+    prisma.ticketUserAccess.findUnique.mockResolvedValueOnce(null);
+    prisma.companyUserAccess.findUnique.mockResolvedValueOnce({ id: 'link-1' });
+    const req = { params: { id: 't1' }, user: { id: 'client-1', role: 'CLIENT' } };
+    const res = mockRes();
+    await ctrl.get(req, res);
+    expect(res.json).toHaveBeenCalled();
+  });
+
+  test('get: DENY esconde o chamado mesmo com vínculo na empresa', async () => {
+    prisma.ticket.findUnique.mockResolvedValue({ id: 't1', userId: 'outro-usuario', companyId: 'emp-1' });
+    prisma.ticketUserAccess.findUnique.mockResolvedValueOnce({ mode: 'DENY' });
+    const req = { params: { id: 't1' }, user: { id: 'client-1', role: 'CLIENT' } };
+    const res = mockRes();
+    await ctrl.get(req, res);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(prisma.companyUserAccess.findUnique).not.toHaveBeenCalled();
   });
 
   test('get: CLIENT consegue ler o próprio chamado', async () => {
@@ -84,6 +118,17 @@ describe('ticketController — isolamento por proprietário (CLIENT)', () => {
     await ctrl.addComment(req, res);
     expect(res.status).toHaveBeenCalledWith(403);
     expect(prisma.ticketComment.create).not.toHaveBeenCalled();
+  });
+
+  test('addComment: CLIENT com acesso ao chamado pode incluir trâmite', async () => {
+    prisma.ticket.findUnique.mockResolvedValue({ id: 't1', userId: 'outro-usuario', companyId: 'emp-1', status: 'OPEN' });
+    prisma.ticketUserAccess.findUnique.mockResolvedValueOnce({ mode: 'GRANT' });
+    prisma.ticketComment.create.mockResolvedValue({ id: 'c1' });
+    const req = { params: { id: 't1' }, body: { message: 'acompanhando' }, user: { id: 'client-1', role: 'CLIENT' } };
+    const res = mockRes();
+    await ctrl.addComment(req, res);
+    expect(prisma.ticketComment.create).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 
   test('addComment: CLIENT pode comentar no próprio chamado', async () => {

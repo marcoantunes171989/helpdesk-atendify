@@ -66,6 +66,9 @@ export const companyService = {
   deactivate: (id) => api.delete(`/companies/${id}`).then(r => r.data),
   delete: (id) => api.delete(`/companies/${id}?force=true`).then(r => r.data),
   checkLinks: (id) => api.get(`/companies/${id}/links`).then(r => r.data),
+  listUserAccess: (id) => api.get(`/companies/${id}/user-access`).then(r => r.data),
+  addUserAccess: (id, userId) => api.post(`/companies/${id}/user-access`, { userId }).then(r => r.data),
+  removeUserAccess: (id, userId) => api.delete(`/companies/${id}/user-access/${userId}`).then(r => r.data),
 };
 
 const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -146,6 +149,10 @@ export const ticketService = {
   create: (data) => api.post('/tickets', data).then(r => r.data),
   update: (id, data) => api.put(`/tickets/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/tickets/${id}`).then(r => r.data),
+  accessCandidates: () => api.get('/tickets/meta/users').then(r => r.data),
+  getAccess: (id) => api.get(`/tickets/${id}/access`).then(r => r.data),
+  setAccess: (id, data) => api.put(`/tickets/${id}/access`, data).then(r => r.data),
+  removeAccess: (id, userId) => api.delete(`/tickets/${id}/access/${userId}`).then(r => r.data),
   addComment: (id, data) => api.post(`/tickets/${id}/comments`, data).then(r => r.data),
   updateComment: (id, commentId, data) => api.put(`/tickets/${id}/comments/${commentId}`, data).then(r => r.data),
   deleteComment: (id, commentId) => api.delete(`/tickets/${id}/comments/${commentId}`).then(r => r.data),
