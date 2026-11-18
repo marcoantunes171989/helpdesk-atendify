@@ -1,4 +1,5 @@
 ﻿const prisma = require('../prisma');
+const { isStaff, clientTicketWhere, userCanAccessTicket } = require('../services/ticketAccess');
 
 // Include completo para detail/update — sem data dos attachments na listagem
 const ticketInclude = {
@@ -37,15 +38,15 @@ exports.list = async (req, res) => {
   if (priority) where.priority = priority;
   if (categoryId) where.categoryId = categoryId;
   if (assignedTo) where.assignedTo = assignedTo;
-  if (userId) where.userId = userId;
-
-  // CLIENT só pode ver os próprios chamados — restrição por proprietário
-  // (ETAPA 2). Qualquer tentativa de filtrar por outro userId é ignorada.
-  if (req.user.role === 'CLIENT') {
-    where.userId = req.user.id;
-  }
+  if (userId && req.user.role !== 'CLIENT') where.userId = userId;
 
   const andConditions = [];
+
+  // CLIENT vê os chamados que abriu, os concedidos a ele e os da empresa
+  // vinculada (menos os ocultados). Filtro por outro userId é ignorado.
+  if (req.user.role === 'CLIENT') {
+    andConditions.push(clientTicketWhere(req.user.id));
+  }
 
   const statusConditions = [];
   if (statusIdArr.length > 0) statusConditions.push({ statusId: { in: statusIdArr } });
@@ -94,8 +95,7 @@ exports.get = async (req, res) => {
 
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  // CLIENT só pode ver o próprio chamado (restrição por proprietário).
-  if (req.user.role === 'CLIENT' && ticket.userId !== req.user.id) {
+  if (!(await userCanAccessTicket(req.user, ticket))) {
     return res.status(403).json({ error: 'Você não tem acesso a este chamado' });
   }
 
@@ -103,7 +103,7 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { title, description, priority, categoryId, companyId, employeeId, technicianId, attachments } = req.body;
+  const { title, description, priority, categoryId, companyId, employeeId, technicianId, attachments, viewerUserIds } = req.body;
 
   if (!title) return res.status(400).json({ error: 'Título é obrigatório' });
   if (!description) return res.status(400).json({ error: 'Descrição é obrigatória' });
@@ -122,6 +122,19 @@ exports.create = async (req, res) => {
   }
 
   const { statusId } = req.body;
+
+  const viewerIds = isStaff(req.user.role) && Array.isArray(viewerUserIds)
+    ? [...new Set(viewerUserIds.filter(id => id && id !== req.user.id))]
+    : [];
+  if (viewerIds.length > 0) {
+    const viewers = await prisma.user.findMany({
+      where: { id: { in: viewerIds }, active: true },
+      select: { id: true },
+    });
+    if (viewers.length !== viewerIds.length) {
+      return res.status(400).json({ error: 'Um ou mais usuários selecionados não existem ou estão inativos' });
+    }
+  }
 
   const lastTicket = await prisma.ticket.findFirst({ orderBy: { code: 'desc' } });
   const code = (lastTicket?.code ?? 0) + 1;
@@ -151,6 +164,12 @@ exports.create = async (req, res) => {
         size: a.size,
         data: a.data,
       })),
+    });
+  }
+
+  if (viewerIds.length > 0) {
+    await prisma.ticketUserAccess.createMany({
+      data: viewerIds.map(userId => ({ ticketId: ticket.id, userId, mode: 'GRANT' })),
     });
   }
 
@@ -255,7 +274,7 @@ exports.addComment = async (req, res) => {
   const ticket = await prisma.ticket.findUnique({ where: { id: req.params.id } });
   if (!ticket) return res.status(404).json({ error: 'Chamado não encontrado' });
 
-  if (req.user.role === 'CLIENT' && ticket.userId !== req.user.id) {
+  if (!(await userCanAccessTicket(req.user, ticket))) {
     return res.status(403).json({ error: 'Você não tem acesso a este chamado' });
   }
 

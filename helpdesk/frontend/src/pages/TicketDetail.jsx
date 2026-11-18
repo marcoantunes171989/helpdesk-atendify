@@ -17,6 +17,7 @@ import {
   employeeService, statusService, technicianService,
 } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import TicketAccessPanel from '../components/TicketAccessPanel';
 import {
   TICKET_STATUS, PRIORITY, ROLES, normalize } from '../utils/constants';
 
@@ -362,11 +363,12 @@ export default function TicketDetail() {
 
   const handleComment = async () => {
     if (!comment.trim()) { message.warning('Escreva um trâmite'); return; }
-    if (!commentStatusId) { message.warning('Selecione um status'); return; }
+    const canChangeStatus = can('tickets.manage');
+    if (canChangeStatus && !commentStatusId) { message.warning('Selecione um status'); return; }
     setSending(true);
     try {
       const selectedStatus = statuses.find(s => s.id === commentStatusId);
-      const builtinStatus = selectedStatus?.builtinStatus;
+      const builtinStatus = canChangeStatus ? selectedStatus?.builtinStatus : null;
       let msg = comment.trim();
       if (builtinStatus === 'RESOLVED') msg = `::SYS_RESOLVED:: ${msg}`;
       else if (builtinStatus === 'OPEN' && ticket.status !== 'OPEN') msg = `::SYS_REOPENED:: ${msg}`;
@@ -378,7 +380,7 @@ export default function TicketDetail() {
         attachments: cfAttachments,
         createdAt: commentDate?.toISOString(),
       });
-      if (commentStatusId !== ticket.statusId) {
+      if (canChangeStatus && commentStatusId !== ticket.statusId) {
         await ticketService.update(id, { statusId: commentStatusId });
       }
       load();
@@ -465,25 +467,35 @@ export default function TicketDetail() {
     const src = `data:${att.mimeType};base64,${att.data}`;
 
     if (compact) {
-      return isImage ? (
-        <img
+      return (
+        <div
           key={att.id}
-          src={src}
-          alt={att.name}
-          title={att.name}
-          style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--cl-border-input)', flexShrink: 0 }}
-          onClick={() => setPreviewImage({ src, name: att.name, mimeType: att.mimeType, data: att.data })}
-        />
-      ) : (
-        <Tooltip key={att.id} title={`${att.name} (${formatSize(att.size)})`}>
-          <Button
-            type="text"
-            icon={<FileOutlined />}
-            size="small"
-            style={{ color: 'var(--cl-text-muted)' }}
-            onClick={() => downloadAttachment(att)}
-          />
-        </Tooltip>
+          title={`${att.name} (${formatSize(att.size)})`}
+          onClick={() => isImage
+            ? setPreviewImage({ src, name: att.name, mimeType: att.mimeType, data: att.data })
+            : downloadAttachment(att)}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, maxWidth: 220,
+            padding: '4px 8px 4px 4px', borderRadius: 8, cursor: 'pointer',
+            border: '1px solid var(--cl-border)', background: 'var(--cl-bg)',
+          }}
+        >
+          {isImage ? (
+            <img
+              src={src}
+              alt={att.name}
+              style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
+            />
+          ) : (
+            <FileOutlined style={{ color: 'var(--cl-text-muted)', fontSize: 16, marginLeft: 6 }} />
+          )}
+          <span style={{
+            fontSize: 12, color: 'var(--cl-text)', fontWeight: 600,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {att.name}
+          </span>
+        </div>
       );
     }
 
@@ -884,6 +896,11 @@ export default function TicketDetail() {
                           {sysMsg}
                         </div>
                       )}
+                      {c.attachments?.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10, paddingLeft: 26 }}>
+                          {c.attachments.map(att => renderAttachment(att, true))}
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -1126,6 +1143,24 @@ export default function TicketDetail() {
               )}
             </div>
           </div>
+
+          {canEdit && (
+            <div style={{ ...CARD, overflow: 'hidden', marginTop: 16 }}>
+              <div style={{
+                padding: '14px 18px',
+                borderBottom: '1px solid var(--cl-border)',
+                background: 'var(--cl-bg-soft)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--cl-text-hi)' }}>
+                  Acesso ao chamado
+                </span>
+              </div>
+              <div style={{ padding: '14px 18px' }}>
+                <TicketAccessPanel ticketId={id} />
+              </div>
+            </div>
+          )}
         </Col>
       </Row>
 
@@ -1180,7 +1215,7 @@ export default function TicketDetail() {
               type="primary"
               icon={<SendOutlined />}
               loading={sending}
-              disabled={!comment.trim() || !commentStatusId}
+              disabled={!comment.trim() || (canEdit && !commentStatusId)}
               onClick={handleComment}
               style={{ fontWeight: 600 }}
             >
@@ -1208,6 +1243,7 @@ export default function TicketDetail() {
               />
             </div>
 
+            {canEdit && (
             <div>
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>
                 Status <span style={{ color: 'var(--cl-danger)' }}>*</span>
@@ -1230,6 +1266,7 @@ export default function TicketDetail() {
                 ))}
               </Select>
             </div>
+            )}
 
             <div>
               <div style={{ ...LABEL_STYLE, marginBottom: 6 }}>

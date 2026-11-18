@@ -39,6 +39,7 @@ model Company {
   treinamentos      Treinamento[]
   visitas           Visita[]
   attachments       CompanyAttachment[]
+  userAccess        CompanyUserAccess[]
 
   @@map("companies")
 }
@@ -83,6 +84,8 @@ model User {
   auditLogs        AuditLog[]       @relation("AuditActor")
   kbFavorites      KbFavorite[]
   kbHistory        KbHistory[]
+  companyAccess    CompanyUserAccess[]
+  ticketAccess     TicketUserAccess[]
 
   @@index([accessGroupId])
   @@map("users")
@@ -198,6 +201,7 @@ model Ticket {
   updatedAt   DateTime     @updatedAt
   comments    TicketComment[]
   attachments TicketAttachment[]
+  userAccess  TicketUserAccess[]
 
   @@map("tickets")
 }
@@ -257,6 +261,42 @@ model TicketCommentAttachment {
   createdAt DateTime      @default(now())
 
   @@map("ticket_comment_attachments")
+}
+
+// Usuário vinculado à empresa enxerga todos os chamados dela,
+// salvo os que tiverem um TicketUserAccess DENY.
+model CompanyUserAccess {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@map("company_user_access")
+}
+
+// GRANT inclui o usuário só neste chamado.
+// DENY esconde este chamado mesmo que o usuário esteja vinculado à empresa.
+enum TicketAccessMode {
+  GRANT
+  DENY
+}
+
+model TicketUserAccess {
+  id        String           @id @default(cuid())
+  ticketId  String
+  ticket    Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode      TicketAccessMode
+  createdAt DateTime         @default(now())
+
+  @@unique([ticketId, userId])
+  @@index([userId])
+  @@map("ticket_user_access")
 }
 
 model TicketAttachment {

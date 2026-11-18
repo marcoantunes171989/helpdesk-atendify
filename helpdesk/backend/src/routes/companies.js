@@ -13,6 +13,9 @@ const attCtrl = require('../controllers/companyAttachmentController');
 // necessário para o formulário (ETAPA 6 do RBAC-03).
 router.get('/', auth, loadPermissions(), wrap(ctrl.list));
 router.get('/:id/links', auth, wrap(ctrl.links));
+router.get('/:id/user-access', auth, requirePermission('companies.read'), wrap(ctrl.listUserAccess));
+router.post('/:id/user-access', auth, requirePermission('companies.update'), wrap(ctrl.addUserAccess));
+router.delete('/:id/user-access/:userId', auth, requirePermission('companies.update'), wrap(ctrl.removeUserAccess));
 router.get('/:id', auth, loadPermissions(), wrap(ctrl.get));
 // RBAC-06 ETAPA 2: create/update/delete usavam minRole('ADMIN'), ignorando
 // companies.create/update/delete do catálogo — um grupo de acesso podia
